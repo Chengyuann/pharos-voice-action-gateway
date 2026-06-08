@@ -1,0 +1,8 @@
+{"t": 0.00, "type": "asr_partial", "text": "send", "speech": true}
+{"t": 0.35, "type": "asr_partial", "text": "send 0.02 PHRS", "speech": true}
+{"t": 0.82, "type": "asr_final", "text": "send 0.02 PHRS to 0x1111111111111111111111111111111111111111", "speech": true}
+{"t": 1.62, "type": "silence", "speech": false}
+{"t": 1.85, "type": "tts_start", "text": "I prepared a Pharos payment preview. Please confirm before I submit anything."}
+{"t": 2.20, "type": "asr_partial", "text": "wait", "speech": true}
+{"t": 2.50, "type": "asr_final", "text": "confirm execute", "speech": true}
+{"t": 3.30, "type": "silence", "speech": false}

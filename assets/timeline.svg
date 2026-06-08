@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="560" viewBox="0 0 1400 560">
+  <defs>
+    <style>
+      .bg{fill:#fbfbfe}.axis{stroke:#1f2937;stroke-width:3}.tick{stroke:#94a3b8;stroke-width:2}.user{fill:#e0f2fe;stroke:#0284c7;stroke-width:2}.agent{fill:#ede9fe;stroke:#7c3aed;stroke-width:2}.gate{fill:#fff7ed;stroke:#ea580c;stroke-width:2}.txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,"Noto Sans CJK SC",sans-serif;fill:#111827}.title{font-size:30px;font-weight:700}.label{font-size:18px;font-weight:650}.small{font-size:15px;fill:#4b5563}.event{font-size:16px;font-weight:650}.arrow{stroke:#334155;stroke-width:2.5;fill:none;marker-end:url(#arrow)}.interrupt{stroke:#ea580c;stroke-width:3;fill:none;stroke-dasharray:8 7;marker-end:url(#arrow2)}
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M2,2 L10,6 L2,10 Z" fill="#334155"/></marker>
+    <marker id="arrow2" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M2,2 L10,6 L2,10 Z" fill="#ea580c"/></marker>
+  </defs>
+  <rect class="bg" width="1400" height="560"/>
+  <text class="txt title" x="50" y="58">全双工语音事件时间线</text>
+  <text class="txt small" x="52" y="88">用户可以在 TTS 播放过程中插话，Gateway 输出 interrupt_tts 并重新提交新的意图。</text>
+
+  <line class="axis" x1="90" y1="300" x2="1310" y2="300"/>
+  <line class="tick" x1="160" y1="285" x2="160" y2="315"/>
+  <line class="tick" x1="455" y1="285" x2="455" y2="315"/>
+  <line class="tick" x1="705" y1="285" x2="705" y2="315"/>
+  <line class="tick" x1="930" y1="285" x2="930" y2="315"/>
+  <line class="tick" x1="1170" y1="285" x2="1170" y2="315"/>
+  <text class="txt small" x="142" y="340">0.0s</text>
+  <text class="txt small" x="435" y="340">1.2s</text>
+  <text class="txt small" x="683" y="340">1.7s</text>
+  <text class="txt small" x="910" y="340">3.0s</text>
+  <text class="txt small" x="1150" y="340">4.1s</text>
+
+  <rect class="user" x="110" y="150" width="330" height="78" rx="16"/>
+  <text class="txt event" x="132" y="183">用户：帮我总结这份合同</text>
+  <text class="txt small" x="132" y="210">Gateway: commit_turn</text>
+  <path class="arrow" d="M275 228 V290"/>
+
+  <rect class="agent" x="500" y="380" width="350" height="78" rx="16"/>
+  <text class="txt event" x="525" y="413">TTS：我先帮你看一下合同...</text>
+  <text class="txt small" x="525" y="440">Gateway: tts_started</text>
+  <path class="arrow" d="M675 380 V312"/>
+
+  <rect class="gate" x="650" y="120" width="360" height="88" rx="16"/>
+  <text class="txt event" x="675" y="154">用户插话：等一下，先看付款周期</text>
+  <text class="txt small" x="675" y="182">Gateway: interrupt_tts + new commit_turn</text>
+  <path class="interrupt" d="M830 208 C820 260 760 330 705 380"/>
+
+  <rect class="agent" x="960" y="380" width="300" height="78" rx="16"/>
+  <text class="txt event" x="984" y="413">TTS：好的，优先看付款周期</text>
+  <text class="txt small" x="984" y="440">新的回复基于修正后的意图</text>
+  <path class="arrow" d="M1110 380 V312"/>
+
+  <rect class="gate" x="1020" y="135" width="255" height="68" rx="14"/>
+  <text class="txt event" x="1042" y="166">Agent 工具调用</text>
+  <text class="txt small" x="1042" y="190">文件 / 合同 / 日历 / 代码</text>
+</svg>

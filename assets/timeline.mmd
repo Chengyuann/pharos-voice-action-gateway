@@ -1,0 +1,16 @@
+sequenceDiagram
+  participant User as 用户
+  participant GW as Duplex Gateway
+  participant Agent as 本地 Agent
+  participant TTS as 本地 TTS
+
+  User->>GW: 帮我总结这份合同
+  GW-->>GW: silence >= threshold
+  GW->>Agent: commit_turn("帮我总结这份合同")
+  Agent->>TTS: 开始回复
+  TTS-->>User: 我先帮你看一下合同...
+  User->>GW: 等一下，先重点看付款周期
+  GW->>TTS: interrupt_tts
+  GW->>Agent: commit_turn("先重点看付款周期")
+  Agent->>TTS: 生成新的回复
+  TTS-->>User: 好的，我优先看付款周期

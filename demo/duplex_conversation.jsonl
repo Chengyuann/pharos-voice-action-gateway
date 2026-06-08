@@ -1,0 +1,11 @@
+{"t": 0.00, "type": "asr_partial", "text": "帮我", "speech": true}
+{"t": 0.36, "type": "asr_partial", "text": "帮我总结这份合同", "speech": true}
+{"t": 0.92, "type": "silence", "speech": false}
+{"t": 1.22, "type": "silence", "speech": false}
+{"t": 1.35, "type": "tts_start", "text": "我先帮你看一下合同。"}
+{"t": 1.70, "type": "asr_partial", "text": "等一下", "speech": true}
+{"t": 1.95, "type": "asr_partial", "text": "等一下 先重点看付款周期", "speech": true}
+{"t": 2.72, "type": "silence", "speech": false}
+{"t": 3.05, "type": "silence", "speech": false}
+{"t": 3.20, "type": "tts_start", "text": "好的，我会优先看付款周期。"}
+{"t": 4.10, "type": "tts_end", "text": ""}

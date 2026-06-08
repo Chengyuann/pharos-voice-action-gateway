@@ -1,0 +1,6 @@
+{"t": 0.00, "type": "asr_partial", "text": "帮我查一下今天的会议", "speech": true}
+{"t": 0.40, "type": "asr_partial", "text": "帮我查一下今天的会议 然后", "speech": true}
+{"t": 0.75, "type": "silence", "speech": false}
+{"t": 1.05, "type": "asr_partial", "text": "帮我查一下今天的会议 然后生成一个待办", "speech": true}
+{"t": 1.82, "type": "silence", "speech": false}
+{"t": 2.08, "type": "silence", "speech": false}

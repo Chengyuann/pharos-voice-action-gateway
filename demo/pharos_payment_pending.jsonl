@@ -1,0 +1,6 @@
+{"t": 0.00, "type": "asr_partial", "text": "帮我", "speech": true}
+{"t": 0.42, "type": "asr_partial", "text": "帮我转账 0.05 PHRS", "speech": true}
+{"t": 0.85, "type": "asr_final", "text": "帮我转账 0.05 PHRS 到 0x2222222222222222222222222222222222222222", "speech": true}
+{"t": 1.70, "type": "silence", "speech": false}
+{"t": 1.95, "type": "tts_start", "text": "我已经生成交易预览，需要你明确确认后才会执行。"}
+{"t": 2.20, "type": "tts_end", "text": ""}

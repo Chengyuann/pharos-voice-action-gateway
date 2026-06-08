@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760">
+  <defs>
+    <style>
+      .bg{fill:#f8fafc}.panel{fill:#fff;stroke:#d7dde8;stroke-width:2}.box{fill:#ffffff;stroke:#4b6bfb;stroke-width:2}.model{fill:#eef6ff;stroke:#1976d2;stroke-width:2}.gateway{fill:#fff4df;stroke:#d88700;stroke-width:3}.agent{fill:#f0ecff;stroke:#6b46c1;stroke-width:2}.tool{fill:#ecfdf3;stroke:#159947;stroke-width:2}.txt{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,"Noto Sans CJK SC",sans-serif;fill:#1f2937}.title{font-size:30px;font-weight:700}.label{font-size:20px;font-weight:650}.small{font-size:15px;fill:#4b5563}.arrow{stroke:#334155;stroke-width:2.5;fill:none;marker-end:url(#arrow)}.dash{stroke:#d88700;stroke-width:2.5;fill:none;stroke-dasharray:8 7;marker-end:url(#arrow-orange)}
+    </style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#334155"/>
+    </marker>
+    <marker id="arrow-orange" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M2,2 L10,6 L2,10 Z" fill="#d88700"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="1400" height="760"/>
+  <text class="txt title" x="48" y="58">Local Duplex Voice Gateway 架构</text>
+  <text class="txt small" x="50" y="88">ModelScope 语音模型 + Gateway 事件协议 + ≤35B 本地 Agent 大脑</text>
+
+  <rect class="panel" x="40" y="120" width="1320" height="570" rx="22"/>
+  <text class="txt label" x="70" y="158">Intel AI PC / Localhost</text>
+  <text class="txt small" x="70" y="184">音频、转写、话轮判断和报告默认留在本机；OpenVINO 可加速 VAD / ASR / EOU / TTS。</text>
+
+  <rect class="box" x="70" y="295" width="170" height="86" rx="16"/>
+  <text class="txt label" x="105" y="330">用户语音</text>
+  <text class="txt small" x="103" y="358">麦克风 / wav</text>
+
+  <rect class="model" x="300" y="230" width="210" height="95" rx="16"/>
+  <text class="txt label" x="340" y="266">VAD</text>
+  <text class="txt small" x="323" y="295">speech_fsmn_vad</text>
+
+  <rect class="model" x="300" y="365" width="210" height="95" rx="16"/>
+  <text class="txt label" x="340" y="401">ASR</text>
+  <text class="txt small" x="322" y="430">SenseVoice / Paraformer</text>
+
+  <rect class="gateway" x="580" y="275" width="250" height="150" rx="20"/>
+  <text class="txt label" x="625" y="318">Duplex Gateway</text>
+  <text class="txt small" x="620" y="350">listen / hold</text>
+  <text class="txt small" x="620" y="374">commit_turn</text>
+  <text class="txt small" x="620" y="398">interrupt_tts</text>
+
+  <rect class="model" x="600" y="500" width="220" height="84" rx="16"/>
+  <text class="txt label" x="626" y="534">Turn Detection</text>
+  <text class="txt small" x="633" y="562">TEN_Turn_Detection</text>
+
+  <rect class="agent" x="900" y="245" width="220" height="112" rx="16"/>
+  <text class="txt label" x="932" y="284">≤35B Agent</text>
+  <text class="txt small" x="932" y="314">Qwen3.6 / openBMB</text>
+  <text class="txt small" x="932" y="338">Ollama / QwenPaw / Trae</text>
+
+  <rect class="tool" x="1170" y="200" width="150" height="86" rx="16"/>
+  <text class="txt label" x="1206" y="235">工具</text>
+  <text class="txt small" x="1198" y="263">文件 / 日历 / 代码</text>
+
+  <rect class="model" x="1170" y="365" width="150" height="86" rx="16"/>
+  <text class="txt label" x="1208" y="400">TTS</text>
+  <text class="txt small" x="1198" y="428">CosyVoice2 / local</text>
+
+  <path class="arrow" d="M240 338 H300"/>
+  <path class="arrow" d="M510 278 H580"/>
+  <path class="arrow" d="M510 413 H580"/>
+  <path class="arrow" d="M705 425 V500"/>
+  <path class="arrow" d="M820 542 C870 542 850 360 900 320"/>
+  <path class="arrow" d="M830 350 H900"/>
+  <path class="arrow" d="M1120 292 C1150 270 1152 248 1170 243"/>
+  <path class="arrow" d="M1120 325 C1150 348 1152 388 1170 408"/>
+  <path class="dash" d="M1245 365 C1240 315 1020 168 730 275"/>
+  <text class="txt small" x="1000" y="170">用户插话时：interrupt_tts</text>
+</svg>

@@ -1,0 +1,6 @@
+{"t": 0.00, "type": "asr_partial", "text": "record", "speech": true}
+{"t": 0.40, "type": "asr_final", "text": "record this voice session proof on chain", "speech": true}
+{"t": 1.18, "type": "silence", "speech": false}
+{"t": 1.42, "type": "tts_start", "text": "I can write a hash proof only. Please confirm."}
+{"t": 1.88, "type": "asr_final", "text": "confirm", "speech": true}
+{"t": 2.66, "type": "silence", "speech": false}

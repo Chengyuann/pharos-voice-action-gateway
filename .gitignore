@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.agent/
+reports/
+duplex_voice_report_*.md
+duplex_voice_report_*.json
+.DS_Store
+*_report.md
+*_report.json

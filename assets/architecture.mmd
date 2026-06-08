@@ -1,0 +1,24 @@
+flowchart LR
+  U["用户自然语音"] --> MIC["麦克风 / 本地音频"]
+  MIC --> VAD["ModelScope VAD\niic/speech_fsmn_vad"]
+  MIC --> ASR["ModelScope ASR\niic/SenseVoiceSmall / Paraformer"]
+  VAD --> GW["Local Duplex Voice Gateway\nlisten / hold / commit / interrupt"]
+  ASR --> GW
+  GW --> TD["Turn Detection\nTEN-framework/TEN_Turn_Detection"]
+  TD --> GW
+  GW -->|"commit_turn"| LLM["≤35B 本地 Agent 大脑\nQwen3.6 / openBMB / Ollama"]
+  LLM --> TOOL["本地工具调用\n文件 / 日历 / 代码 / 搜索"]
+  LLM --> TTS["ModelScope TTS\niic/CosyVoice2-0.5B"]
+  TTS --> SPK["本地播放"]
+  U -->|"插话 / 等一下"| GW
+  GW -->|"interrupt_tts"| TTS
+  subgraph AIPC["Intel AI PC / Localhost"]
+    VAD
+    ASR
+    GW
+    TD
+    LLM
+    TOOL
+    TTS
+    SPK
+  end

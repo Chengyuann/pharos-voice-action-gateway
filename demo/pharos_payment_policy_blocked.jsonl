@@ -1,0 +1,7 @@
+{"t": 0.00, "type": "asr_partial", "text": "send", "speech": true}
+{"t": 0.35, "type": "asr_partial", "text": "send 0.50 PHRS", "speech": true}
+{"t": 0.82, "type": "asr_final", "text": "send 0.50 PHRS to 0x9999999999999999999999999999999999999999", "speech": true}
+{"t": 1.62, "type": "silence", "speech": false}
+{"t": 1.85, "type": "tts_start", "text": "This exceeds the voice payment policy and uses an untrusted recipient."}
+{"t": 2.20, "type": "asr_final", "text": "confirm execute", "speech": true}
+{"t": 3.00, "type": "silence", "speech": false}

@@ -11,7 +11,7 @@ This project upgrades Local Duplex Voice Gateway into a Skill-to-Agent module fo
 ## GitHub URL
 
 ```text
-https://github.com/Chengyuann/local-duplex-voice-gateway
+https://github.com/Chengyuann/pharos-voice-action-gateway
 ```
 
 ## Skill 信息
@@ -56,13 +56,13 @@ python scripts/pharos_voice_action_gateway.py demo/pharos_session_proof_confirme
 ## DoraHacks 简介
 
 ```text
-Pharos Voice Action Gateway is a reusable Skill-to-Agent module that makes voice-driven on-chain agents safer. It combines a local full-duplex voice turn-taking gateway with a Pharos action layer: the Skill waits for a complete voice turn, extracts a structured intent, prepares a Pharos transaction preview or voice-session proof, and blocks high-risk actions until the user explicitly confirms. The demo is mock-first, requires no private key, and outputs deterministic tx/proof hashes that can later be wired to a Pharos wallet or proof registry contract.
+Pharos Voice Action Gateway is a reusable Skill-to-Agent module that makes voice-driven on-chain agents safer. It combines a local full-duplex voice turn-taking gateway with a Pharos action layer: the Skill waits for a complete voice turn, extracts a structured intent, creates a voice-native mandate, evaluates policy limits, prepares a Pharos transaction preview or voice-session proof, and blocks high-risk actions until the user explicitly confirms. The demo is mock-first, requires no private key, and outputs deterministic tx/proof hashes that can later be wired to a Pharos wallet or proof registry contract.
 ```
 
 ## One-liner
 
 ```text
-A confirmation-gated voice-to-onchain Skill for Pharos agents: commit complete voice turns, prepare payment/proof actions, and block unsafe transactions before signing.
+A voice-native mandate and policy layer for Pharos agents: commit complete voice turns, generate verifiable payment/proof mandates, and block unsafe transactions before signing.
 ```
 
 ## Demo Script
@@ -71,6 +71,7 @@ A confirmation-gated voice-to-onchain Skill for Pharos agents: commit complete v
 1. Run the original full-duplex voice gateway demo to show commit_turn and interrupt_tts.
 2. Run pharos_payment_confirmed.jsonl to show a 0.02 PHRS voice payment, explicit confirmation and simulated tx hash.
 3. Run pharos_payment_pending.jsonl to show that the same high-risk payment is blocked without confirmation.
-4. Run pharos_session_proof_confirmed.jsonl to show voice_hash, intent_hash and proof_payload generation.
-5. Explain that mock mode is safe for judging; wallet mode can later connect to Pharos RPC/signers for live Agent Arena deployment.
+4. Run pharos_payment_policy_blocked.jsonl to show that even an explicit confirmation cannot bypass amount and trusted-recipient policy.
+5. Run pharos_session_proof_confirmed.jsonl to show voice_hash, intent_hash, mandate_hash and proof_payload generation.
+6. Explain that mock mode is safe for judging; wallet mode can later connect to Pharos RPC/signers for live Agent Arena deployment.
 ```

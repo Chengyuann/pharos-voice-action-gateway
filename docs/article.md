@@ -4,7 +4,7 @@
 > 作品名称：Local Duplex Voice Gateway  
 > 推荐标签：`Intel AI PC`、`AIPC`、`OpenVINO`、`Agentic AI`、`Skills`、`Voice Agent`
 
-![Local Duplex Voice Gateway 封面](https://raw.githubusercontent.com/Chengyuann/local-duplex-voice-gateway/main/assets/cover.jpg)
+![Local Duplex Voice Gateway 封面](https://raw.githubusercontent.com/Chengyuann/pharos-voice-action-gateway/main/assets/cover.jpg)
 
 我一开始并不想再做一个普通的“语音转文字”工具。ASR、TTS 这些能力已经有很多成熟模型了，真正让我觉得还缺一块的是：语音 Agent 怎么像一个正常交流对象一样处理节奏。
 
@@ -14,7 +14,7 @@
 
 这个方向和 AI PC 很贴。语音是高频交互，延迟稍微高一点就会明显影响体验；语音内容又经常包含私人信息、会议内容、代码需求、工作安排，不适合默认上传。AI PC 的本地算力可以把这部分放回用户设备上，云端只在必要时处理非敏感协作内容。这就是我理解的 Hybrid AI：不是所有东西都塞进本地，也不是所有东西都交给云端，而是把最靠近用户、最需要低延迟和隐私保护的环节放在端侧。
 
-![Local Duplex Voice Gateway 架构](https://raw.githubusercontent.com/Chengyuann/local-duplex-voice-gateway/main/assets/architecture.svg)
+![Local Duplex Voice Gateway 架构](https://raw.githubusercontent.com/Chengyuann/pharos-voice-action-gateway/main/assets/architecture.svg)
 
 ## 我想解决的具体问题
 
@@ -62,7 +62,7 @@ Local Duplex Voice Gateway 的工作流是这样的：
     -> 用户插话时 interrupt_tts
 ```
 
-![全双工语音事件时间线](https://raw.githubusercontent.com/Chengyuann/local-duplex-voice-gateway/main/assets/timeline.svg)
+![全双工语音事件时间线](https://raw.githubusercontent.com/Chengyuann/pharos-voice-action-gateway/main/assets/timeline.svg)
 
 这里的关键不是某一个模型，而是事件协议。Gateway 输出的事件很少，但每个都直接对应 Agent 行为：
 

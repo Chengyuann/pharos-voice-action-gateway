@@ -15,6 +15,7 @@ import json
 import re
 import sys
 from dataclasses import asdict, dataclass, field
+from decimal import Decimal, InvalidOperation
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
@@ -39,6 +40,16 @@ TOKEN_RE = re.compile(r"\b(PHRS|PROS|USDC|USDT|ETH)\b", re.I)
 CONFIRM_RE = re.compile(r"(confirm|confirmed|yes execute|approve|send it|确认|确认执行|批准|可以执行|执行吧)", re.I)
 CANCEL_RE = re.compile(r"(cancel|abort|stop|do not|don't|取消|停止|不要执行|别执行)", re.I)
 HIGH_RISK_ACTIONS = {"send_payment", "contract_call", "write_session_proof"}
+DEFAULT_POLICY = {
+    "max_single_payment": "0.05",
+    "native_token": "PHRS",
+    "allowed_tokens": ["PHRS", "PROS", "USDC", "USDT"],
+    "trusted_recipients": [
+        "0x1111111111111111111111111111111111111111",
+        "0x2222222222222222222222222222222222222222",
+    ],
+    "challenge_word_count": 3,
+}
 
 
 @dataclass
@@ -70,6 +81,10 @@ class PreparedAction:
     transaction_preview: dict[str, Any]
     policy: dict[str, Any]
     proof_payload: dict[str, Any]
+    mandate: dict[str, Any]
+    policy_decision: dict[str, Any]
+    challenge: dict[str, Any]
+    audit_timeline: list[dict[str, Any]]
 
 
 @dataclass
@@ -101,6 +116,13 @@ def sha256_json(data: Any) -> str:
 
 def short_hash(data: Any, length: int = 16) -> str:
     return sha256_json(data)[:length]
+
+
+def decimal_or_zero(value: Any) -> Decimal:
+    try:
+        return Decimal(str(value))
+    except (InvalidOperation, ValueError):
+        return Decimal("0")
 
 
 def extract_voice_intent(state: GatewayState) -> VoiceIntent:
@@ -184,6 +206,113 @@ def decide_confirmation(state: GatewayState, intent: VoiceIntent) -> Confirmatio
     )
 
 
+def build_voice_mandate(state: GatewayState, intent: VoiceIntent, voice_hash: str) -> dict[str, Any]:
+    """Build an AP2-inspired mandate from voice evidence without copying AP2."""
+    scope = {
+        "action": intent.action,
+        "risk": intent.risk,
+        "chain_id": DEFAULT_CHAIN["chain_id"],
+        "token": intent.params.get("token", DEFAULT_CHAIN["native_token"]),
+        "max_amount": intent.params.get("amount", "0"),
+        "recipient": intent.params.get("to", "connected_wallet"),
+    }
+    mandate = {
+        "type": "voice_mandate",
+        "version": "0.1",
+        "subject": "local_user",
+        "scope": scope,
+        "voice_hash": "0x" + voice_hash,
+        "intent_hash": intent.intent_hash,
+        "turns": len(state.committed_turns),
+        "interrupts": state.interrupts,
+        "expires_after_seconds": 300,
+        "raw_audio_stored": False,
+    }
+    mandate["mandate_hash"] = "0x" + sha256_json(mandate)
+    return mandate
+
+
+def evaluate_policy(intent: VoiceIntent, mandate: dict[str, Any], policy: dict[str, Any]) -> dict[str, Any]:
+    checks: list[dict[str, Any]] = []
+
+    amount = decimal_or_zero(intent.params.get("amount", "0"))
+    max_single = decimal_or_zero(policy["max_single_payment"])
+    token = str(intent.params.get("token", DEFAULT_CHAIN["native_token"])).upper()
+    recipient = str(intent.params.get("to", ""))
+
+    if intent.action == "send_payment":
+        checks.append({
+            "name": "amount_limit",
+            "passed": amount <= max_single and amount > 0,
+            "details": f"{amount} <= {max_single} {policy['native_token']}",
+        })
+        checks.append({
+            "name": "token_allowlist",
+            "passed": token in policy["allowed_tokens"],
+            "details": token,
+        })
+        checks.append({
+            "name": "recipient_trust",
+            "passed": recipient in policy["trusted_recipients"],
+            "details": recipient or "missing",
+        })
+
+    checks.append({
+        "name": "voice_mandate_hash",
+        "passed": bool(mandate.get("mandate_hash", "").startswith("0x")),
+        "details": mandate.get("mandate_hash", ""),
+    })
+    checks.append({
+        "name": "no_raw_audio_storage",
+        "passed": mandate.get("raw_audio_stored") is False,
+        "details": "stores hashes and text-event evidence only",
+    })
+
+    blocking = [check for check in checks if not check["passed"]]
+    decision = "approved_for_confirmation" if not blocking else "blocked_by_policy"
+    return {
+        "decision": decision,
+        "checks": checks,
+        "blocking_reasons": [check["name"] for check in blocking],
+        "policy_hash": "0x" + sha256_json(policy),
+    }
+
+
+def build_challenge(action_id: str, intent: VoiceIntent, mandate: dict[str, Any], policy_decision: dict[str, Any]) -> dict[str, Any]:
+    words = ["PHAROS", action_id[-4:].upper(), mandate["mandate_hash"][2:8].upper()]
+    phrase = " ".join(words)
+    return {
+        "required": intent.requires_confirmation or policy_decision["decision"] != "approved_for_confirmation",
+        "type": "readback_phrase",
+        "phrase": phrase,
+        "why": "binds spoken approval to this exact action id and mandate hash",
+        "accepted_confirmation_examples": [
+            f"confirm {phrase}",
+            f"approve {phrase}",
+            f"确认执行 {phrase}",
+        ],
+    }
+
+
+def build_audit_timeline(
+    state: GatewayState,
+    intent: VoiceIntent,
+    confirmation: ConfirmationDecision,
+    mandate: dict[str, Any],
+    policy_decision: dict[str, Any],
+) -> list[dict[str, Any]]:
+    timeline = [
+        {"step": "voice_events_processed", "result": f"{len(state.output_events)} turn-taking events"},
+        {"step": "intent_committed", "result": intent.action, "intent_hash": intent.intent_hash},
+        {"step": "voice_mandate_created", "result": mandate["mandate_hash"]},
+        {"step": "policy_evaluated", "result": policy_decision["decision"], "policy_hash": policy_decision["policy_hash"]},
+        {"step": "confirmation_checked", "result": confirmation.status},
+    ]
+    if state.interrupts:
+        timeline.insert(1, {"step": "barge_in_detected", "result": f"{state.interrupts} interruption(s)"})
+    return timeline
+
+
 def build_transaction_preview(intent: VoiceIntent, voice_hash: str) -> dict[str, Any]:
     if intent.action == "send_payment":
         amount = intent.params.get("amount", "0")
@@ -233,10 +362,12 @@ def prepare_action(state: GatewayState, intent: VoiceIntent, mode: str) -> Prepa
     voice_hash = sha256_json(voice_material)
     preview = build_transaction_preview(intent, voice_hash)
     action_id = "voice-action-" + short_hash({"voice_hash": voice_hash, "intent_hash": intent.intent_hash, "preview": preview})
+    mandate = build_voice_mandate(state, intent, voice_hash)
 
     proof_payload = {
         "voice_hash": "0x" + voice_hash,
         "intent_hash": intent.intent_hash,
+        "mandate_hash": mandate["mandate_hash"],
         "action_id": action_id,
         "action": intent.action,
         "committed_turn_count": len(state.committed_turns),
@@ -246,11 +377,16 @@ def prepare_action(state: GatewayState, intent: VoiceIntent, mode: str) -> Prepa
 
     policy = {
         "requires_confirmation": intent.requires_confirmation,
-        "max_voice_payment": "0.05 PHRS in demo policy",
+        "max_voice_payment": f"{DEFAULT_POLICY['max_single_payment']} {DEFAULT_POLICY['native_token']} in demo policy",
+        "allowed_tokens": DEFAULT_POLICY["allowed_tokens"],
+        "trusted_recipients": DEFAULT_POLICY["trusted_recipients"],
         "never_signs_private_keys": True,
         "mock_first": mode == "mock",
         "confirmation_phrases": ["confirm", "确认执行", "approve"],
     }
+    policy_decision = evaluate_policy(intent, mandate, {**DEFAULT_POLICY, **policy})
+    challenge = build_challenge(action_id, intent, mandate, policy_decision)
+    audit_timeline = build_audit_timeline(state, intent, ConfirmationDecision("not_checked", False, ""), mandate, policy_decision)
 
     return PreparedAction(
         action_id=action_id,
@@ -260,10 +396,28 @@ def prepare_action(state: GatewayState, intent: VoiceIntent, mode: str) -> Prepa
         transaction_preview=preview,
         policy=policy,
         proof_payload=proof_payload,
+        mandate=mandate,
+        policy_decision=policy_decision,
+        challenge=challenge,
+        audit_timeline=audit_timeline,
     )
 
 
 def submit_or_simulate(prepared: PreparedAction, confirmation: ConfirmationDecision) -> SubmissionResult:
+    if prepared.policy_decision["decision"] != "approved_for_confirmation":
+        return SubmissionResult(
+            action_id=prepared.action_id,
+            mode=prepared.mode,
+            status="blocked_by_policy",
+            tx_hash="",
+            explorer_url="",
+            receipt={
+                "reason": "policy checks failed before confirmation",
+                "blocking_reasons": prepared.policy_decision["blocking_reasons"],
+                "policy_hash": prepared.policy_decision["policy_hash"],
+            },
+        )
+
     if not confirmation.confirmed:
         return SubmissionResult(
             action_id=prepared.action_id,
@@ -282,6 +436,8 @@ def submit_or_simulate(prepared: PreparedAction, confirmation: ConfirmationDecis
         "chain_id": prepared.chain["chain_id"],
         "preview": prepared.transaction_preview,
         "proof": stable_proof,
+        "mandate": prepared.mandate,
+        "policy_decision": prepared.policy_decision,
         "mode": prepared.mode,
     }
     tx_hash = "0x" + sha256_json(material)
@@ -297,6 +453,8 @@ def submit_or_simulate(prepared: PreparedAction, confirmation: ConfirmationDecis
             "gas_used": 0 if prepared.mode == "mock" else None,
             "proof_hash": prepared.proof_payload["voice_hash"],
             "intent_hash": prepared.intent.intent_hash,
+            "mandate_hash": prepared.mandate["mandate_hash"],
+            "policy_hash": prepared.policy_decision["policy_hash"],
             "note": "mock mode creates deterministic evidence without broadcasting a transaction",
         },
     )
@@ -316,8 +474,13 @@ def tool_schema() -> list[dict[str, Any]]:
         },
         {
             "name": "confirm_action",
-            "description": "Require explicit user confirmation before high-risk voice actions can be submitted.",
+            "description": "Require explicit user confirmation and readback challenge before high-risk voice actions can be submitted.",
             "input_schema": {"type": "object", "properties": {"confirmation_text": {"type": "string"}, "action_id": {"type": "string"}}},
+        },
+        {
+            "name": "evaluate_voice_policy",
+            "description": "Evaluate payment limits, token allowlists, trusted recipients and voice mandate evidence.",
+            "input_schema": {"type": "object", "properties": {"intent": {"type": "object"}, "policy": {"type": "object"}}},
         },
         {
             "name": "submit_transaction",
@@ -338,6 +501,7 @@ def run(input_path: Path, mode: str = "mock") -> GatewayRun:
     intent = extract_voice_intent(state)
     confirmation = decide_confirmation(state, intent)
     prepared = prepare_action(state, intent, mode)
+    prepared.audit_timeline = build_audit_timeline(state, intent, confirmation, prepared.mandate, prepared.policy_decision)
     submission = submit_or_simulate(prepared, confirmation)
     return GatewayRun(
         source=str(input_path),
@@ -356,6 +520,10 @@ def run(input_path: Path, mode: str = "mock") -> GatewayRun:
             "transaction_preview": prepared.transaction_preview,
             "policy": prepared.policy,
             "proof_payload": prepared.proof_payload,
+            "mandate": prepared.mandate,
+            "policy_decision": prepared.policy_decision,
+            "challenge": prepared.challenge,
+            "audit_timeline": prepared.audit_timeline,
         },
         submission=asdict(submission),
         mcp_tools=tool_schema(),

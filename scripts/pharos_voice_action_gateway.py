@@ -33,6 +33,7 @@ DEFAULT_CHAIN = {
     "native_token": "PHRS",
     "rpc_env": "PHAROS_RPC_URL",
 }
+ZERO_VERIFYING_CONTRACT = "0x0000000000000000000000000000000000000000"
 
 ADDRESS_RE = re.compile(r"0x[a-fA-F0-9]{40}")
 AMOUNT_RE = re.compile(r"(?:send|pay|transfer|付款|转账|支付)\s*([0-9]+(?:\.[0-9]+)?)", re.I)
@@ -85,6 +86,8 @@ class PreparedAction:
     policy_decision: dict[str, Any]
     challenge: dict[str, Any]
     audit_timeline: list[dict[str, Any]]
+    eip712: dict[str, Any]
+    registry_call: dict[str, Any]
 
 
 @dataclass
@@ -123,6 +126,18 @@ def decimal_or_zero(value: Any) -> Decimal:
         return Decimal(str(value))
     except (InvalidOperation, ValueError):
         return Decimal("0")
+
+
+def bytes32(value: str) -> str:
+    if value.startswith("0x") and len(value) == 66:
+        return value
+    return "0x" + sha256_json(value)
+
+
+def amount_to_units(amount: Any, decimals: int = 18) -> str:
+    value = decimal_or_zero(amount)
+    scale = Decimal(10) ** decimals
+    return str(int(value * scale))
 
 
 def extract_voice_intent(state: GatewayState) -> VoiceIntent:
@@ -294,6 +309,93 @@ def build_challenge(action_id: str, intent: VoiceIntent, mandate: dict[str, Any]
     }
 
 
+def build_eip712_typed_data(
+    action_id: str,
+    intent: VoiceIntent,
+    mandate: dict[str, Any],
+    policy_decision: dict[str, Any],
+    challenge: dict[str, Any],
+) -> dict[str, Any]:
+    """Create wallet-readable EIP-712 typed data for the voice mandate."""
+    scope = mandate["scope"]
+    message = {
+        "subject": mandate["subject"],
+        "actionId": action_id,
+        "action": scope["action"],
+        "chainId": scope["chain_id"],
+        "token": scope["token"],
+        "amount": amount_to_units(scope["max_amount"]),
+        "recipient": scope["recipient"] if ADDRESS_RE.fullmatch(str(scope["recipient"])) else ZERO_VERIFYING_CONTRACT,
+        "voiceHash": bytes32(mandate["voice_hash"]),
+        "intentHash": bytes32(intent.intent_hash),
+        "mandateHash": bytes32(mandate["mandate_hash"]),
+        "policyHash": bytes32(policy_decision["policy_hash"]),
+        "challengeHash": bytes32(challenge["phrase"]),
+        "expiresAfterSeconds": mandate["expires_after_seconds"],
+    }
+    typed_data = {
+        "types": {
+            "EIP712Domain": [
+                {"name": "name", "type": "string"},
+                {"name": "version", "type": "string"},
+                {"name": "chainId", "type": "uint256"},
+                {"name": "verifyingContract", "type": "address"},
+            ],
+            "VoiceMandate": [
+                {"name": "subject", "type": "string"},
+                {"name": "actionId", "type": "string"},
+                {"name": "action", "type": "string"},
+                {"name": "chainId", "type": "uint256"},
+                {"name": "token", "type": "string"},
+                {"name": "amount", "type": "uint256"},
+                {"name": "recipient", "type": "address"},
+                {"name": "voiceHash", "type": "bytes32"},
+                {"name": "intentHash", "type": "bytes32"},
+                {"name": "mandateHash", "type": "bytes32"},
+                {"name": "policyHash", "type": "bytes32"},
+                {"name": "challengeHash", "type": "bytes32"},
+                {"name": "expiresAfterSeconds", "type": "uint256"},
+            ],
+        },
+        "primaryType": "VoiceMandate",
+        "domain": {
+            "name": "Pharos Voice Action Gateway",
+            "version": "0.2.0",
+            "chainId": DEFAULT_CHAIN["chain_id"],
+            "verifyingContract": ZERO_VERIFYING_CONTRACT,
+        },
+        "message": message,
+    }
+    return {
+        "standard": "EIP-712",
+        "typed_data": typed_data,
+        "typed_data_hash": "0x" + sha256_json(typed_data),
+        "signature_status": "unsigned_demo_payload",
+        "signing_note": "Send typed_data to a wallet or delegated account signer before live submission.",
+    }
+
+
+def build_registry_call(action_id: str, intent: VoiceIntent, mandate: dict[str, Any], eip712: dict[str, Any]) -> dict[str, Any]:
+    message = eip712["typed_data"]["message"]
+    return {
+        "contract": "VoiceSessionProofRegistry",
+        "function": "recordVoiceMandate",
+        "args": {
+            "actionId": action_id,
+            "action": intent.action,
+            "voiceHash": message["voiceHash"],
+            "intentHash": message["intentHash"],
+            "mandateHash": message["mandateHash"],
+            "policyHash": message["policyHash"],
+            "challengeHash": message["challengeHash"],
+            "subject": mandate["subject"],
+            "signature": "0x",
+        },
+        "calldata_preview": "recordVoiceMandate(string,string,bytes32,bytes32,bytes32,bytes32,bytes32,string,bytes)",
+        "typed_data_hash": eip712["typed_data_hash"],
+    }
+
+
 def build_audit_timeline(
     state: GatewayState,
     intent: VoiceIntent,
@@ -387,6 +489,8 @@ def prepare_action(state: GatewayState, intent: VoiceIntent, mode: str) -> Prepa
     policy_decision = evaluate_policy(intent, mandate, {**DEFAULT_POLICY, **policy})
     challenge = build_challenge(action_id, intent, mandate, policy_decision)
     audit_timeline = build_audit_timeline(state, intent, ConfirmationDecision("not_checked", False, ""), mandate, policy_decision)
+    eip712 = build_eip712_typed_data(action_id, intent, mandate, policy_decision, challenge)
+    registry_call = build_registry_call(action_id, intent, mandate, eip712)
 
     return PreparedAction(
         action_id=action_id,
@@ -400,6 +504,8 @@ def prepare_action(state: GatewayState, intent: VoiceIntent, mode: str) -> Prepa
         policy_decision=policy_decision,
         challenge=challenge,
         audit_timeline=audit_timeline,
+        eip712=eip712,
+        registry_call=registry_call,
     )
 
 
@@ -438,6 +544,7 @@ def submit_or_simulate(prepared: PreparedAction, confirmation: ConfirmationDecis
         "proof": stable_proof,
         "mandate": prepared.mandate,
         "policy_decision": prepared.policy_decision,
+        "typed_data_hash": prepared.eip712["typed_data_hash"],
         "mode": prepared.mode,
     }
     tx_hash = "0x" + sha256_json(material)
@@ -455,6 +562,7 @@ def submit_or_simulate(prepared: PreparedAction, confirmation: ConfirmationDecis
             "intent_hash": prepared.intent.intent_hash,
             "mandate_hash": prepared.mandate["mandate_hash"],
             "policy_hash": prepared.policy_decision["policy_hash"],
+            "typed_data_hash": prepared.eip712["typed_data_hash"],
             "note": "mock mode creates deterministic evidence without broadcasting a transaction",
         },
     )
@@ -492,6 +600,11 @@ def tool_schema() -> list[dict[str, Any]]:
             "description": "Create an on-chain-ready proof payload for a voice intent session.",
             "input_schema": {"type": "object", "properties": {"voice_hash": {"type": "string"}, "intent_hash": {"type": "string"}}},
         },
+        {
+            "name": "export_eip712_voice_mandate",
+            "description": "Export wallet-readable EIP-712 typed data for the committed voice mandate.",
+            "input_schema": {"type": "object", "properties": {"action_id": {"type": "string"}, "mandate_hash": {"type": "string"}}},
+        },
     ]
 
 
@@ -524,6 +637,8 @@ def run(input_path: Path, mode: str = "mock") -> GatewayRun:
             "policy_decision": prepared.policy_decision,
             "challenge": prepared.challenge,
             "audit_timeline": prepared.audit_timeline,
+            "eip712": prepared.eip712,
+            "registry_call": prepared.registry_call,
         },
         submission=asdict(submission),
         mcp_tools=tool_schema(),

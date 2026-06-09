@@ -6,7 +6,7 @@ description: >
   它把本地 ASR/VAD/EOU/TTS 工具组织成 Agent 可调用的语音网关：识别用户是否说完、
   判断是否需要打断正在播放的 TTS、生成稳定的 turn-taking 事件，并把完整语音意图交给
   Agent 大脑处理；随后输出 Pharos 交易预览、语音授权凭证、策略决策记录、确认门、
-  会话证明和 MCP/AgentSkill 工具 schema。
+  EIP-712 typed data、会话证明、proof registry 调用预览和 MCP/AgentSkill 工具 schema。
   适合语音支付、链上证明、agent wallet、RealFi 助手、无障碍链上交互等场景。
 version: 0.2.0
 tags: [Pharos, voice, full-duplex, AgentSkill, MCP, onchain, wallet, proof, turn-taking]
@@ -48,8 +48,10 @@ Pharos Voice Action Gateway 把语音 Agent 中最容易失控的部分拆出来
 6. 生成 voice mandate，绑定 voice hash、intent hash、动作范围、收款人、金额和过期时间。
 7. 为高风险动作执行 explicit confirmation gate，没有“confirm / 确认执行”不会提交。
 8. 执行 policy decision record：金额上限、代币白名单、可信收款人、隐私策略。
-9. 生成 Pharos/EVM 交易预览、voice hash、intent hash、mandate hash、proof payload 和 mock tx hash。
-10. 暴露 MCP/AgentSkill 工具 schema：`process_voice_events`、`prepare_onchain_action`、`confirm_action`、`evaluate_voice_policy`、`submit_transaction`、`write_session_proof`。
+9. 生成 EIP-712 `VoiceMandate` typed data，便于钱包或 delegated account 签名。
+10. 生成 `VoiceSessionProofRegistry.recordVoiceMandate` 合约调用预览。
+11. 生成 Pharos/EVM 交易预览、voice hash、intent hash、mandate hash、proof payload 和 mock tx hash。
+12. 暴露 MCP/AgentSkill 工具 schema：`process_voice_events`、`prepare_onchain_action`、`confirm_action`、`evaluate_voice_policy`、`submit_transaction`、`write_session_proof`、`export_eip712_voice_mandate`。
 
 真实部署时推荐接入：
 
@@ -120,6 +122,7 @@ Agent 读取报告后不要只说“用户说完了”。更好的输出是：
 - 链上动作是否需要确认
 - 交易预览、proof hash 和风险等级是什么
 - voice mandate、policy decision、challenge phrase 和 audit timeline 是什么
+- EIP-712 typed data 和 registry call preview 是什么
 
 ## 安全原则
 

@@ -62,6 +62,27 @@ Each run produces a structured timeline:
 
 This gives a Pharos Agent Arena implementation a clean path to write only hashes and decisions on-chain while keeping raw speech local.
 
+### 5. EIP-712 VoiceMandate
+
+The Skill now exports an EIP-712 `VoiceMandate` typed-data object. This gives the next-stage wallet integration a typed, human-readable signing payload instead of an opaque transaction hash. The typed data includes:
+
+- subject
+- action id
+- action type
+- chain id
+- token and amount
+- recipient
+- voice hash
+- intent hash
+- mandate hash
+- policy hash
+- challenge hash
+- expiration window
+
+### 6. Proof Registry Contract
+
+`contracts/VoiceSessionProofRegistry.sol` is a minimal on-chain anchor for the Skill. It stores proof hashes, action metadata, submitter and timestamp, but not raw speech. This is intentionally scoped for Phase 1: the contract is a clear Agent Arena path without forcing live key management during Skill judging.
+
 ## Why This Fits Pharos
 
 Pharos is positioned for AI Agent economy, on-chain payments, and scalable agent deployment. This Skill provides a missing middleware layer for voice agents that need to safely trigger on-chain actions:
@@ -70,3 +91,4 @@ Pharos is positioned for AI Agent economy, on-chain payments, and scalable agent
 - composable into a complete voice wallet / RealFi agent in Phase 2
 - compatible with mock-first judging and future Pharos RPC/wallet integration
 - privacy-preserving because it stores proof hashes rather than raw audio
+- wallet-ready because it outputs EIP-712 typed data for future delegated account signing

@@ -34,12 +34,16 @@ https://github.com/Chengyuann/pharos-voice-action-gateway
    - Produces a Pharos/EVM transaction preview in mock mode.
    - Returns deterministic tx/proof hashes for demo evidence without private keys.
 
-4. `On-chain voice session proof`
-   - Generates `voice_hash`, `intent_hash`, `action_id` and proof payload.
-   - Can later be wired to a proof registry contract.
+4. `Voice mandate and policy layer`
+   - Generates `voice_hash`, `intent_hash`, `mandate_hash`, policy decisions, readback challenge and audit timeline.
+   - Blocks unsafe transactions even when the user says `confirm`.
 
-5. `AgentSkill/MCP interface`
-   - Exposes five tool schemas: `process_voice_events`, `prepare_onchain_action`, `confirm_action`, `submit_transaction`, `write_session_proof`.
+5. `EIP-712 and proof registry path`
+   - Exports wallet-readable EIP-712 `VoiceMandate` typed data.
+   - Includes `contracts/VoiceSessionProofRegistry.sol` for future Pharos proof anchoring.
+
+6. `AgentSkill/MCP interface`
+   - Exposes seven tool schemas: `process_voice_events`, `prepare_onchain_action`, `confirm_action`, `evaluate_voice_policy`, `submit_transaction`, `write_session_proof`, `export_eip712_voice_mandate`.
 
 ## 验证命令
 
@@ -50,6 +54,7 @@ python scripts/duplex_voice_gateway.py demo/duplex_conversation.jsonl
 python scripts/duplex_voice_gateway.py demo/short_pause_continuation.jsonl
 python scripts/pharos_voice_action_gateway.py demo/pharos_payment_confirmed.jsonl
 python scripts/pharos_voice_action_gateway.py demo/pharos_payment_pending.jsonl
+python scripts/pharos_voice_action_gateway.py demo/pharos_payment_policy_blocked.jsonl
 python scripts/pharos_voice_action_gateway.py demo/pharos_session_proof_confirmed.jsonl
 ```
 

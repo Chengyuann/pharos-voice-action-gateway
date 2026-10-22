@@ -13,6 +13,7 @@ from typing import Any, Optional
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 from uuid import uuid4
+from evm_address import validate_address
 
 from duplex_voice_gateway import GatewayState
 from pharos_voice_action_gateway import (
@@ -345,14 +346,18 @@ def review_payment(
     payment = parsed["payment"]
     tokens = token_map(registry)
     token = tokens.get(payment["token"])
-    recipient_valid = bool(ADDRESS_RE.fullmatch(payment["recipient"])) and int(
-        payment["recipient"], 16,
-    ) != 0
+    try:
+        validate_address(payment["recipient"])
+        recipient_valid = True
+        recipient_detail = "Full EVM address; mixed-case EIP-55 checksum checked"
+    except ValueError as exc:
+        recipient_valid = False
+        recipient_detail = str(exc)
     review["checks"].append({
         "name": "recipient_format",
         "label": "Recipient address",
         "passed": recipient_valid,
-        "detail": "Full EVM address" if recipient_valid else "Enter a valid nonzero EVM address.",
+        "detail": recipient_detail,
         "source": "request",
     })
     review["checks"].append({

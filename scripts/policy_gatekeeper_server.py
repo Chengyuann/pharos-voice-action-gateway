@@ -21,6 +21,7 @@ from urllib.parse import parse_qs, urlparse
 from uuid import uuid4
 
 from payment_actions import ActionStore, ActionConflict, ActionAccessDenied
+from payment_ledger import PaymentLedger, AuditIntegrityError, load_budget_policy, DEFAULT_POLICY
 from payment_chain import (
     MAINNET_POLICY, mainnet_sender, load_mainnet_registry, make_mainnet_review, mainnet_draft,
 )
@@ -157,7 +158,12 @@ def persist_report(report: dict, report_dir: Path) -> None:
     report["recorded"] = True
     try:
         save_report(report, report_dir)
-    except (OSError, TypeError, ValueError) as exc:
+        PaymentLedger(report_dir / "_audit.sqlite3").append("report_recorded", {
+            "record_id": report["id"], "record_type": report.get("record_type", "policy_evaluation"),
+            "record_hash": "0x" + sha256_json(report),
+            "status": report.get("status") or (report.get("policy_decision") or {}).get("outcome"),
+        })
+    except (OSError, TypeError, ValueError, sqlite3.Error) as exc:
         report["recorded"] = False
         raise AuditPersistenceError(report) from exc
 
@@ -401,6 +407,7 @@ class Handler(BaseHTTPRequestHandler):
                     "mcp_policy": load_policy(getattr(self.server, "mainnet_policy_path", MAINNET_POLICY)),
                     "mcp_wallet": {"address": mainnet_sender(), "source": "configured_readonly_address"},
                     "mcp_hint": "Official Pacific Mainnet MCP. Set PHAROS_MCP_READ_ADDRESS; no keys.",
+                    "issuance_policy": load_budget_policy(getattr(self.server, "budget_policy_path", DEFAULT_POLICY)),
                 })
             except (ValueError, OSError):
                 self.send_json({"error": "Payment settings could not be loaded. Check the local configuration."}, status=503)
@@ -420,6 +427,21 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json({"records": self.payment_recent_records()})
             except OSError:
                 self.send_json({"error": "Saved records could not be read."}, status=503)
+            return
+        if parsed.path == "/api/payment/audit-chain":
+            query = parse_qs(parsed.query)
+            ledgers = query.get("ledger", ["actions"])
+            if set(query) - {"ledger"} or len(ledgers) != 1 or ledgers[0] not in {"actions", "reports"}:
+                self.send_json({"error": "Choose one ledger: actions or reports"}, status=400)
+                return
+            database = self.payment_report_dir() / ("_actions.sqlite3" if ledgers[0] == "actions" else "_audit.sqlite3")
+            if not database.is_file():
+                self.send_json({"error": "No audit ledger has been created yet"}, status=404)
+                return
+            try:
+                self.send_json(PaymentLedger(database).export())
+            except (ValueError, OSError, sqlite3.Error, KeyError, TypeError):
+                self.send_json({"error": "Audit ledger is unavailable or inconsistent"}, status=503)
             return
         if parsed.path.startswith("/api/payment/audit/"):
             record_id = parsed.path.removeprefix("/api/payment/audit/")
@@ -508,7 +530,7 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({"error": str(exc)}, status=403)
         except ActionConflict as exc:
             self.send_json({"error": str(exc)}, status=409)
-        except sqlite3.Error:
+        except (sqlite3.Error, AuditIntegrityError):
             self.send_json({"error": "Action storage is unavailable. No success can be reported."}, status=503)
         except AuditPersistenceError as exc:
             self.send_json({
@@ -551,7 +573,8 @@ class Handler(BaseHTTPRequestHandler):
         return getattr(self.server, "payment_report_dir", self.server.report_dir.parent / "payment_preview")
 
     def action_store(self) -> ActionStore:
-        return ActionStore(self.payment_report_dir() / "_actions.sqlite3")
+        return ActionStore(self.payment_report_dir() / "_actions.sqlite3",
+                           budget_policy_path=getattr(self.server, "budget_policy_path", DEFAULT_POLICY))
 
     def action_token(self) -> str:
         values = self.headers.get_all("X-Action-Token", [])
@@ -607,6 +630,7 @@ class Handler(BaseHTTPRequestHandler):
         current = store.begin_review(action_id, token, revision)
         try:
             report = self.evaluate_payment(current)
+            report["issuance_policy"] = load_budget_policy(getattr(self.server, "budget_policy_path", DEFAULT_POLICY))
             report.update(action_id=action_id, action_revision=revision)
             report["integrity_hash"] = review_fingerprint(report)
             store.finish_review(action_id, token, revision, report,
@@ -633,6 +657,8 @@ class Handler(BaseHTTPRequestHandler):
             )
             report.update(action_id=action_id, action_revision=revision,
                           confirmed_review_id=payload["review_id"])
+            original = read_report(self.payment_report_dir(), payload["review_id"])
+            report["issuance_policy"] = original["issuance_policy"]
             report["integrity_hash"] = review_fingerprint(report)
 
             def save(value):
@@ -752,6 +778,9 @@ class Handler(BaseHTTPRequestHandler):
             raise ValueError("payment review is not ready")
         if datetime.now(timezone.utc) >= parse_evaluation_time(review["expires_at"]):
             raise ValueError("payment review expired")
+        if "action_id" in review and review.get("issuance_policy") != load_budget_policy(
+                getattr(self.server, "budget_policy_path", DEFAULT_POLICY)):
+            raise ActionConflict("The rolling issuance policy changed. Review again.")
         mode = review.get("mode")
         if mode == "mcp":
             fresh = make_mainnet_review(
@@ -785,7 +814,7 @@ class Handler(BaseHTTPRequestHandler):
             fresh_comparable = dict(fresh)
             for value in (comparable, fresh_comparable):
                 for key in ("id", "created_at", "expires_at", "recorded", "integrity_hash",
-                            "action_id", "action_revision"):
+                            "action_id", "action_revision", "issuance_policy"):
                     value.pop(key, None)
             if comparable != fresh_comparable or review.get("integrity_hash") != review_fingerprint(review):
                 raise ValueError("payment review is stale; review the payment again")
@@ -843,12 +872,16 @@ def main() -> int:
     parser.add_argument("--host", choices=["127.0.0.1", "localhost"], default="127.0.0.1")
     parser.add_argument("--policy", type=Path, default=POLICY_PATH)
     parser.add_argument("--reports", type=Path, default=REPORT_DIR)
+    parser.add_argument("--issuance-budget", type=Path, default=DEFAULT_POLICY,
+                        help="Rolling unsigned-draft issuance budget, not actual chain spend")
     args = parser.parse_args()
     load_policy(args.policy)
+    load_budget_policy(args.issuance_budget)
     server = ThreadingHTTPServer((args.host, args.port), Handler)
     server.report_dir, server.policy_path = args.reports, args.policy
     server.payment_report_dir = args.reports.parent / "payment_preview"
     server.allow_legacy_payment_api = False
+    server.budget_policy_path = args.issuance_budget
     print(f"Policy Gatekeeper demo: http://{args.host}:{server.server_port}/policy-gatekeeper", flush=True)
     print(f"Payment Preview demo: http://{args.host}:{server.server_port}/payment-preview", flush=True)
     try:

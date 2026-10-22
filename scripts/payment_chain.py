@@ -9,6 +9,7 @@ import os
 import re
 from typing import Any
 from uuid import uuid4
+from evm_address import validate_address
 
 from payment_preview import review_fingerprint, units_to_amount
 from payment_language import load_contacts, parse_mainnet_request
@@ -57,18 +58,6 @@ def mainnet_sender() -> str:
     return validate_address(sender) if sender else ""
 
 
-def validate_address(value: str) -> str:
-    if (not isinstance(value, str) or not ADDRESS_RE.fullmatch(value)
-            or int(value, 16) in {0, 0xDEAD}):
-        raise ValueError("Use a full nonzero, non-burn EVM address")
-    # Mixed case requires EIP-55 validation, not an unchecked lower-case conversion.
-    # shortcut: no Keccak dependency here; ask for an explicit lowercase address.
-    letters = value[2:]
-    if letters != letters.lower() and letters != letters.upper():
-        raise ValueError("Mixed-case checksum is not checked here; explicitly enter the lowercase address")
-    return value.lower()
-
-
 def hex_data(value: Any) -> str:
     if not isinstance(value, str) or not re.fullmatch(r"0x(?:[0-9a-fA-F]{2})*", value):
         raise ValueError("Malformed EVM data")
@@ -101,6 +90,8 @@ def payment_transaction(payment: dict, sender: str, token: dict) -> dict:
         raise ValueError("The payment amount must be positive")
     if recipient == sender:
         raise ValueError("Sender and recipient must differ")
+    if recipient in {item[1] for item in KNOWN_TOKENS.values() if item[1]}:
+        raise ValueError("Do not use a known token contract as the payment recipient")
     contract = token.get("address")
     if contract and recipient == contract:
         raise ValueError("Do not send tokens to their own token contract")
@@ -218,6 +209,7 @@ def make_mainnet_review(text: str, answers: dict | None = None, *, sender: str =
     if now.tzinfo is None:
         raise ValueError("Review time must be timezone-aware")
     registry, policy = load_mainnet_registry(), load_policy(policy_path)
+    secondary_url = os.environ.get("PHAROS_SECONDARY_RPC_URL", "").strip()
     contacts = load_contacts()
     parsed = parse_mainnet_request(text, answers, contacts)
     result = {
@@ -226,6 +218,7 @@ def make_mainnet_review(text: str, answers: dict | None = None, *, sender: str =
         "request_text": text, "answers": deepcopy(answers or {}),
         "status": parsed["status"], "field": parsed.get("field", ""),
         "question": parsed.get("question", ""), "reason": parsed.get("reason", ""),
+        "choices": deepcopy(parsed.get("choices", [])),
         "requires_rewrite": parsed.get("requires_rewrite", False),
         "message": parsed.get("message", ""), "payment": parsed.get("payment"),
         "network": {"name": "Pharos Pacific Mainnet", "chain_id": 1672, "source": "chain_mcp"},
@@ -236,6 +229,9 @@ def make_mainnet_review(text: str, answers: dict | None = None, *, sender: str =
                                                  "sender": sender, "contacts": contacts}),
         "recorded": False,
     }
+    if secondary_url:
+        result["configuration_hash"] = "0x" + sha256_json({
+            "primary": result["configuration_hash"], "secondary_rpc": secondary_url})
     if parsed["status"] == "complete":
         token = next((t for t in registry["tokens"] if t["symbol"] == parsed["payment"]["token"]), None)
         try:
@@ -318,6 +314,24 @@ def make_mainnet_review(text: str, answers: dict | None = None, *, sender: str =
             finally:
                 if own_client:
                     client.close()
+    if secondary_url and result.get("status") == "ready" and result.get("proof"):
+        from payment_crosscheck import crosscheck, SecondaryRpc
+        from payment_proof import ReplayMismatch
+        try:
+            result["secondary_check"] = crosscheck(result["proof"], SecondaryRpc(secondary_url))
+        except (ValueError, OSError, ReplayMismatch):
+            result["secondary_check"] = {"status": "unavailable", "role": "secondary_only_no_fallback"}
+        if result["secondary_check"]["status"] != "matched":
+            result.update(status="data_unavailable", draft_allowed=False,
+                          message="Secondary RPC did not agree with the official MCP snapshot. No draft.")
+            result.pop("prepared_transaction", None)
+        else:
+            after_io = fixed_now or datetime.now(timezone.utc)
+            time_ok, _ = evaluate_time_window(after_io, policy["allowed_time_windows"])
+            if not time_ok or after_io >= datetime.fromisoformat(result["expires_at"]):
+                result.update(status="data_unavailable", draft_allowed=False,
+                              message="Review or policy window expired during secondary verification.")
+                result.pop("prepared_transaction", None)
     result["integrity_hash"] = review_fingerprint(result)
     return result
 
@@ -346,5 +360,7 @@ def mainnet_draft(review: dict, now: datetime | None = None) -> dict:
         "proof": deepcopy(review["proof"]), "signed": False, "broadcast": False, "recorded": False,
         "message": "Unsigned mainnet request only. Verify the account, chain, token, recipient, nonce and fees in your wallet. Nothing signed or sent.",
     }
+    if "secondary_check" in review:
+        draft["secondary_check"] = deepcopy(review["secondary_check"])
     draft["integrity_hash"] = review_fingerprint(draft)
     return draft

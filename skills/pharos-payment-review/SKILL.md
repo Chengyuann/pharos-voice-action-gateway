@@ -91,7 +91,39 @@ installed-file hashes and their results, is in
 - Local policy: `config/payment_mainnet_policy.json`
 - Handler: `scripts/payment_chain.py`
 
-The default limit is in units **of each token**, not USD or a rolling budget.
-Only configured recipients pass. Mixed-case addresses are rejected because
-this dependency-free implementation does not check EIP-55. Do not strip an
-unchecked mixed-case checksum on the user's behalf.
+Single-payment limits are in units **of each token**, not USD. Only configured
+recipients pass. P1 validates mixed-case addresses using EIP-55; invalid checksums
+must not be silently lowercased. All-lowercase/all-uppercase input is accepted
+without a checksum claim. Zero, known burn and known token-contract recipients
+are rejected.
+
+## P1 local guardrails (not part of the submitted P0 release)
+
+The local action API counts unsigned draft exports against
+`config/payment_p1_policy.json`, including native gas budgets. A SQLite
+transaction reserves the budget before publication. Cancellation, restart or
+failed export does not refund reserved budget. This is conservative local
+issuance accounting, **not chain-confirmed spend or wallet authorization**.
+The review displays the issuance policy and changes require a new confirmation.
+Offline proofs/CLI review outputs remain evidence, not issued approvals.
+
+Audit export and verification:
+
+```sh
+python3 scripts/payment_audit.py export /path/to/issuance-ledger.db --output /tmp/audit.json
+python3 scripts/payment_audit.py verify /tmp/audit.json --expected-tip "0x…trusted-tip…"
+```
+
+Retain the trusted tip outside mutable local storage; a digest alone cannot
+prove completeness or prevent a database owner from rewriting all history.
+Never publish the local audit database or session records.
+
+`PHAROS_SECONDARY_RPC_URL` optionally enables same-block read-only checks after
+mandatory official MCP collection. Mismatch/unavailability blocks completion;
+it never substitutes for MCP.
+
+`scripts/payment_batch.py` supports 1–5 semicolon-separated **planning** rows
+and JSON-quoted local memos. It can compare same-snapshot MCP proofs against
+aggregate balances, but it does not allocate nonces, reserve batch allowance,
+issue signing requests or implement batch confirmation. Do not present its
+output as an executable batch.

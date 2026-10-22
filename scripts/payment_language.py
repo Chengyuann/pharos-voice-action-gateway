@@ -2,6 +2,7 @@
 
 import re
 from pathlib import Path
+from evm_address import validate_address
 
 from pharos_voice_action_gateway import ADDRESS_RE, strict_json_loads
 from payment_preview import parse_payment_request, UNSUPPORTED_REQUEST_RE
@@ -10,15 +11,25 @@ from payment_preview import parse_payment_request, UNSUPPORTED_REQUEST_RE
 CONTACTS_PATH = Path(__file__).resolve().parents[1] / "config/payment_contacts.json"
 
 
-def load_contacts():
-    contacts = strict_json_loads(CONTACTS_PATH.read_text(encoding="utf-8"))
-    if (not isinstance(contacts, dict) or len(contacts) > 100 or any(
-        not isinstance(k, str) or not re.fullmatch(r"[a-z][a-z0-9_-]{0,31}", k)
-        or not isinstance(v, str) or not ADDRESS_RE.fullmatch(v)
-        or v != v.lower() or int(v, 16) == 0 for k, v in contacts.items()
-    )):
+def validate_contacts(contacts):
+    if not isinstance(contacts, dict) or len(contacts) > 100:
         raise ValueError("Invalid server contact book")
-    return contacts
+    normalized = {}
+    for name, value in contacts.items():
+        if not isinstance(name, str) or not re.fullmatch(r"[a-z][a-z0-9_-]{0,31}", name):
+            raise ValueError("Invalid contact alias")
+        candidates = [value] if isinstance(value, str) else value
+        if not isinstance(candidates, list) or not 1 <= len(candidates) <= 5:
+            raise ValueError("Contacts require 1-5 explicitly configured addresses")
+        addresses = [validate_address(address) for address in candidates]
+        if len(addresses) != len(set(addresses)):
+            raise ValueError("Duplicate address in contact entry")
+        normalized[name] = addresses[0] if len(addresses) == 1 else addresses
+    return normalized
+
+
+def load_contacts(path=None):
+    return validate_contacts(strict_json_loads((path or CONTACTS_PATH).read_text(encoding="utf-8")))
 
 
 def parse_mainnet_request(text, answers=None, contacts=None):
@@ -27,11 +38,16 @@ def parse_mainnet_request(text, answers=None, contacts=None):
             or not isinstance(answers, dict) or set(answers) - {"amount", "token", "recipient"}
             or any(not isinstance(v, str) or not 1 <= len(v.strip()) <= 100 for v in answers.values())):
         return {"status": "invalid", "message": "Invalid payment request or clarification"}
-    contacts = load_contacts() if contacts is None else contacts
+    contacts = load_contacts() if contacts is None else validate_contacts(contacts)
     # Check before contact substitution so names cannot erase a negation/cancel.
     if UNSUPPORTED_REQUEST_RE.search(text):
         return {"status": "invalid", "message": "Negated, cancelled or scheduled payments are not supported."}
     answers = {k: v.strip() for k, v in answers.items()}
+    if "recipient" in answers:
+        try:
+            validate_address(answers["recipient"])
+        except ValueError as exc:
+            return {"status": "invalid", "message": str(exc)}
     source = text.strip()
     source = re.sub(r"^(?:please\s+)?(?:could|can)\s+you\s+", "", source, flags=re.I)
     # "Pay alice 1 USDC" is an alternative order, but every word must match.
@@ -78,10 +94,17 @@ def parse_mainnet_request(text, answers=None, contacts=None):
         recipient = recipient_match.group(1)
         if not recipient.lower().startswith("0x"):
             known = contacts.get(recipient.lower())
+            if isinstance(known, list):
+                chosen = effective.get("recipient")
+                if chosen is None or chosen.lower() not in known:
+                    return {"status": "needs_details", "field": "recipient",
+                            "question": f'Multiple addresses for "{recipient}". Enter the exact intended address.',
+                            "choices": list(known), "reason": "No address is chosen by list order."}
+                known = chosen.lower()
             chosen = effective.get("recipient", known)
             if chosen is None:
                 return {"status": "needs_details", "field": "recipient",
-                        "question": f'What is the full lowercase address for "{recipient}"?',
+                        "question": f'What is the full address for "{recipient}"?',
                         "reason": "No ENS lookup or guessed address; verify the payee independently."}
             if not ADDRESS_RE.fullmatch(chosen):
                 return {"status": "needs_details", "field": "recipient",
@@ -90,4 +113,16 @@ def parse_mainnet_request(text, answers=None, contacts=None):
                 return {"status": "invalid", "message": "The recipient answer conflicts with the configured contact."}
             source = source[:recipient_match.start(1)] + chosen
             effective["recipient"] = chosen
+        else:
+            try:
+                validate_address(recipient)
+            except ValueError as exc:
+                return {"status": "invalid", "message": str(exc)}
+    # Validate every address spelling before the generic parser's case-insensitive
+    # conflict comparison. An invalid checksum must not be hidden by a valid answer.
+    for match in re.finditer(r"0x[0-9a-fA-F]{40}", source):
+        try:
+            validate_address(match.group(0))
+        except ValueError as exc:
+            return {"status": "invalid", "message": str(exc)}
     return parse_payment_request(source, effective)

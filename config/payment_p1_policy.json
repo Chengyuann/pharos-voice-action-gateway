@@ -1,0 +1,8 @@
+{
+  "counting_basis": "unsigned_draft_issued",
+  "window_seconds": 86400,
+  "limits": {
+    "1672": {"PROS": "1000", "USDC": "1000", "WPROS": "1000"},
+    "688689": {"PHRS": "0.1"}
+  }
+}

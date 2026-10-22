@@ -54,3 +54,11 @@ def test_missing_mcp_never_becomes_rpc_fallback():
     _, skill, result = sample()
     with pytest.raises(ValueError):
         combine({"message": "MCP offline"}, skill, result)
+
+
+@pytest.mark.parametrize("status", ["mismatch", "unavailable"])
+def test_secondary_gate_cannot_be_bypassed_by_skill_composition(status):
+    review, skill, result = sample()
+    review["secondary_check"] = {"status": status}
+    with pytest.raises(ValueError, match="configured review gate"):
+        combine(review, skill, result)

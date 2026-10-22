@@ -55,6 +55,9 @@ def installed_contract(upstream: Path, local: Path) -> dict:
 
 
 def combine(review: dict, skill: dict, cast_result: dict) -> dict:
+    if (review.get("status") == "data_unavailable"
+            or "secondary_check" in review and review["secondary_check"].get("status") != "matched"):
+        raise ValueError("An additional configured review gate failed; no unsigned candidate")
     proof = review.get("proof")
     if proof is None:
         raise ValueError(review.get("message") or "Official Chain MCP produced no proof")
@@ -146,7 +149,7 @@ def main() -> int:
         contract = installed_contract(args.installed_upstream, args.installed_local)
         started = time.monotonic()
         review = make_mainnet_review(args.request, sender=args.sender)
-        if not review.get("proof"):
+        if not review.get("proof") or review.get("status") == "data_unavailable":
             raise ValueError(review.get("message") or "MCP data unavailable; no RPC fallback")
         proof = review["proof"]
         command = [args.cast, "balance", args.sender, "--block", str(proof["state"]["block_number"]),

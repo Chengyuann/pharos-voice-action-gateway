@@ -46,6 +46,12 @@ See
 [P0 release status](docs/p0-release-status.md) and the
 [payment Skill package](skills/pharos-payment-review/SKILL.md).
 
+**P1 development checkpoint:** the separate work branch adds rolling unsigned-
+draft allowance, hash-chain audit, EIP-55 checks, contact disambiguation and
+optional secondary RPC verification. Batch/memo support is **planning-only**,
+not batch transaction issuance. See [P1 scope and verification](docs/p1-progress.md).
+This work has not changed the submitted P0 public evidence.
+
 [Quick start](#quick-start) |
 [Payment Preview](#payment-preview) |
 [Policy Gatekeeper](#policy-gatekeeper-agent-arena-build) |

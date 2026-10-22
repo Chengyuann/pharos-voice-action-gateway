@@ -13,9 +13,11 @@ import re
 import secrets
 import sqlite3
 from uuid import uuid4
+from datetime import datetime, timezone
 
 from payment_preview import parse_payment_request
 from pharos_voice_action_gateway import amount_to_units
+from payment_ledger import PaymentLedger, BudgetDenied, load_budget_policy, draft_charges
 
 
 PROCESS_EPOCH = uuid4().hex
@@ -73,9 +75,10 @@ def revise_amount(payload, instruction):
 
 
 class ActionStore:
-    def __init__(self, path: Path, epoch: str = PROCESS_EPOCH):
+    def __init__(self, path: Path, epoch: str = PROCESS_EPOCH, budget_policy_path=None):
         self.path = path
         self.epoch = epoch
+        self.budget_policy_path = budget_policy_path
 
     @contextmanager
     def transaction(self):
@@ -89,6 +92,7 @@ class ActionStore:
                 revision INTEGER NOT NULL, status TEXT NOT NULL, payload TEXT NOT NULL,
                 review_id TEXT NOT NULL DEFAULT '', draft_id TEXT NOT NULL DEFAULT ''
             )""")
+            PaymentLedger.ensure_schema(connection)
             connection.execute("BEGIN IMMEDIATE")
             yield connection
             connection.execute("COMMIT")
@@ -186,6 +190,10 @@ class ActionStore:
                     "UPDATE actions SET revision = revision + 1, status = 'cancelled', review_id = '' WHERE id = ?",
                     (action_id,),
                 )
+                PaymentLedger.append_to(connection, "action_cancelled", {
+                    "action_id": action_id, "revision": row["revision"],
+                    "issued_budget_refunded": False,
+                })
             return self.public(self._get(connection, action_id, token))
 
     def begin_review(self, action_id, token, revision):
@@ -203,12 +211,17 @@ class ActionStore:
             if row["status"] != "reviewing":
                 raise ActionConflict("Review was superseded or cancelled.")
             save(review)
+            PaymentLedger.append_to(connection, "review_recorded", {
+                "action_id": action_id, "revision": revision, "review_id": review["id"],
+                "status": review.get("status"), "review_hash": review.get("integrity_hash"),
+            })
             connection.execute("UPDATE actions SET status = 'reviewed', review_id = ? WHERE id = ?", (review["id"], action_id))
 
     def fail(self, action_id, token, revision, expected_status):
         with self.transaction() as connection:
             row = self._get(connection, action_id, token)
-            if row["revision"] == revision and row["status"] == expected_status:
+            statuses = {expected_status, "draft_reserved"} if expected_status == "drafting" else {expected_status}
+            if row["revision"] == revision and row["status"] in statuses:
                 connection.execute("UPDATE actions SET status = 'editing', review_id = '' WHERE id = ?", (action_id,))
 
     def confirm(self, action_id, token, revision, review_id, validate):
@@ -217,6 +230,9 @@ class ActionStore:
             if row["status"] not in ("reviewed", "confirmed") or row["review_id"] != review_id:
                 raise ActionConflict("Only the current review can be confirmed.")
             validate()
+            PaymentLedger.append_to(connection, "review_confirmed", {
+                "action_id": action_id, "revision": revision, "review_id": review_id,
+            })
             connection.execute("UPDATE actions SET status = 'confirmed' WHERE id = ?", (action_id,))
             return self.public(self._get(connection, action_id, token))
 
@@ -233,11 +249,49 @@ class ActionStore:
         return ""
 
     def finish_draft(self, action_id, token, revision, draft, save):
+        # Commit a conservative budget reservation BEFORE publishing a JSON file.
+        # A crash or failed save can consume budget, never create an uncounted
+        # export. Cancellation/revision is rechecked in a second transaction.
+        policy = (load_budget_policy(self.budget_policy_path) if self.budget_policy_path
+                  else load_budget_policy())
+        if draft.get("issuance_policy") != policy:
+            raise ActionConflict("The rolling issuance policy changed. Review and confirm again.")
+        denied = None
         with self.transaction() as connection:
             row = self._get(connection, action_id, token, revision)
             if row["status"] != "drafting":
                 raise ActionConflict("Draft was superseded or cancelled.")
+            try:
+                charges = draft_charges(draft, policy)
+                receipt = PaymentLedger.authorize_in(connection, draft=draft, action_id=action_id,
+                    charges=charges, window_seconds=policy["window_seconds"])
+            except BudgetDenied as exc:
+                denied = str(exc)
+                PaymentLedger.append_to(connection, "budget_denied", {
+                    "action_id": action_id, "revision": revision, "draft_id": draft["id"],
+                    "reason": denied,
+                })
+                connection.execute("UPDATE actions SET status='editing', review_id='' WHERE id=?", (action_id,))
+            else:
+                connection.execute("UPDATE actions SET status='draft_reserved' WHERE id=?", (action_id,))
+        if denied:
+            raise ActionConflict(denied)
+        with self.transaction() as connection:
+            row = self._get(connection, action_id, token, revision)
+            if row["status"] != "draft_reserved":
+                raise ActionConflict("Reserved draft was superseded or cancelled.")
+            if datetime.now(timezone.utc) >= datetime.fromisoformat(draft["expires_at"]):
+                raise ActionConflict("Draft expired during budget reservation. Review again.")
+            latest_policy = (load_budget_policy(self.budget_policy_path) if self.budget_policy_path
+                             else load_budget_policy())
+            if latest_policy != policy:
+                raise ActionConflict("Issuance policy changed during reservation. Review again.")
+            draft["rolling_budget"] = receipt
+            from payment_preview import review_fingerprint
+            draft["integrity_hash"] = review_fingerprint(draft)
             save(draft)
-            # shortcut: JSON and SQLite are separate stores; a crash may leave a
-            # historical orphan file. Restart revokes sessions; add recovery before hosting.
+            PaymentLedger.append_to(connection, "draft_published", {
+                "action_id": action_id, "revision": revision, "draft_id": draft["id"],
+                "draft_hash": draft["integrity_hash"],
+            })
             connection.execute("UPDATE actions SET status = 'drafted', draft_id = ? WHERE id = ?", (draft["id"], action_id))

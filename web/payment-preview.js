@@ -92,7 +92,7 @@ function setToast(message) {
   clearTimeout(setToast.timer);
   setToast.timer = setTimeout(() => $("toast").hidden = true, 2500);
 }
-async function jsonRequest(path, options = {}, timeoutMs = 50000) {
+async function jsonRequest(path, options = {}, timeoutMs = 75000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -356,6 +356,11 @@ function renderReview(result) {
     $("agent-response-text").textContent = result.question;
     const notice = element("div", result.question, "notice");
     if (result.reason) notice.append(element("p", result.reason));
+    if (result.choices?.length) {
+      const choices = element("ul");
+      for (const address of result.choices) choices.append(element("li", address, "address"));
+      notice.append(choices);
+    }
     $("review-body").append(notice);
     if (!result.requires_rewrite) {
       followField = result.field;
@@ -402,6 +407,12 @@ function renderReview(result) {
   } else if (result.fee.status === "estimated") rows.append(row("Estimated total", `${result.balance.required} ${result.payment.token}`, "total"));
   else rows.append(row("Amount only", `${result.payment.amount} ${result.payment.token} · fee excluded`, "total"));
   $("review-body").append(rows);
+  if (result.issuance_policy) {
+    const limits = result.issuance_policy.limits[String(result.network.chain_id)] || {};
+    $("review-body").append(element("div",
+      `Rolling draft allowance (${result.issuance_policy.window_seconds / 3600} hours): ${Object.entries(limits).map(([asset, amount]) => `${amount} ${asset}`).join(", ")}. Counts unsigned exports and reserved failures, including fee budgets—not actual spend. Cancellation does not refund; checked atomically before export.`,
+      "notice"));
+  }
   const checks = element("div", "", "checks");
   checks.append(element("h3", "Checks"));
   for (const [index, check] of result.checks.entries()) {
@@ -514,6 +525,8 @@ function renderDraft(result) {
   const box = element("div", "", "draft");
   box.id = "draft-result";
   box.append(element("h3", result.wallet_ready ? "Unsigned request created" : "Example draft created"), element("p", result.message));
+  if (result.rolling_budget) box.append(element("p",
+    "This draft counts against the rolling issuance allowance. Cancelling or restarting does not refund it. No funds were moved."));
   const details = element("details", "", "developer");
   details.append(element("summary", "View transaction fields"), element("pre", JSON.stringify(result.transaction, null, 2)));
   box.append(details);
@@ -530,6 +543,12 @@ function renderDraft(result) {
   const audit = element("a", "Download audit", "plain");
   audit.href = `/api/payment/audit/${result.id}`;
   actions.append(copy, audit);
+  if (result.rolling_budget) {
+    const chain = element("a", "Download issuance audit chain", "plain");
+    chain.href = "/api/payment/audit-chain?ledger=actions";
+    chain.download = "pharos-issuance-audit-chain.json";
+    actions.append(chain);
+  }
   if (result.wallet_uri) {
     const uri = element("button", "Copy wallet URI", "plain");
     uri.type = "button";

@@ -126,8 +126,14 @@ def main():
             verify_proof(result["proof"])
             args.output.parent.mkdir(parents=True, exist_ok=True)
             with args.output.open("x", encoding="utf-8") as stream:
-                json.dump(result["proof"], stream, ensure_ascii=False, indent=2, allow_nan=False)
+                # Keep the secondary outcome instead of exporting only a primary
+                # allow proof when the additional configured check has failed.
+                json.dump(result if "secondary_check" in result else result["proof"],
+                          stream, ensure_ascii=False, indent=2, allow_nan=False)
             print(f"Proof: {args.output}. No signature or broadcast. Use the local UI for confirmed draft handoff.")
+            if result["status"] == "data_unavailable":
+                print(result.get("message", "Additional checks are unavailable"))
+                return 1
         return 0
     except (ValueError, ReplayMismatch, KeyError, TypeError, OSError, OverflowError) as exc:
         print(f"FAILED: {exc}")

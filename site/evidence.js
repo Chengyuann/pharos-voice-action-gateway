@@ -143,5 +143,8 @@ function showTask() {
   }
   selectScenario(task, spec.scenarios[0][1], $("scenarios").firstElementChild);
 }
-window.addEventListener("hashchange", showTask);
+// In-page accessibility anchors must not silently reset the selected task.
+window.addEventListener("hashchange", () => {
+  if (Object.hasOwn(tasks, location.hash.slice(1))) showTask();
+});
 showTask();

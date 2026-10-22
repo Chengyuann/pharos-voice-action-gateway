@@ -1,0 +1,28 @@
+{
+  "network_chain_id": 1672,
+  "network_name": "Pharos Pacific Mainnet",
+  "native_symbol": "PROS",
+  "source": "Pharos docs token registry and Skill Engine a873387c9e34e9ae8e71360d43dc33329a335a24",
+  "tokens": [
+    {
+      "symbol": "PROS",
+      "name": "PROS",
+      "type": "native",
+      "decimals": 18
+    },
+    {
+      "symbol": "USDC",
+      "name": "USDC",
+      "type": "erc20",
+      "decimals": 6,
+      "address": "0xc879c018db60520f4355c26ed1a6d572cdac1815"
+    },
+    {
+      "symbol": "WPROS",
+      "name": "Wrapped PROS",
+      "type": "erc20",
+      "decimals": 18,
+      "address": "0x52c48d4213107b20bc583832b0d951fb9ca8f0b0"
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "id": "d32e14ddfd7a4619b75f911e8db91868",
+  "received_at": "2026-10-21T11:16:29.752716+00:00",
+  "mode": "mock",
+  "clock": "replay",
+  "input_source": "typed command, not captured audio",
+  "raw_body_sha256": "",
+  "submission": {
+    "action_id": "voice-action-50148b412d30cb8d",
+    "mode": "mock",
+    "status": "blocked_by_policy",
+    "tx_hash": "",
+    "explorer_url": "",
+    "receipt": {
+      "reason": "policy checks failed before confirmation",
+      "blocking_reasons": [
+        "amount_limit"
+      ],
+      "deciding_rule": "amount_limit",
+      "execution_attempted": false,
+      "mock_executor_called": false,
+      "policy_hash": "0x1e628333f1cc047669d947b5a9a36fdc27849d9bfe78ed7af8150a9b51fd5539"
+    }
+  },
+  "request_hash": "0x06eba259f8361a89cb27c460f4fe50f4d1eb1c32dbf524d7d6490bd77859829d",
+  "policy": {
+    "name": "Pharos Voice Policy Gatekeeper",
+    "version": "1.0",
+    "max_single_payment": "0.05",
+    "native_token": "PHRS",
+    "allowed_tokens": [
+      "PHRS"
+    ],
+    "trusted_recipients": [
+      "0x1111111111111111111111111111111111111111",
+      "0x2222222222222222222222222222222222222222"
+    ],
+    "allowed_time_windows": [
+      {
+        "days": [
+          "MON",
+          "TUE",
+          "WED",
+          "THU",
+          "FRI"
+        ],
+        "start": "09:00",
+        "end": "17:00",
+        "timezone": "UTC"
+      }
+    ],
+    "challenge_word_count": 3
+  },
+  "intent": {
+    "action": "send_payment",
+    "confidence": 1.0,
+    "summary": "Structured payment command for policy evaluation.",
+    "raw_text": "",
+    "params": {
+      "amount": "0.06",
+      "token": "PHRS",
+      "to": "0x1111111111111111111111111111111111111111"
+    },
+    "risk": "high",
+    "requires_confirmation": true,
+    "intent_hash": "0x70428bf98502c682a25726038e6d4d9e2e078429e47c408aaa804b0906c20852"
+  },
+  "confirmation": {
+    "status": "confirmed",
+    "confirmed": true,
+    "reason": "explicit mock approval",
+    "confirmation_text": ""
+  },
+  "transaction_preview": {
+    "type": "native_or_token_transfer",
+    "to": "0x1111111111111111111111111111111111111111",
+    "amount": "0.06",
+    "token": "PHRS",
+    "value_hint": "0.06 PHRS",
+    "data": "0x",
+    "safety_note": "recipient resolution and wallet signature are required before live submission"
+  },
+  "policy_decision": {
+    "decision": "blocked_by_policy",
+    "outcome": "deny",
+    "deciding_rule": "amount_limit",
+    "evaluated_at": "2026-10-20T10:00:00+00:00",
+    "policy_passed": false,
+    "checks": [
+      {
+        "name": "amount_limit",
+        "passed": false,
+        "details": "0.06 PHRS; maximum 0.05 token units; must be positive and representable"
+      },
+      {
+        "name": "token_allowlist",
+        "passed": true,
+        "details": "PHRS"
+      },
+      {
+        "name": "recipient_trust",
+        "passed": true,
+        "details": "0x1111111111111111111111111111111111111111"
+      },
+      {
+        "name": "time_window",
+        "passed": true,
+        "details": "current UTC time is inside an allowed window"
+      },
+      {
+        "name": "voice_mandate_hash",
+        "passed": true,
+        "details": "0xcb335542b6e757ae3ccfa63dbdee89a56939a997e5bc91710c97b9f5c33c13bf"
+      },
+      {
+        "name": "no_raw_audio_storage",
+        "passed": true,
+        "details": "stores hashes and text-event evidence only"
+      }
+    ],
+    "blocking_reasons": [
+      "amount_limit"
+    ],
+    "audit_log": [
+      {
+        "rule": "amount_limit",
+        "outcome": "deny",
+        "details": "0.06 PHRS; maximum 0.05 token units; must be positive and representable"
+      },
+      {
+        "rule": "token_allowlist",
+        "outcome": "allow",
+        "details": "PHRS"
+      },
+      {
+        "rule": "recipient_trust",
+        "outcome": "allow",
+        "details": "0x1111111111111111111111111111111111111111"
+      },
+      {
+        "rule": "time_window",
+        "outcome": "allow",
+        "details": "current UTC time is inside an allowed window"
+      },
+      {
+        "rule": "voice_mandate_hash",
+        "outcome": "allow",
+        "details": "0xcb335542b6e757ae3ccfa63dbdee89a56939a997e5bc91710c97b9f5c33c13bf"
+      },
+      {
+        "rule": "no_raw_audio_storage",
+        "outcome": "allow",
+        "details": "stores hashes and text-event evidence only"
+      },
+      {
+        "rule": "amount_limit",
+        "outcome": "deny",
+        "details": "final decision at 2026-10-20T10:00:00+00:00"
+      }
+    ],
+    "policy_hash": "0x1e628333f1cc047669d947b5a9a36fdc27849d9bfe78ed7af8150a9b51fd5539"
+  },
+  "audit_timeline": [
+    {
+      "step": "typed_command_parsed",
+      "result": "send_payment"
+    },
+    {
+      "step": "policy_evaluated",
+      "result": "deny"
+    },
+    {
+      "step": "confirmation_checked",
+      "result": "confirmed"
+    },
+    {
+      "step": "policy_rechecked",
+      "result": "deny",
+      "evaluated_at": "2026-10-20T10:00:00+00:00",
+      "deciding_rule": "amount_limit"
+    }
+  ],
+  "recorded": true,
+  "evaluation_record_id": "f8a90cdeaa5c41f7b7ffe423f2aa91af",
+  "completed_at": "2026-10-21T11:16:29.759162+00:00"
+}

@@ -1,0 +1,28 @@
+{
+  "name": "Pharos Voice Policy Gatekeeper",
+  "version": "1.0",
+  "max_single_payment": "0.05",
+  "native_token": "PHRS",
+  "allowed_tokens": [
+    "PHRS"
+  ],
+  "trusted_recipients": [
+    "0x1111111111111111111111111111111111111111",
+    "0x2222222222222222222222222222222222222222"
+  ],
+  "allowed_time_windows": [
+    {
+      "days": [
+        "MON",
+        "TUE",
+        "WED",
+        "THU",
+        "FRI"
+      ],
+      "start": "09:00",
+      "end": "17:00",
+      "timezone": "UTC"
+    }
+  ],
+  "challenge_word_count": 3
+}

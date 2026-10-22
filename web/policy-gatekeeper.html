@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Policy Gatekeeper | Pharos Voice Action Gateway</title>
+  <link rel="icon" href="/assets/logo.png">
+  <style>
+    :root { color-scheme: light; --ink: #202327; --muted: #59616c; --line: #dce0e3; --accent: #14644f; --danger: #a53232; }
+    * { box-sizing: border-box; letter-spacing: 0; }
+    body { margin: 0; background: #f6f7f8; color: var(--ink); font: 14px/1.5 system-ui, -apple-system, sans-serif; }
+    button, input, textarea, select { font: inherit; }
+    button, select { cursor: pointer; }
+    button:disabled { cursor: not-allowed; opacity: .5; }
+    :focus-visible { outline: 3px solid #679cc5; outline-offset: 3px; }
+    header { background: white; border-bottom: 1px solid var(--line); }
+    .bar { max-width: 1240px; margin: auto; padding: 18px 28px; display: flex; align-items: center; gap: 14px; }
+    .bar img { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; }
+    .brand { font-size: 12px; color: var(--muted); }
+    h1 { font-size: 26px; line-height: 1.25; margin: 2px 0; }
+    .environment { margin-left: auto; color: #654314; background: #fff4dd; padding: 5px 10px; border: 1px solid #ebd3a5; border-radius: 4px; font-size: 12px; }
+    main { max-width: 1240px; padding: 26px 28px 40px; margin: auto; }
+    .topline { display: flex; justify-content: space-between; gap: 16px; color: var(--muted); margin-bottom: 22px; }
+    .workspace { display: grid; grid-template-columns: minmax(290px, .9fr) minmax(0, 1.5fr); gap: 32px; }
+    section { min-width: 0; }
+    h2 { font-size: 16px; margin: 0 0 18px; }
+    label, legend { display: block; font-size: 12px; font-weight: 650; margin: 15px 0 6px; }
+    textarea, input, select { width: 100%; padding: 10px 12px; border: 1px solid #bec5cc; border-radius: 5px; background: white; color: inherit; min-height: 42px; }
+    textarea { resize: vertical; min-height: 112px; font: 13px/1.6 ui-monospace, monospace; }
+    fieldset { padding: 0; border: 0; margin: 0; }
+    .clock { display: flex; gap: 18px; min-height: 36px; align-items: center; }
+    .clock label, .approval { display: flex; align-items: center; gap: 8px; margin: 0; font-weight: 450; font-size: 13px; }
+    input[type=radio], input[type=checkbox] { width: 16px; height: 16px; min-height: 0; padding: 0; accent-color: var(--accent); flex-shrink: 0; }
+    input:disabled { background: #eee; color: #6a6c70; }
+    .approval { margin: 17px 0; }
+    button { min-height: 42px; border-radius: 5px; padding: 9px 14px; border: 1px solid #bcc4cc; background: white; color: inherit; font-weight: 600; }
+    button:hover:not(:disabled) { background: #edf2ef; }
+    button:active:not(:disabled) { transform: translateY(1px); }
+    .primary { background: var(--accent); border-color: var(--accent); color: white; width: 100%; }
+    .primary:hover:not(:disabled) { background: #0e503f; }
+    .policy { margin-top: 24px; border-top: 1px solid var(--line); padding-top: 16px; }
+    dl { margin: 0; }
+    .policy dl > div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; padding: 7px 0; }
+    dt { color: var(--muted); font-size: 12px; }
+    dd { margin: 0; font: 12px/1.65 ui-monospace, monospace; overflow-wrap: anywhere; white-space: pre-line; }
+    .status { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 14px; border-block: 1px solid var(--line); padding: 18px 0; min-height: 95px; }
+    .decision { font-size: 24px; line-height: 1; font-weight: 750; }
+    [data-outcome=allow] { color: var(--accent); }
+    [data-outcome=deny] { color: var(--danger); }
+    [data-outcome=stale], [data-outcome=pending] { color: var(--muted); }
+    .detail { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+    #rule { color: var(--ink); font: 13px ui-monospace, monospace; }
+    .execution { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+    .execution span { display: block; color: var(--muted); font-size: 12px; }
+    .execution strong { display: block; font-size: 13px; margin-top: 4px; }
+    .checks { min-height: 250px; }
+    .check { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+    .check b { font: 12px/1.8 ui-monospace, monospace; }
+    .check strong { font-size: 13px; display: block; }
+    .empty { padding: 24px 0; color: var(--muted); }
+    .history { margin-top: 32px; border-top: 1px solid var(--line); padding-top: 22px; }
+    .sectionbar { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 12px; }
+    .sectionbar h2 { margin: 0; }
+    .scroll { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 12px; }
+    th, td { text-align: left; padding: 11px 12px 11px 0; border-bottom: 1px solid var(--line); }
+    th { color: var(--muted); font-weight: 500; }
+    td:last-child { white-space: normal; overflow-wrap: anywhere; }
+    details { margin-top: 18px; }
+    summary { cursor: pointer; color: var(--muted); }
+    pre { overflow: auto; background: #212529; color: #edf2ef; border-radius: 5px; padding: 16px; font: 12px/1.6 ui-monospace, monospace; max-height: 380px; }
+    #error { color: var(--danger); margin: 14px 0; }
+    footer { margin-top: 24px; color: var(--muted); font-size: 12px; }
+    @media (max-width: 760px) {
+      .bar, main { padding-inline: 18px; }
+      h1 { font-size: 23px; }
+      .brand { max-width: 210px; font-size: 11px; }
+      .environment { display: none; }
+      .workspace { grid-template-columns: 1fr; gap: 30px; }
+      .topline { font-size: 12px; flex-wrap: wrap; }
+      .execution { gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header><div class="bar">
+    <img src="/assets/logo.png" alt="Voice Action Gateway" width="44" height="44">
+    <div><div class="brand">PHAROS VOICE ACTION GATEWAY</div><h1>Policy Gatekeeper</h1></div>
+    <span class="environment">Local mock executor</span>
+  </div></header>
+  <main>
+    <div class="topline"><span>Payment policy / v1.0</span><span>No wallet connected &middot; No signing &middot; No broadcasting</span></div>
+    <div class="workspace">
+      <section aria-labelledby="request-heading">
+        <h2 id="request-heading">Payment request</h2>
+        <form id="request-form">
+          <label for="scenario">Scenario</label>
+          <select id="scenario"><option value="">Custom request</option></select>
+          <label for="text">Command</label>
+          <textarea id="text" required maxlength="500" spellcheck="false">send 0.02 PHRS to 0x1111111111111111111111111111111111111111</textarea>
+          <fieldset><legend>Evaluation clock</legend><div class="clock">
+            <label><input type="radio" name="clock" value="server" checked>Server UTC</label>
+            <label><input type="radio" name="clock" value="replay">Replay (mock only)</label>
+          </div></fieldset>
+          <label for="evaluated-at">Replay timestamp</label>
+          <input id="evaluated-at" disabled value="2026-10-20T10:00:00Z" spellcheck="false">
+          <label class="approval"><input type="checkbox" id="confirmed">Approve mock execution if policy allows</label>
+          <button class="primary" id="run" type="submit" disabled>Evaluate request</button>
+          <p id="error" role="alert" hidden></p>
+        </form>
+        <div class="policy"><h2>Active policy</h2><dl id="policy"><div><dt>Status</dt><dd>Loading...</dd></div></dl></div>
+      </section>
+      <section aria-labelledby="result-heading">
+        <h2 id="result-heading">Decision trace</h2>
+        <div class="status" aria-live="polite">
+          <div class="decision" id="decision" data-outcome="pending">PENDING</div>
+          <div><div id="rule">No evaluation yet</div><div class="detail" id="evaluated-time">Server clock</div></div>
+        </div>
+        <div class="execution">
+          <div><span>Executor</span><strong id="execution">Not called</strong></div>
+          <div><span>Broadcasts</span><strong>0</strong></div>
+          <div><span>Confirmation</span><strong id="confirmation">Not provided</strong></div>
+        </div>
+        <div id="checks" class="checks"><p class="empty">No checks recorded.</p></div>
+      </section>
+    </div>
+    <section class="history" aria-labelledby="audit-heading">
+      <div class="sectionbar"><h2 id="audit-heading">Session audit</h2><button id="download" type="button" disabled>Export latest JSON</button></div>
+      <div class="scroll"><table>
+        <thead><tr><th>Received (UTC)</th><th>Clock</th><th>Decision</th><th>Executor</th><th>Deciding rule</th><th>Record</th></tr></thead>
+        <tbody id="history"><tr id="empty-history"><td colspan="6">No evaluations in this session.</td></tr></tbody>
+      </table></div>
+      <details><summary>Latest evaluation JSON</summary><pre id="json">{}</pre></details>
+    </section>
+    <footer>Typed-command demo &middot; No live Pharos integration yet &middot; Audit files stored locally in reports/policy_gatekeeper</footer>
+  </main>
+  <script>
+    const $ = id => document.getElementById(id);
+    const history = [];
+    let scenarios = [];
+    let busy = false;
+    let ready = false;
+    const names = {amount_limit: "Spend limit", token_allowlist: "Token allowlist", recipient_trust: "Recipient allowlist", time_window: "Time window", voice_mandate_hash: "Evidence hash format", no_raw_audio_storage: "No raw audio stored"};
+    function element(tag, text, cls = "") { const node = document.createElement(tag); node.textContent = text; node.className = cls; return node; }
+    function stale() {
+      $("confirmation").textContent = $("confirmed").checked ? "Approval pending evaluation" : "Not provided";
+      $("download").disabled = true;
+      $("evaluated-time").textContent = "No evaluation for current inputs";
+      $("json").textContent = "{}";
+      if (!history.length) return;
+      $("decision").textContent = "STALE"; $("decision").dataset.outcome = "stale";
+      $("rule").textContent = "Inputs changed"; $("execution").textContent = "Not called for new input";
+      $("checks").replaceChildren(element("p", "Previous results remain in the audit.", "empty"));
+    }
+    function executor(report) {
+      if (report.submission?.receipt?.mock_executor_called) return "Mock called";
+      if (report.submission?.status === "blocked_by_confirmation_gate") return "Awaiting approval";
+      if (report.submission?.status === "executor_error") return "Unknown (mock error)";
+      return "Not called";
+    }
+    function render(report) {
+      const decision = report.policy_decision;
+      $("decision").textContent = decision.outcome.toUpperCase(); $("decision").dataset.outcome = decision.outcome;
+      $("rule").textContent = decision.deciding_rule;
+      $("evaluated-time").textContent = `${report.clock.toUpperCase()} / ${decision.evaluated_at}`;
+      $("execution").textContent = executor(report);
+      $("confirmation").textContent = report.confirmation?.confirmed ? "Mock approved" : "Not provided";
+      $("checks").replaceChildren();
+      decision.checks.forEach(check => {
+        const row = element("div", "", "check");
+        const state = element("b", check.passed ? "PASS" : "DENY"); state.dataset.outcome = check.passed ? "allow" : "deny";
+        const detail = element("div", "");
+        detail.append(element("strong", names[check.name] || check.name), element("div", check.details, "detail"));
+        row.append(state, detail); $("checks").append(row);
+      });
+      history.push(report); $("empty-history")?.remove();
+      const row = element("tr", "");
+      [report.received_at.slice(11, 19), report.clock, decision.outcome.toUpperCase(), executor(report), decision.deciding_rule, report.id.slice(0, 10)].forEach(value => row.append(element("td", value)));
+      $("history").prepend(row); $("json").textContent = JSON.stringify(report, null, 2);
+      $("download").disabled = report.recorded === false;
+    }
+    async function jsonRequest(url, options) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
+      try {
+        const response = await fetch(url, {...options, signal: controller.signal});
+        const body = await response.json();
+        if (!response.ok) {
+          const error = new Error(body.error || `HTTP ${response.status}`);
+          error.report = body.report || (body.policy_decision ? body : null);
+          throw error;
+        }
+        return body;
+      } finally { clearTimeout(timeout); }
+    }
+    async function evaluate(event) {
+      event.preventDefault(); if (busy || !ready) return;
+      busy = true; $("run").disabled = true; $("download").disabled = true;
+      $("run").textContent = "Evaluating..."; $("request-form").setAttribute("aria-busy", "true"); $("error").hidden = true;
+      const clock = document.querySelector("input[name=clock]:checked").value;
+      const payload = {text: $("text").value, clock, confirmed: $("confirmed").checked};
+      if (clock === "replay") payload.evaluated_at = $("evaluated-at").value;
+      const controls = [...$("request-form").elements].filter(control => control !== $("run"));
+      controls.forEach(control => control.disabled = true);
+      try { render(await jsonRequest("/api/evaluate", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload)})); }
+      catch (error) {
+        if (error.report) render(error.report);
+        else {
+          $("decision").textContent = "ERROR"; $("decision").dataset.outcome = "deny";
+          $("rule").textContent = "No verified result"; $("execution").textContent = "Unknown; see error";
+          $("checks").replaceChildren(); $("json").textContent = "{}";
+        }
+        $("download").disabled = !(error.report && error.report.recorded === true);
+        $("error").textContent = error.name === "AbortError" ? "Request timed out; mock outcome unknown. Check local audit records before retrying." : error.message;
+        $("error").hidden = false;
+      }
+      finally {
+        busy = false; controls.forEach(control => control.disabled = false); $("evaluated-at").disabled = clock === "server";
+        $("run").disabled = false; $("run").textContent = "Evaluate request"; $("request-form").removeAttribute("aria-busy");
+      }
+    }
+    $("request-form").addEventListener("submit", evaluate); $("request-form").addEventListener("input", stale);
+    $("scenario").addEventListener("change", () => {
+      const scenario = scenarios.find(item => item.id === $("scenario").value);
+      if (scenario) {
+        $("text").value = scenario.text; $("evaluated-at").value = scenario.evaluated_at;
+        document.querySelector("input[value=replay]").checked = true; $("evaluated-at").disabled = false; $("confirmed").checked = false;
+      } stale();
+    });
+    document.querySelectorAll("input[name=clock]").forEach(input => input.addEventListener("change", () => {
+      $("evaluated-at").disabled = input.value === "server" && input.checked; $("scenario").value = "";
+      $("confirmed").checked = false; stale();
+    }));
+    [$("text"), $("evaluated-at")].forEach(input => input.addEventListener("input", () => {
+      $("scenario").value = ""; $("confirmed").checked = false; stale();
+    }));
+    $("download").addEventListener("click", () => {
+      if (!history.length) return;
+      const link = element("a", "");
+      link.href = `/api/audit/${history[history.length - 1].id}`;
+      link.download = "";
+      document.body.append(link);
+      link.click();
+      link.remove();
+    });
+    async function init() {
+      try {
+        const data = await jsonRequest("/api/scenarios"); scenarios = data.scenarios;
+        scenarios.forEach(scenario => { const option = element("option", scenario.label); option.value = scenario.id; $("scenario").append(option); });
+        const policy = await jsonRequest("/api/policy"); $("policy").replaceChildren();
+        [["Per request", `${policy.max_single_payment} ${policy.allowed_tokens.join(" / ")}`], ["Recipients", policy.trusted_recipients.join("\n")], ["UTC windows", policy.allowed_time_windows.map(w => `${w.days.join(", ")}\n${w.start} <= time < ${w.end}`).join("\n")]].forEach(([name, value]) => {
+          const row = element("div", ""); row.append(element("dt", name), element("dd", value)); $("policy").append(row);
+        });
+        ready = true; $("run").disabled = false;
+      } catch (error) { $("error").textContent = `Setup failed: ${error.message}. Reload to retry.`; $("error").hidden = false; }
+    }
+    init();
+  </script>
+</body>
+</html>

@@ -1,0 +1,32 @@
+{
+  "name": "Pharos Mainnet Read-only Payment Policy",
+  "version": "1.0",
+  "max_single_payment": "1000",
+  "native_token": "PROS",
+  "allowed_tokens": [
+    "PROS",
+    "USDC",
+    "WPROS"
+  ],
+  "trusted_recipients": [
+    "0x1111111111111111111111111111111111111111",
+    "0x2222222222222222222222222222222222222222"
+  ],
+  "allowed_time_windows": [
+    {
+      "days": [
+        "MON",
+        "TUE",
+        "WED",
+        "THU",
+        "FRI",
+        "SAT",
+        "SUN"
+      ],
+      "start": "00:00",
+      "end": "24:00",
+      "timezone": "UTC"
+    }
+  ],
+  "challenge_word_count": 3
+}

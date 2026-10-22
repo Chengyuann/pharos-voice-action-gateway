@@ -1,0 +1,392 @@
+{
+  "schema": "pharos-payment-proof/1",
+  "transport": "Streamable HTTP",
+  "endpoint": "https://mcp.pharos.xyz/mcp",
+  "server": {
+    "name": "pharos-mcp-server",
+    "version": "0.1.0"
+  },
+  "skill": {
+    "name": "pharos-payment-review",
+    "upstream_commit": "a873387c9e34e9ae8e71360d43dc33329a335a24",
+    "handler": "payment_chain.decide_mainnet_payment",
+    "fee_rule": "ceil(estimate_gas * 1.2)"
+  },
+  "input": {
+    "payment": {
+      "amount": "0.01",
+      "token": "USDC",
+      "recipient": "0x1111111111111111111111111111111111111111"
+    },
+    "sender": "0x3333333333333333333333333333333333333333"
+  },
+  "policy": {
+    "name": "Pharos Mainnet Read-only Payment Policy",
+    "version": "1.0",
+    "max_single_payment": "1000",
+    "native_token": "PROS",
+    "allowed_tokens": [
+      "PROS",
+      "USDC",
+      "WPROS"
+    ],
+    "trusted_recipients": [
+      "0x1111111111111111111111111111111111111111",
+      "0x2222222222222222222222222222222222222222"
+    ],
+    "allowed_time_windows": [
+      {
+        "days": [
+          "MON",
+          "TUE",
+          "WED",
+          "THU",
+          "FRI",
+          "SAT",
+          "SUN"
+        ],
+        "start": "00:00",
+        "end": "24:00",
+        "timezone": "UTC"
+      }
+    ],
+    "challenge_word_count": 3
+  },
+  "token": {
+    "symbol": "USDC",
+    "name": "USDC",
+    "type": "erc20",
+    "decimals": 6,
+    "address": "0xc879c018db60520f4355c26ed1a6d572cdac1815"
+  },
+  "evaluated_at": "2026-10-21T11:16:57.131081+00:00",
+  "state": {
+    "block_number": 20830085,
+    "block_hash": "0xd9577e4bdd4ecf5ff800890275e07cf36adcec4a12b4c9610646e9d7dea12569",
+    "block_timestamp": 1792581408,
+    "native_balance": 0,
+    "sender_code": "0x",
+    "recipient_code": "0x",
+    "nonce": 0,
+    "transaction": {
+      "from": "0x3333333333333333333333333333333333333333",
+      "to": "0xc879c018db60520f4355c26ed1a6d572cdac1815",
+      "value": "0x0",
+      "data": "0xa9059cbb00000000000000000000000011111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000000002710"
+    },
+    "token_verified": true,
+    "token_balance": 0,
+    "simulation_ok": false,
+    "simulation_error": "execution reverted: ERC20: transfer amount exceeds balance",
+    "gas": null,
+    "gas_price": null,
+    "fee_error": "execution reverted: ERC20: transfer amount exceeds balance"
+  },
+  "trace": [
+    {
+      "tool": "get_chain_info",
+      "arguments": {},
+      "result": {
+        "name": "Pharos",
+        "chainId": 1672,
+        "chainIdHex": "0x688",
+        "expectedChainId": 1672,
+        "chainIdMatches": true,
+        "latestBlock": "20830085",
+        "latestBlockHex": "0x13dd785",
+        "nativeSymbol": "PROS",
+        "clientVersion": "portal/1.0.0",
+        "rpcUrl": "https://rpc.pharos.xyz"
+      }
+    },
+    {
+      "tool": "get_block_number",
+      "arguments": {},
+      "result": {
+        "blockNumber": "20830085",
+        "blockNumberHex": "0x13dd785"
+      }
+    },
+    {
+      "tool": "get_block",
+      "arguments": {
+        "block": "0x13dd785"
+      },
+      "result": {
+        "baseFeePerGas": "0x2540be400",
+        "difficulty": "0x0",
+        "extraData": "0xde4886e1ed075e7a091a6f20e95920fd409d3a34319d906d810becad0b123210",
+        "gasLimit": "0x3b9aca00",
+        "gasUsed": "0x0",
+        "hash": "0xd9577e4bdd4ecf5ff800890275e07cf36adcec4a12b4c9610646e9d7dea12569",
+        "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "miner": "0x0000000000000000000000000000000000000000",
+        "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x0000000000000000",
+        "number": "0x13dd785",
+        "parentHash": "0x08ec137d43f34a9b33dde735295f532859b35862f776778c012e5e010e48a818",
+        "receiptsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+        "sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+        "size": "0x229",
+        "stateRoot": "0x6afbdde5e5e03313a57ca7b079ff0e11de588ebf51b9ae2b294e736e707353ef",
+        "timestamp": "0x6ad89f20",
+        "totalDifficulty": "0x0",
+        "transactions": [],
+        "transactionsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+        "uncles": []
+      }
+    },
+    {
+      "tool": "get_balance",
+      "arguments": {
+        "address": "0x3333333333333333333333333333333333333333",
+        "block": "0x13dd785"
+      },
+      "result": {
+        "address": "0x3333333333333333333333333333333333333333",
+        "balanceWei": "0",
+        "balance": "0",
+        "symbol": "PROS",
+        "balanceHex": "0x0"
+      }
+    },
+    {
+      "tool": "get_code",
+      "arguments": {
+        "address": "0x3333333333333333333333333333333333333333",
+        "block": "0x13dd785"
+      },
+      "result": {
+        "code": "0x"
+      }
+    },
+    {
+      "tool": "get_code",
+      "arguments": {
+        "address": "0x1111111111111111111111111111111111111111",
+        "block": "0x13dd785"
+      },
+      "result": {
+        "code": "0x"
+      }
+    },
+    {
+      "tool": "get_transaction_count",
+      "arguments": {
+        "address": "0x3333333333333333333333333333333333333333",
+        "block": "pending"
+      },
+      "result": {
+        "nonce": "0",
+        "nonceHex": "0x0"
+      }
+    },
+    {
+      "tool": "get_code",
+      "arguments": {
+        "address": "0xc879c018db60520f4355c26ed1a6d572cdac1815",
+        "block": "0x13dd785"
+      },
+      "result": {
+        "code": "0x60806040526004361061005a5760003560e01c80635c60da1b116100435780635c60da1b146101315780638f2839701461016f578063f851a440146101af5761005a565b80633659cfe6146100645780634f1ef286146100a4575b6100626101c4565b005b34801561007057600080fd5b506100626004803603602081101561008757600080fd5b503573ffffffffffffffffffffffffffffffffffffffff166101de565b610062600480360360408110156100ba57600080fd5b73ffffffffffffffffffffffffffffffffffffffff82351691908101906040810160208201356401000000008111156100f257600080fd5b82018360208201111561010457600080fd5b8035906020019184600183028401116401000000008311171561012657600080fd5b509092509050610232565b34801561013d57600080fd5b50610146610309565b6040805173ffffffffffffffffffffffffffffffffffffffff9092168252519081900360200190f35b34801561017b57600080fd5b506100626004803603602081101561019257600080fd5b503573ffffffffffffffffffffffffffffffffffffffff16610318565b3480156101bb57600080fd5b50610146610420565b6101cc610430565b6101dc6101d76104c4565b6104e9565b565b6101e661050d565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614156102275761022281610532565b61022f565b61022f6101c4565b50565b61023a61050d565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614156102fc5761027683610532565b60003073ffffffffffffffffffffffffffffffffffffffff16348484604051808383808284376040519201945060009350909150508083038185875af1925050503d80600081146102e3576040519150601f19603f3d011682016040523d82523d6000602084013e6102e8565b606091505b50509050806102f657600080fd5b50610304565b6103046101c4565b505050565b60006103136104c4565b905090565b61032061050d565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614156102275773ffffffffffffffffffffffffffffffffffffffff81166103bf576040517f08c379a00000000000000000000000000000000000000000000000000000000081526004018080602001828103825260368152602001806106606036913960400191505060405180910390fd5b7f7e644d79422f17c01e4894b5f4f588d331ebfa28653d42ae832dc59e38c9798f6103e861050d565b6040805173ffffffffffffffffffffffffffffffffffffffff928316815291841660208301528051918290030190a161022281610587565b600061031361050d565b3b151590565b61043861050d565b73ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff1614156104bc576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252603281526020018061062e6032913960400191505060405180910390fd5b6101dc6101dc565b7f7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c35490565b3660008037600080366000845af43d6000803e808015610508573d6000f35b3d6000fd5b7f10d6a54a4754c8869d6886b5f5d7fbfa5b4522237ea5c60d11bc4e7a1ff9390b5490565b61053b816105ab565b6040805173ffffffffffffffffffffffffffffffffffffffff8316815290517fbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b9181900360200190a150565b7f10d6a54a4754c8869d6886b5f5d7fbfa5b4522237ea5c60d11bc4e7a1ff9390b55565b6105b48161042a565b610609576040517f08c379a000000000000000000000000000000000000000000000000000000000815260040180806020018281038252603b815260200180610696603b913960400191505060405180910390fd5b7f7050c9e0f4ca769c69bd3a8ef740bc37934f8e2c036e5a723fd8ee048ed3f8c35556fe43616e6e6f742063616c6c2066616c6c6261636b2066756e6374696f6e2066726f6d207468652070726f78792061646d696e43616e6e6f74206368616e6765207468652061646d696e206f6620612070726f787920746f20746865207a65726f206164647265737343616e6e6f742073657420612070726f787920696d706c656d656e746174696f6e20746f2061206e6f6e2d636f6e74726163742061646472657373a26469706673582212201b7dbd288c50fb491c3306d5523f68761218a7146fd69c9b0b4a0c0491850c1b64736f6c634300060c0033"
+      }
+    },
+    {
+      "tool": "eth_call",
+      "arguments": {
+        "transaction": {
+          "to": "0xc879c018db60520f4355c26ed1a6d572cdac1815",
+          "data": "0x95d89b41"
+        },
+        "block": "0x13dd785"
+      },
+      "result": {
+        "result": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000045553444300000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "tool": "eth_call",
+      "arguments": {
+        "transaction": {
+          "to": "0xc879c018db60520f4355c26ed1a6d572cdac1815",
+          "data": "0x313ce567"
+        },
+        "block": "0x13dd785"
+      },
+      "result": {
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000006"
+      }
+    },
+    {
+      "tool": "eth_call",
+      "arguments": {
+        "transaction": {
+          "to": "0xc879c018db60520f4355c26ed1a6d572cdac1815",
+          "data": "0x70a082310000000000000000000000003333333333333333333333333333333333333333"
+        },
+        "block": "0x13dd785"
+      },
+      "result": {
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "tool": "eth_call",
+      "arguments": {
+        "transaction": {
+          "from": "0x3333333333333333333333333333333333333333",
+          "to": "0xc879c018db60520f4355c26ed1a6d572cdac1815",
+          "value": "0x0",
+          "data": "0xa9059cbb00000000000000000000000011111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000000002710"
+        },
+        "block": "0x13dd785"
+      },
+      "error": {
+        "error": {
+          "message": "execution reverted: ERC20: transfer amount exceeds balance",
+          "code": 3,
+          "data": "0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002645524332303a207472616e7366657220616d6f756e7420657863656564732062616c616e63650000000000000000000000000000000000000000000000000000"
+        }
+      }
+    },
+    {
+      "tool": "estimate_gas",
+      "arguments": {
+        "transaction": {
+          "from": "0x3333333333333333333333333333333333333333",
+          "to": "0xc879c018db60520f4355c26ed1a6d572cdac1815",
+          "value": "0x0",
+          "data": "0xa9059cbb00000000000000000000000011111111111111111111111111111111111111110000000000000000000000000000000000000000000000000000000000002710"
+        }
+      },
+      "error": {
+        "error": {
+          "message": "execution reverted: ERC20: transfer amount exceeds balance",
+          "code": 3,
+          "data": "0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002645524332303a207472616e7366657220616d6f756e7420657863656564732062616c616e63650000000000000000000000000000000000000000000000000000"
+        }
+      }
+    }
+  ],
+  "decision": {
+    "decision": "blocked_by_policy",
+    "outcome": "deny",
+    "deciding_rule": "token_balance",
+    "evaluated_at": "2026-10-21T11:16:57.131081+00:00",
+    "policy_passed": false,
+    "checks": [
+      {
+        "name": "amount_limit",
+        "passed": true,
+        "details": "0.01 USDC / limit 1000"
+      },
+      {
+        "name": "token_allowlist",
+        "passed": true,
+        "details": "USDC"
+      },
+      {
+        "name": "recipient_trust",
+        "passed": true,
+        "details": "0x1111111111111111111111111111111111111111"
+      },
+      {
+        "name": "time_window",
+        "passed": true,
+        "details": "current UTC time is inside an allowed window"
+      },
+      {
+        "name": "sender_type",
+        "passed": true,
+        "details": "Only ordinary EOA senders are supported; read-only address is not ownership proof"
+      },
+      {
+        "name": "token_balance",
+        "passed": false,
+        "details": "0 USDC available"
+      },
+      {
+        "name": "native_fee_balance",
+        "passed": false,
+        "details": "Native fee requirement unavailable; no draft can be created"
+      },
+      {
+        "name": "simulation",
+        "passed": false,
+        "details": "execution reverted: ERC20: transfer amount exceeds balance"
+      },
+      {
+        "name": "fee_quote",
+        "passed": false,
+        "details": "execution reverted: ERC20: transfer amount exceeds balance"
+      }
+    ],
+    "blocking_reasons": [
+      "token_balance",
+      "native_fee_balance",
+      "simulation",
+      "fee_quote"
+    ],
+    "audit_log": [
+      {
+        "rule": "amount_limit",
+        "outcome": "allow",
+        "details": "0.01 USDC / limit 1000"
+      },
+      {
+        "rule": "token_allowlist",
+        "outcome": "allow",
+        "details": "USDC"
+      },
+      {
+        "rule": "recipient_trust",
+        "outcome": "allow",
+        "details": "0x1111111111111111111111111111111111111111"
+      },
+      {
+        "rule": "time_window",
+        "outcome": "allow",
+        "details": "current UTC time is inside an allowed window"
+      },
+      {
+        "rule": "sender_type",
+        "outcome": "allow",
+        "details": "Only ordinary EOA senders are supported; read-only address is not ownership proof"
+      },
+      {
+        "rule": "token_balance",
+        "outcome": "deny",
+        "details": "0 USDC available"
+      },
+      {
+        "rule": "native_fee_balance",
+        "outcome": "deny",
+        "details": "Native fee requirement unavailable; no draft can be created"
+      },
+      {
+        "rule": "simulation",
+        "outcome": "deny",
+        "details": "execution reverted: ERC20: transfer amount exceeds balance"
+      },
+      {
+        "rule": "fee_quote",
+        "outcome": "deny",
+        "details": "execution reverted: ERC20: transfer amount exceeds balance"
+      },
+      {
+        "rule": "token_balance",
+        "outcome": "deny",
+        "details": "final decision at 2026-10-21T11:16:57.131081+00:00"
+      }
+    ],
+    "policy_hash": "0x1a69579cc48f27559e5ac097dc7ff21b5b81fe44b2b1bd140448d9b7b4ff6d4b"
+  },
+  "transaction": null,
+  "boundary": "Evidence replay is not authenticated chain provenance or wallet authorization.",
+  "unpinned": [
+    "get_transaction_count: pending",
+    "estimate_gas: current",
+    "get_gas_price: current"
+  ],
+  "digest": "0xfdd75614611f2301e8c493a7e60971ca2ff6c38e045b1f5f01d10bd1e8b2e57e"
+}

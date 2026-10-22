@@ -1,4 +1,16 @@
 __pycache__/
+.pytest_cache/
+.coverage
+output/playwright/
+output/research/
+.playwright-cli/
+output/p0/
+outputs/pharos-mcy/
+.venv/
+.env
+.env.*
+!.env.example
+dist/
 *.pyc
 .agent/
 reports/

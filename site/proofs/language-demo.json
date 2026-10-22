@@ -1,0 +1,20 @@
+{
+  "request": "Send 1 or 2 USDC to alice",
+  "first": {
+    "status": "needs_details",
+    "field": "amount",
+    "question": "Which exact amount: 1 or 2?",
+    "reason": "More than one amount was given."
+  },
+  "answer": {
+    "amount": "1"
+  },
+  "resolved": {
+    "status": "complete",
+    "payment": {
+      "amount": "1",
+      "token": "USDC",
+      "recipient": "0x1111111111111111111111111111111111111111"
+    }
+  }
+}

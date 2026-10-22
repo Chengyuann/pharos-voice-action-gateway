@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#090e1b">
+  <meta name="description" content="Replay local voice-agent events, commit an utterance, inspect intent and safely preview a Pharos payment.">
+  <title>Pharos Voice Action Gateway</title>
+  <link rel="preload" href="/assets/fonts/barlow-condensed-700.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="preload" href="/assets/fonts/manrope-400.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="icon" href="/assets/logo.png"><link rel="stylesheet" href="/assets/payment-preview.css">
+  <script src="/assets/payment-preview.js" defer></script><script src="/assets/voice-console.js" defer></script>
+</head>
+<body>
+<div class="ambient" aria-hidden="true"><span></span><span></span><span></span></div>
+<a class="skip" href="#main">Skip to voice action</a>
+<div class="app">
+  <aside class="sidebar">
+    <a class="brand" href="/payment-preview" aria-label="Pharos Voice Action Gateway home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 25V7h11a7 7 0 0 1 0 14H7m7-7h6M7 29h7"/></svg><span>Pharos<small>Voice Action Gateway</small></span></a>
+    <nav aria-label="Workspace">
+      <button class="nav-item active" data-view="payment" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Zm-7 9a7 7 0 0 0 14 0M12 19v3m-4 0h8"/></svg>Voice action</button>
+      <button class="nav-item" data-view="activity"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7m2-4v6l4 2"/></svg>Activity</button>
+      <button class="nav-item" data-view="rules"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 8 3v6c0 5-8 9-8 9S4 17 4 12V6Zm-4 9 3 3 5-6"/></svg>Payment rules</button>
+      <button class="nav-item" data-view="settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16M8 3v6m8 0v6m-7 0v6"/></svg>Connection</button>
+    </nav>
+    <div class="sidebar-bottom"><span class="dot"></span> Voice fixtures ready<p>Local ASR/VAD/TTS events.<br>No microphone or wallet connected.</p><a href="/policy-gatekeeper">Open policy inspector ↗</a></div>
+  </aside>
+  <div class="main-column">
+    <header class="topbar"><div class="topbar-path"><span class="topbar-mark"></span> Workspace <span>/</span> <strong id="breadcrumb">Voice action</strong></div><div class="topbar-meta"><button id="motion-toggle" type="button" class="motion-toggle" aria-pressed="false" hidden>Pause motion</button><span class="pill" id="environment">Demo data</span></div></header>
+    <div class="signal-rail" aria-hidden="true"><div class="signal-track"><div class="signal-group"><span>ASR PARTIALS</span><i></i><span>END-OF-UTTERANCE</span><i></i><span>BARGE-IN DETECTION</span><i></i><span>VOICE MANDATE</span><i></i><span>POLICY BEFORE CONFIRMATION</span><i></i></div><div class="signal-group"><span>ASR PARTIALS</span><i></i><span>END-OF-UTTERANCE</span><i></i><span>BARGE-IN DETECTION</span><i></i><span>VOICE MANDATE</span><i></i><span>POLICY BEFORE CONFIRMATION</span><i></i></div></div></div>
+    <main id="main" tabindex="-1">
+      <section id="view-payment" class="view">
+        <div class="page-heading hero-heading"><div class="hero-copy"><p class="eyebrow"><span></span> PHAROS VOICE ACTION GATEWAY</p><h1 aria-label="Speak value. Not blindly."><span class="display-line" aria-hidden="true">SPEAK VALUE.</span><span class="verb-line" aria-hidden="true"><em id="hero-verb"><span>NOT BLINDLY.</span><span>THEN VERIFY.</span><span>STAY IN CONTROL.</span><span>NOT BLINDLY.</span></em><i class="type-caret"></i></span></h1><p>Turn committed speech into a structured intent, a safe payment preview and a voice-bound mandate—before any wallet is involved.</p><div class="live-readout" aria-hidden="true"><span><i></i>VOICE GATEWAY</span><strong id="hero-readout">AWAITING INPUT</strong><b id="hero-source">FIXTURE REPLAY / LOCAL</b></div></div><div class="hero-orbit" data-tilt="8" aria-hidden="true"><div class="orbit-ring ring-one"></div><div class="orbit-ring ring-two"></div><div class="orbit-data"><span>LISTEN</span><span>COMMIT</span><span>VERIFY</span></div><div class="coin-float"><div class="orbit-core"><span class="coin-word">PHAROS</span><svg viewBox="0 0 80 80" aria-hidden="true"><path d="M40 14a10 10 0 0 0-10 10v20a10 10 0 0 0 20 0V24a10 10 0 0 0-10-10ZM21 41a19 19 0 0 0 38 0M40 60v8m-10 0h20"/></svg><span class="coin-code">VOICE / ACTION</span></div></div><span class="orbit-label label-one">ASR</span><span class="orbit-label label-two">EOU</span><span class="orbit-label label-three">MANDATE</span><div class="orbit-scan"></div></div><span class="step-note">01 LISTEN <span>—</span> 02 COMMIT <span>—</span> 03 VERIFY</span></div>
+        <section class="voice-console" aria-labelledby="voice-console-title">
+          <div class="voice-console-top">
+            <div><p class="eyebrow"><span></span> VOICE AGENT / TURN-TAKING</p><h2 id="voice-console-title">A pause is not always the end.</h2><p>Inspect how the gateway handles transcript fragments, waits for a complete turn, and responds to interruptions.</p></div>
+            <span class="voice-boundary"><i></i>MIC NOT CONNECTED</span>
+          </div>
+          <div class="voice-scenarios" role="group" aria-label="Voice demo scenarios">
+            <button class="active" type="button" data-voice-scenario="payment">Voice payment</button>
+            <button type="button" data-voice-scenario="barge-in">Barge-in correction</button>
+            <button type="button" data-voice-scenario="short-pause">Short pause</button>
+          </div>
+          <div class="voice-grid">
+            <div class="voice-listener">
+              <div class="voice-listener-head"><span id="voice-state" role="status">LOADING FIXTURE</span><b id="voice-clock">0.00s</b></div>
+              <div class="waveform" id="voice-waveform" aria-hidden="true"></div>
+              <p class="waveform-caption">EVENT VISUALIZATION · NOT RECORDED AUDIO</p>
+              <p id="voice-transcript-label" class="voice-transcript-label">COMMITTED UTTERANCE</p>
+              <blockquote id="voice-transcript">Loading local voice events…</blockquote>
+              <p id="voice-reason" class="voice-reason">No microphone access is requested.</p>
+              <div class="voice-actions"><button id="voice-replay" class="plain" type="button" disabled>Replay events</button><button id="voice-next" class="plain" type="button" disabled>Next event</button><button id="voice-use-payment" class="text-button" type="button" hidden>Use payment intent →</button></div>
+            </div>
+            <div class="voice-pipeline">
+              <div class="voice-pipeline-head"><span>GATEWAY DECISIONS</span><b>JSONL FIXTURE</b></div>
+              <ol id="voice-events" class="voice-events"><li>Loading gateway output…</li></ol>
+              <div class="voice-proof"><span>INTENT CANDIDATE · KEYWORD RULES, NOT AN LLM</span><strong id="voice-intent">Waiting for fixture</strong><details id="voice-evidence"><summary>Inspect voice / intent / mandate evidence</summary><p id="voice-source"></p><div id="voice-proof"></div><pre id="voice-evidence-json"></pre></details></div>
+            </div>
+          </div>
+          <p id="voice-boundary-note" class="voice-note">Local fixture replay, not live speech. Microphone capture, ASR models and TTS audio are not connected. Recorded confirmations never authorize a new payment.</p>
+        </section>
+        <div class="flow-monitor" role="group" aria-label="Payment preview stages">
+          <div class="flow-line" aria-hidden="true"><i></i></div>
+          <div class="flow-node active" data-flow-step="input"><span>01</span><div><strong>Intent</strong><small>Committed speech or text</small></div></div>
+          <div class="flow-node" data-flow-step="verify"><span>02</span><div><strong>Verify</strong><small>Balance + policy</small></div></div>
+          <div class="flow-node" data-flow-step="draft"><span>03</span><div><strong>Draft</strong><small>Unsigned output</small></div></div>
+          <output id="flow-status" aria-live="polite">WAITING FOR PAYMENT DETAILS</output>
+        </div>
+        <div class="workspace">
+          <div class="request-column">
+            <section class="panel" aria-labelledby="request-title">
+              <div class="section-title"><span class="step-number">01</span><h2 id="request-title">Voice intent</h2></div>
+              <form id="payment-form">
+                <label for="request">Committed transcript or typed fallback</label><textarea id="request" maxlength="500" spellcheck="false" required placeholder="Send 0.02 PHRS to 0x…"></textarea>
+                <p class="field-hint">Only committed text enters the payment parser. Partial ASR and raw audio are not used here.</p>
+                <p id="intent-source" class="intent-source">INPUT SOURCE / TYPED FALLBACK</p>
+                <div class="example-row"><span>Try an example</span><button type="button" data-example="complete">Small payment ↗</button><button type="button" data-example="missing">Missing amount ↗</button><button type="button" data-example="balance">Low balance ↗</button></div>
+                <details class="edit-details" id="edit-details"><summary>Or enter the details directly</summary>
+                  <div class="field-grid"><div><label for="edit-amount">Amount</label><input id="edit-amount" inputmode="decimal" placeholder="0.00" maxlength="100"></div><div><label for="edit-token">Token</label><select id="edit-token"><option value="PHRS">PHRS</option></select></div></div>
+                  <label for="edit-recipient">Recipient address</label><input id="edit-recipient" placeholder="0x…" spellcheck="false" maxlength="100">
+                  <p class="field-hint">Editing these fields replaces the text above. Review it before creating a draft.</p>
+                </details>
+                <fieldset class="mode-field"><legend>Balance source</legend><div class="source-options">
+                  <label><input type="radio" name="mode" value="demo" checked><span><strong>Demo</strong><small>Local sample balance</small></span></label>
+                  <label><input type="radio" name="mode" value="live"><span><strong>Live network</strong><small>Read-only RPC</small></span></label>
+                  <label><input type="radio" name="mode" value="mcp"><span><strong>Official Chain MCP</strong><small>Pacific Mainnet · unsigned only</small></span></label>
+                </div></fieldset>
+                <p id="mode-note" class="field-hint">Demo mode uses a fixed balance and evaluation time. No network request.</p>
+                <div id="follow-up" class="follow-up" hidden><label id="follow-label" for="follow-input"></label><input id="follow-input" maxlength="100" autocomplete="off"><p id="follow-reason" class="field-hint"></p></div>
+                <div class="agent-response"><span>AGENT RESPONSE / TEXT ONLY</span><p id="agent-response-text" role="status">Use a committed payment from the voice demo, or type one below. I will ask for missing details before checking it.</p></div>
+                <button id="review-button" class="primary" type="submit" disabled>Review payment <span aria-hidden="true">→</span></button>
+                <div id="error" class="notice error" role="alert" hidden></div>
+              </form>
+              <div class="action-controls">
+                <output id="action-version" aria-live="polite">No active action</output>
+                <form id="correction-form">
+                  <label for="correction-text">Correct current amount</label>
+                  <div class="correction-row"><input id="correction-text" maxlength="100" placeholder="改成0.02 / change amount to 0.02" autocomplete="off"><button id="correct-action" class="plain" type="submit" disabled>Apply correction</button></div>
+                </form>
+                <button id="cancel-action" class="plain" type="button" disabled>Cancel action</button>
+                <p id="action-change" role="status" hidden></p>
+              </div>
+            </section>
+            <section class="account-summary" aria-label="Source account"><span class="account-icon" aria-hidden="true">P</span><div><strong id="account-title">Example account</strong><p id="account-address">Loading settings…</p><p id="account-balance"></p></div></section>
+            <p class="privacy-note">This product does not sign or send transactions. Local reports stay on this computer. Network modes send public addresses and call parameters to your configured RPC or the official Pharos Chain MCP, never private keys or request text.</p>
+          </div>
+          <section class="receipt spotlight-surface" aria-labelledby="review-title">
+            <div class="receipt-top"><div class="section-title"><span class="step-number">02</span><h2 id="review-title">Payment review</h2></div><span id="status" class="pill muted" role="status">Not reviewed</span></div>
+            <div id="review-body" class="receipt-body"><div class="empty-review"><div class="receipt-symbol" aria-hidden="true"><svg viewBox="0 0 48 56"><path d="M10 4h28v48l-5-3-5 3-4-3-5 3-4-3-5 3ZM17 15h14M17 23h14M17 35h5m5 0h4"/></svg></div><h3>A payment, clearly laid out.</h3><p>Your amount, recipient and checks will appear here. Nothing is sent when you review.</p><div class="preview-demo" aria-hidden="true"><span class="demo-caption">HOW PREVIEW WORKS</span><div class="demo-step"><b>01</b><span>Read your intent</span><i></i></div><div class="demo-step"><b>02</b><span>Check the rules</span><i></i></div><div class="demo-step"><b>03</b><span>Prepare a draft</span><i></i></div></div><span class="empty-caption">ILLUSTRATION ONLY · NOTHING IS SENT</span></div></div>
+            <div class="receipt-foot"><span id="review-time">No review yet</span><span>Unsigned only</span></div>
+          </section>
+        </div>
+        <section class="trust-strip" data-reveal aria-label="Voice agent safety boundaries"><span>NO RAW AUDIO STORED</span><i></i><span>BARGE-IN AWARE</span><i></i><span>COMMIT BEFORE ACTION</span><i></i><span>POLICY BEFORE CONFIRMATION</span></section>
+        <section class="recent-section" data-reveal><div class="section-title spread"><h2>Recent activity</h2><button class="text-button" type="button" data-view="activity">View all records →</button></div><div id="recent-list" class="record-list"><p class="muted-text">No saved reviews yet.</p></div></section>
+      </section>
+      <section id="view-activity" class="view" hidden><div class="page-heading"><div><p class="eyebrow">LOCAL RECORDS</p><h1>Activity</h1><p>The 100 most recent reviews and drafts on this computer. These are not transaction receipts.</p></div><button id="refresh-records" class="plain">Refresh records</button></div><div id="activity-list" class="record-list"></div></section>
+      <section id="view-rules" class="view" hidden><div class="page-heading"><div><p class="eyebrow">BEFORE A DRAFT IS CREATED</p><h1>Payment rules</h1><p>Every payment must pass these checks. Confirmation cannot override a rule.</p></div></div><div id="policy-content" class="settings-panel" data-reveal></div><a class="text-link" href="/policy-gatekeeper">Inspect individual rules and replay test cases ↗</a></section>
+      <section id="view-settings" class="view" hidden><div class="page-heading"><div><p class="eyebrow">VOICE + CHAIN ADAPTERS</p><h1>Connection</h1><p>See what is connected now and what a production voice agent still needs.</p></div></div><div class="settings-panel" data-reveal>
+        <h2>Voice adapters</h2><p><strong>Current:</strong> deterministic local JSONL event replay through the real turn-taking gateway. Browser microphone capture, live ASR, VAD and TTS playback are not connected in this page.</p><div class="adapter-list"><span><i class="ready"></i>Duplex event processor</span><span><i class="ready"></i>EOU + barge-in decisions</span><span><i></i>Browser microphone</span><span><i></i>Live ASR / VAD / TTS adapters</span></div>
+        <hr><h2>Demo payment data</h2><p>The sample account, balance and payment time come from local files. The network fee is not checked. Demo drafts are examples, not wallet instructions.</p><div id="demo-settings"></div>
+        <hr><h2>Official Chain MCP · Pacific Mainnet</h2><p id="mcp-connection-state">Checking configuration…</p><p>PROS, USDC and WPROS. Balance, code, token metadata and eth_call use one block. Pending nonce, gas estimate and gas price are current quotes. A Skill evaluates the actual data; downloaded proofs replay that decision offline. No signer or broadcaster exists.</p>
+        <pre class="setup-command">PHAROS_MCP_READ_ADDRESS="0x…lowercase-public-address…" \
+python3 scripts/policy_gatekeeper_server.py --port 8768</pre>
+        <p>Example contacts Alice and Bob are placeholders, not verified people. Only explicitly allowlisted recipients pass. Mixed-case addresses are refused rather than silently stripping their unchecked checksum.</p>
+        <hr><h2>Legacy live network · Atlantic</h2><p id="live-connection-state">Checking configuration…</p><p>The server reads the chain ID, block number, balance, gas estimate and gas price. It never requests keys, signs or broadcasts. The address is read-only; it does not prove ownership.</p>
+        <pre class="setup-command">PHAROS_RPC_URL="https://your-rpc-endpoint" \
+PHAROS_READ_ADDRESS="0x…full-address…" \
+python3 scripts/policy_gatekeeper_server.py --port 8766</pre>
+        <p>Restart the server after changing these variables. Only native PHRS transfers with 18 decimal places are supported; token metadata is configured, not fetched from a contract.</p>
+        <hr><h2>Storage and access</h2><p>Reports are saved under <code>reports/payment_preview/</code>. This local workspace has no user accounts; other software or users on this computer may read its files. Do not expose this server to the public internet.</p>
+      </div></section>
+    </main>
+    <footer class="footer"><span>PHAROS / VOICE ACTION GATEWAY</span><span>FIXTURE REPLAY · LOCAL WORKSPACE · NO FUNDS MOVED</span></footer>
+  </div>
+</div>
+<dialog id="record-dialog" aria-labelledby="record-title"><div class="dialog-heading"><h2 id="record-title">Saved record</h2><button id="close-record" class="plain" type="button">Close</button></div><p class="notice">Historical record only. Run a new review before preparing another payment.</p><pre id="record-json"></pre><a id="record-download" class="plain" href="#">Download audit JSON</a></dialog>
+<div id="toast" role="status" class="toast" hidden></div>
+</body>
+</html>

@@ -1,0 +1,29 @@
+{
+  "schema": "pharos-public-media/1",
+  "recorded_date": "2026-10-22",
+  "voice": "MCY authorized narration",
+  "presenter": false,
+  "background_music": false,
+  "private_reference_included": false,
+  "files": [
+    {
+      "file": "01-policy-gatekeeper-mcy.mp4",
+      "bytes": 3924131,
+      "sha256": "373bb7a2f4de5cb3d6734cdb4e994c9c7f9f61f4f0c3222ec0d40c82439a3b64",
+      "subtitles": "01-policy-gatekeeper-mcy.srt"
+    },
+    {
+      "file": "02-payment-agent-mcy.mp4",
+      "bytes": 5170767,
+      "sha256": "d5c84cd036dd733ae3ea9801b87ef5e7ec5dd7e25baec93ac961d749ec6d4601",
+      "subtitles": "02-payment-agent-mcy.srt"
+    },
+    {
+      "file": "03-skill-chain-mcp-mcy.mp4",
+      "bytes": 4790007,
+      "sha256": "ae096d5796c7a2b2db7ff2b87c9c752ce658dd8958dde0535efd21c3e541bd5d",
+      "subtitles": "03-skill-chain-mcp-mcy.srt"
+    }
+  ],
+  "boundary": "Recorded product evidence, never a live payment instruction."
+}

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; media-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="description" content="Inspect recorded Policy Gatekeeper and official Chain MCP payment evidence. No wallet connection, live transfer, or signing.">
+  <title>Pharos · Payment Evidence</title>
+  <link rel="icon" href="icon.svg">
+  <link rel="stylesheet" href="evidence.css">
+  <script src="evidence.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#evidence">Skip to evidence</a>
+  <header><a class="wordmark" href="./">PHAROS <span>/ VOICE ACTION GATEWAY</span></a><span class="badge">READ-ONLY EVIDENCE</span></header>
+  <main>
+    <section class="hero">
+      <p class="eyebrow">THREE TASKS. ONE SAFETY BOUNDARY.</p>
+      <h1>Check the intent.<br>Inspect the evidence.</h1>
+      <p class="intro">Payment preparation with explicit policy decisions, official Chain MCP reads, and confirmation-bound drafts. No signatures. No funds moved.</p>
+      <div class="notice"><strong>Recorded demonstration, not a live payment app.</strong> This page reads only curated local JSON files. All chain data is historical; it cannot authorize a payment. Run the repository locally to collect new data and review a new request.</div>
+    </section>
+    <nav class="tabs" aria-label="Evidence tasks">
+      <a href="#policy" data-task="policy">01 Policy Gatekeeper</a>
+      <a href="#payment" data-task="payment">02 Natural-language payment</a>
+      <a href="#composition" data-task="composition">03 Skill + Chain MCP</a>
+    </nav>
+    <section id="evidence" tabindex="-1">
+      <div class="section-heading"><div><p id="category" class="eyebrow"></p><h2 id="task-title"></h2></div><span id="kind" class="badge"></span></div>
+      <p id="task-description"></p>
+      <section class="video-panel" aria-labelledby="walkthrough-title">
+        <h3 id="walkthrough-title">Narrated walkthrough</h3>
+        <video id="walkthrough" controls preload="metadata" playsinline aria-label="Task walkthrough with MCY Chinese narration and captions"></video>
+        <p><a id="video-download" download>Download MP4 ↓</a> · <a id="subtitle-download" download>Chinese subtitles ↓</a>
+          <span class="media-note">1080p · MCY narration · no presenter · recorded October 22, 2026</span></p>
+      </section>
+      <div id="scenarios" class="scenarios" role="group" aria-label="Recorded scenarios"></div>
+      <p id="loading" role="status">Loading recorded evidence…</p>
+      <div class="evidence-grid">
+        <article class="summary" aria-labelledby="result-heading">
+          <p class="eyebrow">RECORDED RESULT</p><h3 id="result-heading">—</h3>
+          <p id="boundary"></p>
+          <dl id="facts"></dl>
+          <a id="download" class="button" download>Download evidence JSON ↓</a>
+        </article>
+        <article class="checks-panel" aria-labelledby="checks-heading"><h3 id="checks-heading">Decision checks</h3><ul id="checks"></ul></article>
+      </div>
+      <section class="trace-panel" aria-labelledby="trace-heading">
+        <h3 id="trace-heading">What called what</h3>
+        <p id="flow-description"></p>
+        <ol id="trace"></ol>
+      </section>
+      <details><summary>Inspect raw evidence</summary><pre id="raw"></pre></details>
+    </section>
+    <section class="reproduce" id="reproduce">
+      <p class="eyebrow">VERIFY, DO NOT JUST TRUST A SCREENSHOT</p>
+      <h2>Replay the decision locally.</h2>
+      <pre>python3 scripts/payment_proof.py verify site/proofs/pros-allow-live.json
+python3 -m pytest scripts -q</pre>
+      <p>The verifier replays exact tool arguments and results, recomputes checks, and rebuilds the candidate transaction. It detects inconsistent evidence, <strong>not a completely fabricated and internally consistent transcript</strong>. It is not an authenticated chain proof.</p>
+      <p>PROS / WPROS success samples inspect a third party's publicly visible address. We make no ownership claim. Alice and Bob are placeholder contacts. USDC's empty-balance case is intentionally blocked. Voice remains fixture replay, not live microphone input.</p>
+      <p><a href="https://github.com/Chengyuann/pharos-voice-action-gateway" rel="noreferrer">Source repository ↗</a> · <a href="media/manifest.json">Media integrity manifest</a> · Tests and published evidence are not Arena approval.</p>
+    </section>
+  </main>
+  <footer>PHAROS / INDEPENDENT PROJECT · NOT AN OFFICIAL WALLET · HISTORICAL EVIDENCE ONLY</footer>
+</body>
+</html>

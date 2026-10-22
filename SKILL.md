@@ -16,6 +16,15 @@ author: AI PC Developer
 
 # Pharos Voice Action Gateway
 
+## P0 payment extension (October 22, 2026)
+
+For the implemented Pacific Mainnet payment flow, use
+[`skills/pharos-payment-review/SKILL.md`](skills/pharos-payment-review/SKILL.md).
+It consumes official Chain MCP data, verifies PROS/USDC/WPROS requests and
+prepares unsigned output after action-bound confirmation. It never signs or
+broadcasts. The legacy voice schemas and fixture boundary below are separate
+from this outbound MCP integration. Public deployment/submission is pending.
+
 Pharos Voice Action Gateway 把语音 Agent 中最容易失控的部分拆出来：什么时候听、什么时候等、什么时候打断 TTS、什么时候把一句话提交给 Agent 大脑，以及什么时候允许 Agent 准备链上动作。
 
 ## 适用场景
@@ -47,7 +56,7 @@ Pharos Voice Action Gateway 把语音 Agent 中最容易失控的部分拆出来
 5. 将 `commit_turn` 转换为 `send_payment`、`check_balance`、`write_session_proof` 等结构化链上意图。
 6. 生成 voice mandate，绑定 voice hash、intent hash、动作范围、收款人、金额和过期时间。
 7. 为高风险动作执行 explicit confirmation gate，没有“confirm / 确认执行”不会提交。
-8. 执行 policy decision record：金额上限、代币白名单、可信收款人、隐私策略。
+8. 执行 policy decision record：金额上限、代币白名单、可信收款人、UTC 时间窗和隐私策略。
 9. 生成 EIP-712 `VoiceMandate` typed data，便于钱包或 delegated account 签名。
 10. 生成 `VoiceSessionProofRegistry.recordVoiceMandate` 合约调用预览。
 11. 生成 Pharos/EVM 交易预览、voice hash、intent hash、mandate hash、proof payload 和 mock tx hash。
@@ -108,6 +117,39 @@ python scripts/pharos_voice_action_gateway.py demo/pharos_payment_confirmed.json
 ```bash
 python scripts/run_demo_tests.py
 python scripts/run_pharos_demo_tests.py
+python3 -m pytest scripts/test_policy_gatekeeper.py scripts/test_policy_gatekeeper_http.py -v
+```
+
+运行 Agent Arena Policy Gatekeeper 交互 demo：
+
+```bash
+python3 scripts/policy_gatekeeper_server.py
+```
+
+默认打开 Payment Preview：
+
+```text
+http://127.0.0.1:8766/payment-preview
+```
+
+Payment Preview 支持缺失字段补全、本地样例余额、策略检查、示例草案、
+本地审计记录，以及可选的只读 RPC 余额和手续费查询。实时模式通过
+`PHAROS_RPC_URL` 和 `PHAROS_READ_ADDRESS` 配置，不连接钱包，不请求签名，
+不广播交易。
+
+```bash
+PHAROS_RPC_URL="https://atlantic.dplabs-internal.com" \
+PHAROS_READ_ADDRESS="0x3333333333333333333333333333333333333333" \
+python3 scripts/policy_gatekeeper_server.py
+```
+
+运行完整付款预览测试：
+
+```bash
+python3 -m pytest \
+  scripts/test_payment_preview.py \
+  scripts/test_payment_preview_http.py \
+  scripts/test_payment_rpc.py -q
 ```
 
 ## Agent 输出建议
@@ -132,4 +174,5 @@ Agent 读取报告后不要只说“用户说完了”。更好的输出是：
 - 真实接入麦克风时，应由用户明确授权。
 - 默认 mock-first，不保存私钥，不自动签名，不广播真实交易。
 - 任何付款、合约写入或会话证明上链都必须有 explicit confirmation。
-- 用户确认只能满足确认门，不能绕过策略检查；超限或非可信收款人仍会被阻断。
+- 用户确认只能满足确认门，不能绕过策略检查；超限、非可信收款人或时间窗外请求仍会被阻断。
+- 策略配置错误时 fail closed；准备动作后、模拟执行前会重新检查策略。

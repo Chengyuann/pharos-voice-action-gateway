@@ -1,0 +1,352 @@
+{
+  "schema": "pharos-payment-proof/1",
+  "transport": "Streamable HTTP",
+  "endpoint": "https://mcp.pharos.xyz/mcp",
+  "server": {
+    "name": "pharos-mcp-server",
+    "version": "0.1.0"
+  },
+  "skill": {
+    "name": "pharos-payment-review",
+    "upstream_commit": "a873387c9e34e9ae8e71360d43dc33329a335a24",
+    "handler": "payment_chain.decide_mainnet_payment",
+    "fee_rule": "ceil(estimate_gas * 1.2)"
+  },
+  "input": {
+    "payment": {
+      "amount": "0.001",
+      "token": "PROS",
+      "recipient": "0x1111111111111111111111111111111111111111"
+    },
+    "sender": "0x6ea606ec600f47411bf56df699cf695a0b0e9071"
+  },
+  "policy": {
+    "name": "Pharos Mainnet Read-only Payment Policy",
+    "version": "1.0",
+    "max_single_payment": "1000",
+    "native_token": "PROS",
+    "allowed_tokens": [
+      "PROS",
+      "USDC",
+      "WPROS"
+    ],
+    "trusted_recipients": [
+      "0x1111111111111111111111111111111111111111",
+      "0x2222222222222222222222222222222222222222"
+    ],
+    "allowed_time_windows": [
+      {
+        "days": [
+          "MON",
+          "TUE",
+          "WED",
+          "THU",
+          "FRI",
+          "SAT",
+          "SUN"
+        ],
+        "start": "00:00",
+        "end": "24:00",
+        "timezone": "UTC"
+      }
+    ],
+    "challenge_word_count": 3
+  },
+  "token": {
+    "symbol": "PROS",
+    "name": "PROS",
+    "type": "native",
+    "decimals": 18
+  },
+  "evaluated_at": "2026-10-22T08:09:44.849065+00:00",
+  "state": {
+    "block_number": 20911380,
+    "block_hash": "0x78e885ce3ec8fd93a5bd51aab8bbf724d6c54b69833a55aeb3f3c0969f487f53",
+    "block_timestamp": 1792656577,
+    "native_balance": 4977021385000000000,
+    "sender_code": "0x",
+    "recipient_code": "0x",
+    "nonce": 28,
+    "transaction": {
+      "from": "0x6ea606ec600f47411bf56df699cf695a0b0e9071",
+      "to": "0x1111111111111111111111111111111111111111",
+      "value": "0x38d7ea4c68000",
+      "data": "0x"
+    },
+    "token_verified": true,
+    "token_balance": 4977021385000000000,
+    "simulation_ok": true,
+    "simulation_error": "",
+    "gas": 25200,
+    "gas_price": 10000000000,
+    "fee_error": "",
+    "gas_estimate": 21000
+  },
+  "trace": [
+    {
+      "tool": "get_chain_info",
+      "arguments": {},
+      "result": {
+        "name": "Pharos",
+        "chainId": 1672,
+        "chainIdHex": "0x688",
+        "expectedChainId": 1672,
+        "chainIdMatches": true,
+        "latestBlock": "20911380",
+        "latestBlockHex": "0x13f1514",
+        "nativeSymbol": "PROS",
+        "clientVersion": "portal/1.0.0",
+        "rpcUrl": "https://rpc.pharos.xyz"
+      }
+    },
+    {
+      "tool": "get_block_number",
+      "arguments": {},
+      "result": {
+        "blockNumber": "20911380",
+        "blockNumberHex": "0x13f1514"
+      }
+    },
+    {
+      "tool": "get_block",
+      "arguments": {
+        "block": "0x13f1514"
+      },
+      "result": {
+        "baseFeePerGas": "0x2540be400",
+        "difficulty": "0x0",
+        "extraData": "0x644bf5bca0d1ea62b0ac35b6b7146d535ce3676f81d08a7022346a641db2e1e9",
+        "gasLimit": "0x3b9aca00",
+        "gasUsed": "0x0",
+        "hash": "0x78e885ce3ec8fd93a5bd51aab8bbf724d6c54b69833a55aeb3f3c0969f487f53",
+        "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "miner": "0x0000000000000000000000000000000000000000",
+        "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x0000000000000000",
+        "number": "0x13f1514",
+        "parentHash": "0xb02c3983754746edf9afc038f198a4c7e7b35f15914abaf2fb3976c7833274a7",
+        "receiptsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+        "sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+        "size": "0x229",
+        "stateRoot": "0x623ff840fe3bdc930ec22edb8410981af9a4b3e68c583b0ed0c8f457909c6cfb",
+        "timestamp": "0x6ad9c4c1",
+        "totalDifficulty": "0x0",
+        "transactions": [],
+        "transactionsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+        "uncles": []
+      }
+    },
+    {
+      "tool": "get_balance",
+      "arguments": {
+        "address": "0x6ea606ec600f47411bf56df699cf695a0b0e9071",
+        "block": "0x13f1514"
+      },
+      "result": {
+        "address": "0x6ea606ec600f47411bf56df699cf695a0b0e9071",
+        "balanceWei": "4977021385000000000",
+        "balance": "4.977021385",
+        "symbol": "PROS",
+        "balanceHex": "0x4511ee948c729a00"
+      }
+    },
+    {
+      "tool": "get_code",
+      "arguments": {
+        "address": "0x6ea606ec600f47411bf56df699cf695a0b0e9071",
+        "block": "0x13f1514"
+      },
+      "result": {
+        "code": "0x"
+      }
+    },
+    {
+      "tool": "get_code",
+      "arguments": {
+        "address": "0x1111111111111111111111111111111111111111",
+        "block": "0x13f1514"
+      },
+      "result": {
+        "code": "0x"
+      }
+    },
+    {
+      "tool": "get_transaction_count",
+      "arguments": {
+        "address": "0x6ea606ec600f47411bf56df699cf695a0b0e9071",
+        "block": "pending"
+      },
+      "result": {
+        "nonce": "28",
+        "nonceHex": "0x1c"
+      }
+    },
+    {
+      "tool": "eth_call",
+      "arguments": {
+        "transaction": {
+          "from": "0x6ea606ec600f47411bf56df699cf695a0b0e9071",
+          "to": "0x1111111111111111111111111111111111111111",
+          "value": "0x38d7ea4c68000",
+          "data": "0x"
+        },
+        "block": "0x13f1514"
+      },
+      "result": {
+        "result": "0x"
+      }
+    },
+    {
+      "tool": "estimate_gas",
+      "arguments": {
+        "transaction": {
+          "from": "0x6ea606ec600f47411bf56df699cf695a0b0e9071",
+          "to": "0x1111111111111111111111111111111111111111",
+          "value": "0x38d7ea4c68000",
+          "data": "0x"
+        }
+      },
+      "result": {
+        "gas": "21000",
+        "gasHex": "0x5208"
+      }
+    },
+    {
+      "tool": "get_gas_price",
+      "arguments": {},
+      "result": {
+        "gasPriceWei": "10000000000",
+        "gasPriceGwei": "10",
+        "gasPriceHex": "0x2540be400",
+        "maxPriorityFeePerGasWei": "0",
+        "maxPriorityFeePerGasGwei": "0",
+        "maxPriorityFeePerGasHex": "0x0"
+      }
+    }
+  ],
+  "decision": {
+    "decision": "approved_for_confirmation",
+    "outcome": "allow",
+    "deciding_rule": "all_rules_passed",
+    "evaluated_at": "2026-10-22T08:09:44.849065+00:00",
+    "policy_passed": true,
+    "checks": [
+      {
+        "name": "amount_limit",
+        "passed": true,
+        "details": "0.001 PROS / limit 1000"
+      },
+      {
+        "name": "token_allowlist",
+        "passed": true,
+        "details": "PROS"
+      },
+      {
+        "name": "recipient_trust",
+        "passed": true,
+        "details": "0x1111111111111111111111111111111111111111"
+      },
+      {
+        "name": "time_window",
+        "passed": true,
+        "details": "current UTC time is inside an allowed window"
+      },
+      {
+        "name": "sender_type",
+        "passed": true,
+        "details": "Only ordinary EOA senders are supported; read-only address is not ownership proof"
+      },
+      {
+        "name": "token_balance",
+        "passed": true,
+        "details": "4.977021385 PROS available"
+      },
+      {
+        "name": "native_fee_balance",
+        "passed": true,
+        "details": "0.001252 PROS required including the gas limit"
+      },
+      {
+        "name": "simulation",
+        "passed": true,
+        "details": "eth_call succeeded at block 20911380"
+      },
+      {
+        "name": "fee_quote",
+        "passed": true,
+        "details": "Current estimate \u00d7 1.2 (rounded up); not pinned to the review block"
+      }
+    ],
+    "blocking_reasons": [],
+    "audit_log": [
+      {
+        "rule": "amount_limit",
+        "outcome": "allow",
+        "details": "0.001 PROS / limit 1000"
+      },
+      {
+        "rule": "token_allowlist",
+        "outcome": "allow",
+        "details": "PROS"
+      },
+      {
+        "rule": "recipient_trust",
+        "outcome": "allow",
+        "details": "0x1111111111111111111111111111111111111111"
+      },
+      {
+        "rule": "time_window",
+        "outcome": "allow",
+        "details": "current UTC time is inside an allowed window"
+      },
+      {
+        "rule": "sender_type",
+        "outcome": "allow",
+        "details": "Only ordinary EOA senders are supported; read-only address is not ownership proof"
+      },
+      {
+        "rule": "token_balance",
+        "outcome": "allow",
+        "details": "4.977021385 PROS available"
+      },
+      {
+        "rule": "native_fee_balance",
+        "outcome": "allow",
+        "details": "0.001252 PROS required including the gas limit"
+      },
+      {
+        "rule": "simulation",
+        "outcome": "allow",
+        "details": "eth_call succeeded at block 20911380"
+      },
+      {
+        "rule": "fee_quote",
+        "outcome": "allow",
+        "details": "Current estimate \u00d7 1.2 (rounded up); not pinned to the review block"
+      },
+      {
+        "rule": "all_rules_passed",
+        "outcome": "allow",
+        "details": "final decision at 2026-10-22T08:09:44.849065+00:00"
+      }
+    ],
+    "policy_hash": "0x1a69579cc48f27559e5ac097dc7ff21b5b81fe44b2b1bd140448d9b7b4ff6d4b"
+  },
+  "transaction": {
+    "chainId": 1672,
+    "from": "0x6ea606ec600f47411bf56df699cf695a0b0e9071",
+    "to": "0x1111111111111111111111111111111111111111",
+    "value": "0x38d7ea4c68000",
+    "data": "0x",
+    "nonce": "0x1c",
+    "gas": "0x6270",
+    "gasPrice": "0x2540be400"
+  },
+  "boundary": "Evidence replay is not authenticated chain provenance or wallet authorization.",
+  "unpinned": [
+    "get_transaction_count: pending",
+    "estimate_gas: current",
+    "get_gas_price: current"
+  ],
+  "digest": "0x11b04b113803c64874d9c8b17c0afa2a8386c7bd57d427d72d4afa5f7aea2a70"
+}

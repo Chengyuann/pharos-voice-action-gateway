@@ -1,0 +1,402 @@
+{
+  "schema": "pharos-payment-proof/1",
+  "transport": "Streamable HTTP",
+  "endpoint": "https://mcp.pharos.xyz/mcp",
+  "server": {
+    "name": "pharos-mcp-server",
+    "version": "0.1.0"
+  },
+  "skill": {
+    "name": "pharos-payment-review",
+    "upstream_commit": "a873387c9e34e9ae8e71360d43dc33329a335a24",
+    "handler": "payment_chain.decide_mainnet_payment",
+    "fee_rule": "ceil(estimate_gas * 1.2)"
+  },
+  "input": {
+    "payment": {
+      "amount": "0.0001",
+      "token": "WPROS",
+      "recipient": "0x1111111111111111111111111111111111111111"
+    },
+    "sender": "0x6ea606ec600f47411bf56df699cf695a0b0e9071"
+  },
+  "policy": {
+    "name": "Pharos Mainnet Read-only Payment Policy",
+    "version": "1.0",
+    "max_single_payment": "1000",
+    "native_token": "PROS",
+    "allowed_tokens": [
+      "PROS",
+      "USDC",
+      "WPROS"
+    ],
+    "trusted_recipients": [
+      "0x1111111111111111111111111111111111111111",
+      "0x2222222222222222222222222222222222222222"
+    ],
+    "allowed_time_windows": [
+      {
+        "days": [
+          "MON",
+          "TUE",
+          "WED",
+          "THU",
+          "FRI",
+          "SAT",
+          "SUN"
+        ],
+        "start": "00:00",
+        "end": "24:00",
+        "timezone": "UTC"
+      }
+    ],
+    "challenge_word_count": 3
+  },
+  "token": {
+    "symbol": "WPROS",
+    "name": "Wrapped PROS",
+    "type": "erc20",
+    "decimals": 18,
+    "address": "0x52c48d4213107b20bc583832b0d951fb9ca8f0b0"
+  },
+  "evaluated_at": "2026-10-21T11:16:48.097881+00:00",
+  "state": {
+    "block_number": 20830073,
+    "block_hash": "0xc5604f82ce6cdbbb47c2aca53a68c4c8dca5fc23113552fa28a85f2c11548931",
+    "block_timestamp": 1792581398,
+    "native_balance": 4977021385000000000,
+    "sender_code": "0x",
+    "recipient_code": "0x",
+    "nonce": 28,
+    "transaction": {
+      "from": "0x6ea606ec600f47411bf56df699cf695a0b0e9071",
+      "to": "0x52c48d4213107b20bc583832b0d951fb9ca8f0b0",
+      "value": "0x0",
+      "data": "0xa9059cbb000000000000000000000000111111111111111111111111111111111111111100000000000000000000000000000000000000000000000000005af3107a4000"
+    },
+    "token_verified": true,
+    "token_balance": 400000263857239,
+    "simulation_ok": true,
+    "simulation_error": "",
+    "gas": 78735,
+    "gas_price": 10000000000,
+    "fee_error": "",
+    "gas_estimate": 65612
+  },
+  "trace": [
+    {
+      "tool": "get_chain_info",
+      "arguments": {},
+      "result": {
+        "name": "Pharos",
+        "chainId": 1672,
+        "chainIdHex": "0x688",
+        "expectedChainId": 1672,
+        "chainIdMatches": true,
+        "latestBlock": "20830072",
+        "latestBlockHex": "0x13dd778",
+        "nativeSymbol": "PROS",
+        "clientVersion": "portal/1.0.0",
+        "rpcUrl": "https://rpc.pharos.xyz"
+      }
+    },
+    {
+      "tool": "get_block_number",
+      "arguments": {},
+      "result": {
+        "blockNumber": "20830073",
+        "blockNumberHex": "0x13dd779"
+      }
+    },
+    {
+      "tool": "get_block",
+      "arguments": {
+        "block": "0x13dd779"
+      },
+      "result": {
+        "baseFeePerGas": "0x2540be400",
+        "difficulty": "0x0",
+        "extraData": "0xe2993308e20c88be54bec61c4492d5604107e50ad6db56d02c53983fa1263a20",
+        "gasLimit": "0x3b9aca00",
+        "gasUsed": "0x0",
+        "hash": "0xc5604f82ce6cdbbb47c2aca53a68c4c8dca5fc23113552fa28a85f2c11548931",
+        "logsBloom": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+        "miner": "0x0000000000000000000000000000000000000000",
+        "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "nonce": "0x0000000000000000",
+        "number": "0x13dd779",
+        "parentHash": "0x9bf1e6083ee171a23cd4504e051e0568157caa9cdf2ad716c3cdb95c70e085ef",
+        "receiptsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+        "sha3Uncles": "0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347",
+        "size": "0x229",
+        "stateRoot": "0x45d24147b096f0802993bb18f5dc9170e6dcf9264719ce0e67a840b41295ddd2",
+        "timestamp": "0x6ad89f16",
+        "totalDifficulty": "0x0",
+        "transactions": [],
+        "transactionsRoot": "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421",
+        "uncles": []
+      }
+    },
+    {
+      "tool": "get_balance",
+      "arguments": {
+        "address": "0x6ea606ec600f47411bf56df699cf695a0b0e9071",
+        "block": "0x13dd779"
+      },
+      "result": {
+        "address": "0x6ea606ec600f47411bf56df699cf695a0b0e9071",
+        "balanceWei": "4977021385000000000",
+        "balance": "4.977021385",
+        "symbol": "PROS",
+        "balanceHex": "0x4511ee948c729a00"
+      }
+    },
+    {
+      "tool": "get_code",
+      "arguments": {
+        "address": "0x6ea606ec600f47411bf56df699cf695a0b0e9071",
+        "block": "0x13dd779"
+      },
+      "result": {
+        "code": "0x"
+      }
+    },
+    {
+      "tool": "get_code",
+      "arguments": {
+        "address": "0x1111111111111111111111111111111111111111",
+        "block": "0x13dd779"
+      },
+      "result": {
+        "code": "0x"
+      }
+    },
+    {
+      "tool": "get_transaction_count",
+      "arguments": {
+        "address": "0x6ea606ec600f47411bf56df699cf695a0b0e9071",
+        "block": "pending"
+      },
+      "result": {
+        "nonce": "28",
+        "nonceHex": "0x1c"
+      }
+    },
+    {
+      "tool": "get_code",
+      "arguments": {
+        "address": "0x52c48d4213107b20bc583832b0d951fb9ca8f0b0",
+        "block": "0x13dd779"
+      },
+      "result": {
+        "code": "0x60806040526004361061009c5760003560e01c8063313ce56711610064578063313ce567146102a257806370a08231146102d357806395d89b4114610338578063a9059cbb146103c8578063d0e30db01461043b578063dd62ed3e146104455761009c565b806306fdde03146100a6578063095ea7b31461013657806318160ddd146101a957806323b872dd146101d45780632e1a7d4d14610267575b6100a46104ca565b005b3480156100b257600080fd5b506100bb610567565b6040518080602001828103825283818151815260200191508051906020019080838360005b838110156100fb5780820151818401526020810190506100e0565b50505050905090810190601f1680156101285780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b34801561014257600080fd5b5061018f6004803603604081101561015957600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919080359060200190929190505050610605565b604051808215151515815260200191505060405180910390f35b3480156101b557600080fd5b506101be6106f7565b6040518082815260200191505060405180910390f35b3480156101e057600080fd5b5061024d600480360360608110156101f757600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803590602001909291905050506106ff565b604051808215151515815260200191505060405180910390f35b34801561027357600080fd5b506102a06004803603602081101561028a57600080fd5b8101908080359060200190929190505050610a48565b005b3480156102ae57600080fd5b506102b7610b79565b604051808260ff1660ff16815260200191505060405180910390f35b3480156102df57600080fd5b50610322600480360360208110156102f657600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610b8c565b6040518082815260200191505060405180910390f35b34801561034457600080fd5b5061034d610ba4565b6040518080602001828103825283818151815260200191508051906020019080838360005b8381101561038d578082015181840152602081019050610372565b50505050905090810190601f1680156103ba5780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b3480156103d457600080fd5b50610421600480360360408110156103eb57600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff16906020019092919080359060200190929190505050610c42565b604051808215151515815260200191505060405180910390f35b6104436104ca565b005b34801561045157600080fd5b506104b46004803603604081101561046857600080fd5b81019080803573ffffffffffffffffffffffffffffffffffffffff169060200190929190803573ffffffffffffffffffffffffffffffffffffffff169060200190929190505050610c57565b6040518082815260200191505060405180910390f35b34600360003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600082825401925050819055503373ffffffffffffffffffffffffffffffffffffffff167fe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c346040518082815260200191505060405180910390a2565b60008054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156105fd5780601f106105d2576101008083540402835291602001916105fd565b820191906000526020600020905b8154815290600101906020018083116105e057829003601f168201915b505050505081565b600081600460003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060008573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020819055508273ffffffffffffffffffffffffffffffffffffffff163373ffffffffffffffffffffffffffffffffffffffff167f8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925846040518082815260200191505060405180910390a36001905092915050565b600047905090565b600081600360008673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002054101561074d57600080fd5b3373ffffffffffffffffffffffffffffffffffffffff168473ffffffffffffffffffffffffffffffffffffffff161415801561082557507fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff600460008673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205414155b1561093e5781600460008673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000205410156108b357600080fd5b81600460008673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16815260200190815260200160002060003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600082825403925050819055505b81600360008673ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020019081526020016000206000828254039250508190555081600360008573ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600082825401925050819055508273ffffffffffffffffffffffffffffffffffffffff168473ffffffffffffffffffffffffffffffffffffffff167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef846040518082815260200191505060405180910390a3600190509392505050565b80600360003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020541015610a9457600080fd5b80600360003373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001908152602001600020600082825403925050819055503373ffffffffffffffffffffffffffffffffffffffff166108fc829081150290604051600060405180830381858888f19350505050158015610b27573d6000803e3d6000fd5b503373ffffffffffffffffffffffffffffffffffffffff167f7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65826040518082815260200191505060405180910390a250565b600260009054906101000a900460ff1681565b60036020528060005260406000206000915090505481565b60018054600181600116156101000203166002900480601f016020809104026020016040519081016040528092919081815260200182805460018160011615610100020316600290048015610c3a5780601f10610c0f57610100808354040283529160200191610c3a565b820191906000526020600020905b815481529060010190602001808311610c1d57829003601f168201915b505050505081565b6000610c4f3384846106ff565b905092915050565b600460205281600052604060002060205280600052604060002060009150915050548156fea265627a7a723158203eb1bf6320ba1042f376dc65fabb6318b48e7bc854bcb6184f350a87b5b5ac2664736f6c63430005110032"
+      }
+    },
+    {
+      "tool": "eth_call",
+      "arguments": {
+        "transaction": {
+          "to": "0x52c48d4213107b20bc583832b0d951fb9ca8f0b0",
+          "data": "0x95d89b41"
+        },
+        "block": "0x13dd779"
+      },
+      "result": {
+        "result": "0x000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000055750524f53000000000000000000000000000000000000000000000000000000"
+      }
+    },
+    {
+      "tool": "eth_call",
+      "arguments": {
+        "transaction": {
+          "to": "0x52c48d4213107b20bc583832b0d951fb9ca8f0b0",
+          "data": "0x313ce567"
+        },
+        "block": "0x13dd779"
+      },
+      "result": {
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000012"
+      }
+    },
+    {
+      "tool": "eth_call",
+      "arguments": {
+        "transaction": {
+          "to": "0x52c48d4213107b20bc583832b0d951fb9ca8f0b0",
+          "data": "0x70a082310000000000000000000000006ea606ec600f47411bf56df699cf695a0b0e9071"
+        },
+        "block": "0x13dd779"
+      },
+      "result": {
+        "result": "0x00000000000000000000000000000000000000000000000000016bcc51a32457"
+      }
+    },
+    {
+      "tool": "eth_call",
+      "arguments": {
+        "transaction": {
+          "from": "0x6ea606ec600f47411bf56df699cf695a0b0e9071",
+          "to": "0x52c48d4213107b20bc583832b0d951fb9ca8f0b0",
+          "value": "0x0",
+          "data": "0xa9059cbb000000000000000000000000111111111111111111111111111111111111111100000000000000000000000000000000000000000000000000005af3107a4000"
+        },
+        "block": "0x13dd779"
+      },
+      "result": {
+        "result": "0x0000000000000000000000000000000000000000000000000000000000000001"
+      }
+    },
+    {
+      "tool": "estimate_gas",
+      "arguments": {
+        "transaction": {
+          "from": "0x6ea606ec600f47411bf56df699cf695a0b0e9071",
+          "to": "0x52c48d4213107b20bc583832b0d951fb9ca8f0b0",
+          "value": "0x0",
+          "data": "0xa9059cbb000000000000000000000000111111111111111111111111111111111111111100000000000000000000000000000000000000000000000000005af3107a4000"
+        }
+      },
+      "result": {
+        "gas": "65612",
+        "gasHex": "0x1004c"
+      }
+    },
+    {
+      "tool": "get_gas_price",
+      "arguments": {},
+      "result": {
+        "gasPriceWei": "10000000000",
+        "gasPriceGwei": "10",
+        "gasPriceHex": "0x2540be400",
+        "maxPriorityFeePerGasWei": "0",
+        "maxPriorityFeePerGasGwei": "0",
+        "maxPriorityFeePerGasHex": "0x0"
+      }
+    }
+  ],
+  "decision": {
+    "decision": "approved_for_confirmation",
+    "outcome": "allow",
+    "deciding_rule": "all_rules_passed",
+    "evaluated_at": "2026-10-21T11:16:48.097881+00:00",
+    "policy_passed": true,
+    "checks": [
+      {
+        "name": "amount_limit",
+        "passed": true,
+        "details": "0.0001 WPROS / limit 1000"
+      },
+      {
+        "name": "token_allowlist",
+        "passed": true,
+        "details": "WPROS"
+      },
+      {
+        "name": "recipient_trust",
+        "passed": true,
+        "details": "0x1111111111111111111111111111111111111111"
+      },
+      {
+        "name": "time_window",
+        "passed": true,
+        "details": "current UTC time is inside an allowed window"
+      },
+      {
+        "name": "sender_type",
+        "passed": true,
+        "details": "Only ordinary EOA senders are supported; read-only address is not ownership proof"
+      },
+      {
+        "name": "token_balance",
+        "passed": true,
+        "details": "0.000400000263857239 WPROS available"
+      },
+      {
+        "name": "native_fee_balance",
+        "passed": true,
+        "details": "0.00078735 PROS required including the gas limit"
+      },
+      {
+        "name": "simulation",
+        "passed": true,
+        "details": "eth_call succeeded at block 20830073"
+      },
+      {
+        "name": "fee_quote",
+        "passed": true,
+        "details": "Current estimate × 1.2 (rounded up); not pinned to the review block"
+      }
+    ],
+    "blocking_reasons": [],
+    "audit_log": [
+      {
+        "rule": "amount_limit",
+        "outcome": "allow",
+        "details": "0.0001 WPROS / limit 1000"
+      },
+      {
+        "rule": "token_allowlist",
+        "outcome": "allow",
+        "details": "WPROS"
+      },
+      {
+        "rule": "recipient_trust",
+        "outcome": "allow",
+        "details": "0x1111111111111111111111111111111111111111"
+      },
+      {
+        "rule": "time_window",
+        "outcome": "allow",
+        "details": "current UTC time is inside an allowed window"
+      },
+      {
+        "rule": "sender_type",
+        "outcome": "allow",
+        "details": "Only ordinary EOA senders are supported; read-only address is not ownership proof"
+      },
+      {
+        "rule": "token_balance",
+        "outcome": "allow",
+        "details": "0.000400000263857239 WPROS available"
+      },
+      {
+        "rule": "native_fee_balance",
+        "outcome": "allow",
+        "details": "0.00078735 PROS required including the gas limit"
+      },
+      {
+        "rule": "simulation",
+        "outcome": "allow",
+        "details": "eth_call succeeded at block 20830073"
+      },
+      {
+        "rule": "fee_quote",
+        "outcome": "allow",
+        "details": "Current estimate × 1.2 (rounded up); not pinned to the review block"
+      },
+      {
+        "rule": "all_rules_passed",
+        "outcome": "allow",
+        "details": "final decision at 2026-10-21T11:16:48.097881+00:00"
+      }
+    ],
+    "policy_hash": "0x1a69579cc48f27559e5ac097dc7ff21b5b81fe44b2b1bd140448d9b7b4ff6d4b"
+  },
+  "transaction": {
+    "chainId": 1672,
+    "from": "0x6ea606ec600f47411bf56df699cf695a0b0e9071",
+    "to": "0x52c48d4213107b20bc583832b0d951fb9ca8f0b0",
+    "value": "0x0",
+    "data": "0xa9059cbb000000000000000000000000111111111111111111111111111111111111111100000000000000000000000000000000000000000000000000005af3107a4000",
+    "nonce": "0x1c",
+    "gas": "0x1338f",
+    "gasPrice": "0x2540be400"
+  },
+  "boundary": "Evidence replay is not authenticated chain provenance or wallet authorization.",
+  "unpinned": [
+    "get_transaction_count: pending",
+    "estimate_gas: current",
+    "get_gas_price: current"
+  ],
+  "digest": "0x0561cafae3338f1bcea319a27fdda57eccd067cbab04a45a40fe22c415213788"
+}

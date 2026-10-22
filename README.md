@@ -27,11 +27,25 @@ artifacts: a transaction preview, voice and intent hashes, a voice mandate,
 policy results, an EIP-712-shaped typed-data payload, a proof-registry call
 preview, an audit timeline, and a deterministic simulation hash.
 
-**Try it without moving funds.** The Python demos run entirely offline with
-the standard library. They do not capture audio, call an RPC, connect a wallet,
-or submit a transaction, in either execution mode.
+**Try it without moving funds.** Demo mode runs entirely offline. Payment
+Preview also has an optional read-only RPC mode for chain ID, balance and fee
+estimation. Neither mode connects a wallet, requests a signature, or submits a
+transaction.
+
+**P0 update — October 22, 2026.** The local workspace now includes an
+**Official Chain MCP** mode for Pacific Mainnet PROS/USDC/WPROS, token metadata
+checks, read-only simulation, pending nonce, unsigned wallet requests and
+offline proof replay. The isolated `site/` folder is a recorded evidence
+viewer with three MCY-narrated, Chinese-captioned walkthroughs under `site/media/`.
+Publication is in progress; Arena authentication and submission remain separate.
+See
+[P0 release status](docs/p0-release-status.md) and the
+[payment Skill package](skills/pharos-payment-review/SKILL.md).
 
 [Quick start](#quick-start) |
+[Payment Preview](#payment-preview) |
+[Policy Gatekeeper](#policy-gatekeeper-agent-arena-build) |
+[Product plan](docs/payment-agent-plan.md) |
 [Watch the narrated demo](assets/demo/pharos-voice-action-gateway-demo-mimo-voiced.mp4) |
 [DoraHacks submission](https://dorahacks.io/build/44805)
 
@@ -41,6 +55,8 @@ or submit a transaction, in either execution mode.
 - [What is implemented](#what-is-implemented)
 - [Architecture](#architecture)
 - [Quick start](#quick-start)
+- [Payment Preview](#payment-preview)
+- [Policy Gatekeeper Agent Arena build](#policy-gatekeeper-agent-arena-build)
 - [Demo scenarios](#demo-scenarios)
 - [Input event format](#input-event-format)
 - [Output contract](#output-contract)
@@ -87,10 +103,173 @@ The central rule is simple:
 > Human confirmation is necessary for a risky action, but confirmation alone
 > is never sufficient to override safety policy.
 
+## Payment Preview
+
+The default page is now the **Voice Action Gateway** workspace, with a
+voice-event console ahead of Payment Preview. Three local JSONL scenarios
+(`Voice payment`, `Barge-in correction`, `Short pause`) run through the existing
+duplex gateway and expose `listen`, `hold`, `commit_turn` and `interrupt_tts`.
+Replay or step through the events, inspect fixture-only voice/intent/mandate
+hashes, and explicitly copy a committed payment into the review form.
+
+**This is event replay, not live microphone input or audio playback.** No
+speech models or LLM are connected; intent candidates use the prototype's
+keyword rules and may overmatch. Replay is read-only and does not persist
+records, call RPC, simulate execution or carry confirmation into a new payment.
+Legacy voice-mandate hashes use their original chain scope and are not bound
+to the new Payment Preview draft.
+
+Payment Preview accepts one
+payment request, asks for missing amount, token or recipient details, checks the
+address, configured balance and payment policy, and produces a reviewable
+draft.
+
+It has three clearly separated data sources:
+
+- **Demo data**: a deterministic local balance and policy time. The resulting
+  transaction object is labelled as an example.
+- **Live network**: read-only JSON-RPC calls for chain ID, block number, native
+  balance, gas estimate and gas price. The source address is supplied as a
+  server environment variable; no wallet connection or ownership claim is
+  made.
+- **Official Chain MCP**: Pacific Mainnet PROS/USDC/WPROS; pinned balance,
+  code, metadata and `eth_call`, plus pending nonce and current fee quotes.
+  Select this mode explicitly; it never treats testnet PHRS as mainnet PROS.
+
+All modes save local review and draft records under
+`reports/payment_preview/`. A review expires after 10 minutes; its demo draft keeps that expiry. Changing the
+request invalidates the current review. The server checks current settings and
+policy again before a draft is created; live mode also reads network data
+again.
+
+### Action revisions and cancellation
+
+The product UI uses server-side action sessions. Editing input or applying an
+explicit amount correction invalidates the prior review and confirmation.
+`change amount to 0.03` and `改成0.03` are supported correction forms; this is
+not general conversational understanding. Cancellation blocks late review and
+draft publication. Retry of an already completed draft returns the same saved
+draft; simultaneous draft requests do not create duplicates.
+
+The default HTTP service requires a per-action capability token for payment
+review, confirmation, and draft creation. The old text-only HTTP review and
+review-ID-only draft paths are disabled by default; compatibility tests enable
+them explicitly. Tokens stay in page memory and only their digests are stored
+in the local SQLite state file. A server restart revokes old action sessions.
+This is local workflow protection, not user authentication or wallet authority.
+Previously exported drafts cannot be recalled.
+
+See [action lifecycle and verification](docs/action-lifecycle.md).
+
+Run the local workspace:
+
+```bash
+python3 scripts/policy_gatekeeper_server.py
+```
+
+Open:
+
+```text
+http://127.0.0.1:8766/payment-preview
+```
+
+Optional live read-only mode:
+
+```bash
+PHAROS_RPC_URL="https://atlantic.dplabs-internal.com" \
+PHAROS_READ_ADDRESS="0x3333333333333333333333333333333333333333" \
+python3 scripts/policy_gatekeeper_server.py
+```
+
+Replace the example address with the full public address whose balance you want
+to inspect. Do not put private keys or seed phrases in these variables.
+Atlantic Testnet uses chain ID `688689`. The endpoint above is the public
+endpoint listed in the Pharos network documentation as of October 20, 2026.
+
+Atlantic demo/legacy live mode supports one native PHRS transfer at a time.
+Official MCP mode adds exact configured contacts, PROS/USDC/WPROS, ERC-20
+encoding, pending nonce and an unsigned wallet URI. Neither mode supports
+schedules, recurring payments, wallet connection, signatures or broadcast.
+Use `PHAROS_MCP_READ_ADDRESS` to configure the public address for the official
+MCP mode. The default Alice/Bob contacts are placeholders, not verified people.
+
+See [product specification](docs/payment-agent-plan.md) and
+[verification record](docs/payment-preview-verification.md).
+
+Focused tests:
+
+```bash
+python3 -m pytest \
+  scripts/test_payment_preview.py \
+  scripts/test_payment_preview_http.py \
+  scripts/test_payment_rpc.py \
+  scripts/test_payment_actions.py -q
+```
+
+The combined suite including Chain MCP and static evidence checks passed
+**296 tests** on October 22, 2026. The two legacy smoke suites also passed.
+Run `python3 -m pytest scripts -q` for the full suite.
+
+## Policy Gatekeeper Agent Arena build
+
+This repository now includes a dedicated implementation of the Pharos Season
+of AI **Policy Gatekeeper** task. It applies four rules before any executor can
+be reached:
+
+- positive per-request spend limit;
+- token allowlist;
+- recipient allowlist;
+- UTC day and time window.
+
+Every request returns `allow` or `deny`, the deciding rule, the complete
+per-rule trace, and a local JSON audit record. Invalid policy configuration
+fails closed. Policy is evaluated again immediately before mock execution, so
+an action prepared inside an allowed time window cannot reuse that approval
+after the window closes.
+
+Run the reviewer-facing demo:
+
+```bash
+python3 scripts/policy_gatekeeper_server.py
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8766/policy-gatekeeper
+```
+
+The page includes four reproducible scenarios: allow, deny by amount, deny by
+recipient, and deny by time window. Replay timestamps are available only in
+mock mode and are visibly labelled. Even the allowed scenario never signs or
+broadcasts a transaction.
+
+Run the focused tests:
+
+```bash
+python3 -m pytest scripts/test_policy_gatekeeper.py scripts/test_policy_gatekeeper_http.py -v
+```
+
+The active policy is stored in
+[`config/policy_gatekeeper.json`](config/policy_gatekeeper.json). Audit records
+are written under `reports/policy_gatekeeper/`, which is intentionally ignored
+by Git.
+
+The [badcase review](docs/policy-gatekeeper-badcases.md) records independent
+worker findings, verified fixes, and 77 passing core/HTTP tests. This local
+server rejects non-loopback Host headers and is not a public production host.
+Prepared-object checks detect accidental mutation, not hostile in-process
+code. If an audit write fails after mock execution, the API returns the actual
+result with `recorded=false`; it does not claim the mock was never called.
+
 ## What is implemented
 
 | Capability | Current implementation |
 |---|---|
+| Payment Preview | Local product with editable payment form, missing-field questions, review, drafts, activity and connection settings |
+| Read-only RPC | Chain ID, block, balance, gas estimate and gas price; explicit opt-in, no signing or broadcast |
+| Official Chain MCP | Pacific Mainnet PROS/USDC/WPROS, pinned state, simulation, nonce and human-reviewed unsigned drafts |
+| Evidence replay | Curated historical traces, offline decision verifier and isolated static proof viewer |
 | Turn detection | Heuristic processing of timestamped ASR, silence, and TTS events |
 | Short-pause handling | Emits `hold` while an utterance appears incomplete |
 | End-of-utterance commit | Emits `commit_turn` only after completion criteria are met |
@@ -98,7 +277,7 @@ The central rule is simple:
 | Intent extraction | Deterministic parsing for payment, balance, proof, and generic intents |
 | Confirmation gate | Blocks medium- and high-risk actions without explicit confirmation |
 | Cancellation handling | Detects English and Chinese cancellation phrases |
-| Policy checks | Payment amount, token allowlist, trusted recipient, mandate-hash presence, and a no-audio-storage flag |
+| Policy checks | Payment amount, token allowlist, trusted recipient, UTC time window, mandate-hash format, and a no-audio-storage flag |
 | Voice mandate | Collects event-evidence hashes, intent, action scope, and declared expiry duration |
 | Readback challenge | Generates an action-specific phrase for a future strict confirmation adapter |
 | EIP-712 draft | Exports a `VoiceMandate` typed-data structure for wallet integration |
@@ -141,10 +320,13 @@ An interruption is an output event, not an actual audio-playback operation.
 
 ## Quick start
 
+For the web product, run `python3 scripts/policy_gatekeeper_server.py` and open
+`http://127.0.0.1:8766/`. The commands below also exercise the legacy voice demos.
+
 ### Requirements
 
 - Python **3.9 or newer**; the documented commands were verified on Python 3.9.6
-- No third-party Python packages
+- No third-party Python packages to run the product; `pytest` is needed for tests
 - No wallet, RPC endpoint, API key, or speech model required for the demos
 
 Clone and enter the repository:
@@ -415,7 +597,10 @@ The demo:
 - hashes structured event evidence;
 - keeps raw audio out of the mandate and proof registry;
 - never requests or stores a private key; and
-- never sends data to an external API.
+- in the legacy voice and Demo modes, never sends data to an external API.
+  Optional network modes send public addresses and transfer
+  parameters (not the request text) to the configured read-only RPC or official
+  Pharos Chain MCP.
 
 Production adapters should preserve the same privacy boundary.
 
@@ -425,6 +610,11 @@ Redact them before publishing a report. The `voice_hash` fingerprints
 structured text-event evidence, not a recording or a speaker's identity.
 
 ## Agent and MCP integration
+
+The **outbound official Chain MCP client is implemented** in
+`scripts/pharos_mcp.py`. Payment composition and replay live in
+`scripts/payment_chain.py` and `scripts/payment_proof.py`. This is distinct from
+the legacy gateway's proposed inbound tool catalog below.
 
 The report includes a catalog of seven tool schemas:
 
@@ -542,18 +732,25 @@ This repository is a safety-layer prototype, not a production wallet.
 - The zero address is used as the placeholder verifying contract.
 - Mandate expiry is metadata only. The demo has no enforced expiration,
   action nonce, speaker authentication, or production replay protection.
-- Chain ID `688688` is hardcoded for the demo; it is not fetched from a live
-  network. Token unit conversion assumes 18 decimals. Payment previews do
-  not encode ERC-20 transfers, and balance previews do not fetch balances.
+- The legacy voice-action report still uses its original prototype chain ID
+  `688688`. Payment Preview demo/legacy live mode uses Atlantic chain `688689`.
+  The separate **Official Chain MCP** mode enforces Pacific Mainnet `1672`.
+- Atlantic demo/live mode supports native PHRS. Official MCP mode supports
+  PROS/USDC/WPROS, on-chain metadata checks and ERC-20 calldata.
+- Network modes are read-only. Official MCP mode fetches a pending nonce and
+  prepares an unsigned wallet request after confirmation. Neither mode proves
+  ownership, connects a wallet, signs or broadcasts.
+- Fee and balance reads are snapshots. A wallet must independently recheck
+  network, nonce, balance and fees before any later signing implementation.
 - `--mode wallet` returns `ready_for_wallet_signature`; it does not sign or
   broadcast.
 - The Solidity contract is a draft and is not deployed by this repository.
 - The included Python tests verify behavior and contract presence; they do not
   compile or audit the Solidity contract.
 
-The offline boundary makes the prototype reproducible. The unfinished
-authorization and signing features still need implementation and review
-before it is suitable for real assets.
+The demo boundary keeps the product reproducible. The unfinished ownership,
+authorization and signing features still need implementation and review before
+it is suitable for real assets.
 
 ## Production roadmap
 
@@ -564,9 +761,9 @@ execution. The following work is planned, not included in this release:
 |---|---|
 | Speech adapters | Connect local VAD, ASR, and interruptible TTS; evaluate model-based end-of-utterance detection and optional OpenVINO acceleration |
 | Intent and consent | Add structured intent validation, per-action confirmation, strict readback checks, nonces, enforced expiry, and configurable policy |
-| Wallet handoff | Verify network and token metadata; implement canonical EIP-712 signing, transaction encoding, simulation, gas estimation, and final approval |
+| Wallet handoff | Add canonical EIP-712 signing and secure wallet ownership validation; unsigned mainnet encoding, simulation and fee estimates already exist |
 | Evidence registry | Reconcile preview interfaces; add signature validation, replay protection, contract tests, and a security review before deployment |
-| Agent runtime | Implement validated MCP handlers, integrate Pharos tools, and measure latency and policy outcomes without exposing private transcripts |
+| Agent runtime | Validate the Skill package inside the hosted Pharos runtime; outbound Chain MCP already exists; add inbound MCP handlers only when needed |
 
 ## Hackathon background
 
@@ -578,8 +775,10 @@ as **Pharos Voice Action Gateway** and later evolved into
 - [DoraHacks submission](https://dorahacks.io/build/44805)
 - [Source repository](https://github.com/Chengyuann/pharos-voice-action-gateway)
 
-The source code documented here remains the offline gateway prototype; the
-separately hosted Agent Arena entry is not a packaged service in this repository.
+The repository includes the local Payment Preview product and the legacy
+offline gateway. Historical references to an Agent Arena entry are not
+evidence of Season of AI registration. As of the October 21 check, current
+GitHub OAuth consent was pending; account/submission status remains unconfirmed.
 
 ## Further reading
 

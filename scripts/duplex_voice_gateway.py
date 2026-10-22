@@ -146,7 +146,7 @@ def handle_silence(event: InputEvent, state: GatewayState, eou_silence_ms: int) 
         emit(state, event.t, "hold", "pause looks like continuation, not end of turn", state.latest_text, silence_ms)
         return
 
-    if silence_ms >= eou_silence_ms or should_commit(state.latest_text):
+    if silence_ms >= eou_silence_ms:
         commit_turn(state, event.t, f"silence {silence_ms}ms crossed EOU threshold")
     else:
         emit(state, event.t, "hold", "waiting for EOU threshold", state.latest_text, silence_ms)

@@ -12,8 +12,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import re
 import sys
+from copy import deepcopy
 from dataclasses import asdict, dataclass, field
 from decimal import Decimal, InvalidOperation
 from datetime import datetime, timezone
@@ -48,6 +50,14 @@ DEFAULT_POLICY = {
     "trusted_recipients": [
         "0x1111111111111111111111111111111111111111",
         "0x2222222222222222222222222222222222222222",
+    ],
+    "allowed_time_windows": [
+        {
+            "days": ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"],
+            "start": "00:00",
+            "end": "24:00",
+            "timezone": "UTC",
+        },
     ],
     "challenge_word_count": 3,
 }
@@ -88,6 +98,7 @@ class PreparedAction:
     audit_timeline: list[dict[str, Any]]
     eip712: dict[str, Any]
     registry_call: dict[str, Any]
+    integrity_hash: str = ""
 
 
 @dataclass
@@ -123,7 +134,11 @@ def short_hash(data: Any, length: int = 16) -> str:
 
 def decimal_or_zero(value: Any) -> Decimal:
     try:
-        return Decimal(str(value))
+        text = str(value)
+        if len(text) > 100 or not re.fullmatch(r"[0-9]+(?:\.[0-9]{1,18})?", text):
+            return Decimal("0")
+        parsed = Decimal(text)
+        return parsed if parsed.is_finite() else Decimal("0")
     except (InvalidOperation, ValueError):
         return Decimal("0")
 
@@ -135,9 +150,138 @@ def bytes32(value: str) -> str:
 
 
 def amount_to_units(amount: Any, decimals: int = 18) -> str:
-    value = decimal_or_zero(amount)
-    scale = Decimal(10) ** decimals
-    return str(int(value * scale))
+    if type(decimals) is not int or not 0 <= decimals <= 77:
+        raise ValueError("token decimals must be an integer between 0 and 77")
+    text = str(amount)
+    if len(text) > 100 or not re.fullmatch(r"[0-9]+(?:\.[0-9]+)?", text):
+        raise ValueError("amount must be a finite unsigned plain decimal")
+    whole, _, fraction = text.partition(".")
+    if len(fraction) > decimals:
+        raise ValueError("amount has more precision than token decimals")
+    # Integer string arithmetic avoids Decimal's default 28-digit rounding.
+    units = int(whole + fraction.ljust(decimals, "0"))
+    if units > 2 ** 256 - 1:
+        raise ValueError("amount exceeds uint256")
+    return str(units)
+
+
+def load_policy(path: Path) -> dict[str, Any]:
+    policy = strict_json_loads(path.read_text(encoding="utf-8"))
+    if not isinstance(policy, dict):
+        raise ValueError("policy file must contain a JSON object")
+    validate_policy(policy)
+    return policy
+
+
+def strict_json_loads(raw: Any) -> Any:
+    def unique_object(pairs):
+        value = {}
+        for key, item in pairs:
+            if key in value:
+                raise ValueError("duplicate JSON field")
+            value[key] = item
+        return value
+
+    def reject_constant(value):
+        raise ValueError("non-finite JSON number")
+
+    def finite_float(value):
+        parsed = float(value)
+        if not math.isfinite(parsed):
+            raise ValueError("non-finite JSON number")
+        return parsed
+
+    try:
+        return json.loads(raw, object_pairs_hook=unique_object,
+                          parse_constant=reject_constant, parse_float=finite_float)
+    except RecursionError as exc:
+        raise ValueError("JSON nesting exceeds the supported depth") from exc
+
+
+def parse_evaluation_time(value: Optional[str]) -> datetime:
+    if value is None:
+        return datetime.now(timezone.utc)
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        raise ValueError("evaluation time must include Z or a UTC offset")
+    try:
+        return parsed.astimezone(timezone.utc)
+    except OverflowError as exc:
+        raise ValueError("evaluation time is outside the supported UTC range") from exc
+
+
+def time_to_minutes(value: str, allow_24: bool = False) -> int:
+    match = re.fullmatch(r"([0-9]{2}):([0-9]{2})", value)
+    if not match:
+        raise ValueError(f"invalid policy time: {value}")
+    hour, minute = (int(part) for part in match.groups())
+    if allow_24 and hour == 24 and minute == 0:
+        return 24 * 60
+    if hour > 23 or minute > 59:
+        raise ValueError(f"invalid policy time: {value}")
+    return hour * 60 + minute
+
+
+def validate_windows(windows: Any) -> None:
+    if not isinstance(windows, list):
+        raise ValueError("allowed_time_windows must be a list (empty denies all times)")
+    for window in windows:
+        if not isinstance(window, dict) or set(window) != {"days", "start", "end", "timezone"}:
+            raise ValueError("a time window requires days, start, end and timezone")
+        if window.get("timezone", "UTC") != "UTC":
+            raise ValueError("policy time windows currently require UTC")
+        days = window["days"]
+        if not isinstance(days, list) or not days or any(
+            day not in ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"] for day in days
+        ):
+            raise ValueError("days must contain uppercase UTC weekday names")
+        start = time_to_minutes(str(window["start"]))
+        end = time_to_minutes(str(window["end"]), allow_24=True)
+        if start >= end:
+            raise ValueError("window start must precede end; split overnight windows at midnight")
+
+
+def validate_policy(policy: Any) -> None:
+    if not isinstance(policy, dict):
+        raise ValueError("policy must be an object")
+    required = {"max_single_payment", "native_token", "allowed_tokens",
+                "trusted_recipients", "allowed_time_windows"}
+    if not required.issubset(policy):
+        raise ValueError("missing policy fields: " + ", ".join(sorted(required - set(policy))))
+    if decimal_or_zero(policy["max_single_payment"]) <= 0:
+        raise ValueError("max_single_payment must be a positive plain decimal, at most 18 decimal places")
+    amount_to_units(policy["max_single_payment"])
+    tokens = policy["allowed_tokens"]
+    if not isinstance(tokens, list) or any(
+        not isinstance(token, str) or not re.fullmatch(r"[A-Z][A-Z0-9]{0,11}", token)
+        for token in tokens
+    ):
+        raise ValueError("allowed_tokens must be a list of uppercase token symbols")
+    if not isinstance(policy["native_token"], str):
+        raise ValueError("native_token must be a string")
+    recipients = policy["trusted_recipients"]
+    if not isinstance(recipients, list) or any(
+        not isinstance(address, str) or not ADDRESS_RE.fullmatch(address)
+        or address.lower() == ZERO_VERIFYING_CONTRACT for address in recipients
+    ):
+        raise ValueError("trusted_recipients must be a list of nonzero EVM addresses")
+    validate_windows(policy["allowed_time_windows"])
+
+
+def evaluate_time_window(evaluated_at: datetime, windows: list[dict[str, Any]]) -> tuple[bool, str]:
+    validate_windows(windows)
+    if evaluated_at.tzinfo is None or evaluated_at.utcoffset() is None:
+        raise ValueError("evaluation time must be timezone-aware")
+    current = evaluated_at.astimezone(timezone.utc)
+    day = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"][current.weekday()]
+    minute = current.hour * 60 + current.minute
+    for window in windows:
+        days = window["days"]
+        start = time_to_minutes(window["start"])
+        end = time_to_minutes(window["end"], allow_24=True)
+        if day in days and start <= minute < end:
+            return True, "current UTC time is inside an allowed window"
+    return False, "current UTC time is outside every allowed window"
 
 
 def extract_voice_intent(state: GatewayState) -> VoiceIntent:
@@ -247,10 +391,27 @@ def build_voice_mandate(state: GatewayState, intent: VoiceIntent, voice_hash: st
     return mandate
 
 
-def evaluate_policy(intent: VoiceIntent, mandate: dict[str, Any], policy: dict[str, Any]) -> dict[str, Any]:
+def evaluate_policy(
+    intent: VoiceIntent,
+    mandate: dict[str, Any],
+    policy: dict[str, Any],
+    evaluated_at: Optional[datetime] = None,
+) -> dict[str, Any]:
+    evaluated_at = evaluated_at or datetime.now(timezone.utc)
     checks: list[dict[str, Any]] = []
+    try:
+        validate_policy(policy)
+        evaluate_time_window(evaluated_at, policy["allowed_time_windows"])
+    except (TypeError, ValueError) as exc:
+        checks.append({"name": "policy_config", "passed": False, "details": str(exc)})
+        return policy_result(checks, policy, evaluated_at)
 
     amount = decimal_or_zero(intent.params.get("amount", "0"))
+    amount_valid = amount > 0
+    try:
+        amount_to_units(intent.params.get("amount", "0"))
+    except ValueError:
+        amount_valid = False
     max_single = decimal_or_zero(policy["max_single_payment"])
     token = str(intent.params.get("token", DEFAULT_CHAIN["native_token"])).upper()
     recipient = str(intent.params.get("to", ""))
@@ -258,8 +419,8 @@ def evaluate_policy(intent: VoiceIntent, mandate: dict[str, Any], policy: dict[s
     if intent.action == "send_payment":
         checks.append({
             "name": "amount_limit",
-            "passed": amount <= max_single and amount > 0,
-            "details": f"{amount} <= {max_single} {policy['native_token']}",
+            "passed": amount_valid and amount <= max_single,
+            "details": f"{intent.params.get('amount', 'missing')} {token}; maximum {max_single} token units; must be positive and representable",
         })
         checks.append({
             "name": "token_allowlist",
@@ -268,13 +429,25 @@ def evaluate_policy(intent: VoiceIntent, mandate: dict[str, Any], policy: dict[s
         })
         checks.append({
             "name": "recipient_trust",
-            "passed": recipient in policy["trusted_recipients"],
+            "passed": bool(ADDRESS_RE.fullmatch(recipient))
+            and recipient.lower() in [address.lower() for address in policy["trusted_recipients"]],
             "details": recipient or "missing",
         })
+        time_allowed, time_details = evaluate_time_window(
+            evaluated_at,
+            policy["allowed_time_windows"],
+        )
+        checks.append({
+            "name": "time_window",
+            "passed": time_allowed,
+            "details": time_details,
+        })
+    elif intent.action not in {"check_balance", "summarize_intent", "write_session_proof"}:
+        checks.append({"name": "action_scope", "passed": False, "details": "unsupported action"})
 
     checks.append({
         "name": "voice_mandate_hash",
-        "passed": bool(mandate.get("mandate_hash", "").startswith("0x")),
+        "passed": bool(re.fullmatch(r"0x[0-9a-fA-F]{64}", str(mandate.get("mandate_hash", "")))),
         "details": mandate.get("mandate_hash", ""),
     })
     checks.append({
@@ -283,12 +456,36 @@ def evaluate_policy(intent: VoiceIntent, mandate: dict[str, Any], policy: dict[s
         "details": "stores hashes and text-event evidence only",
     })
 
+    return policy_result(checks, policy, evaluated_at)
+
+
+def policy_result(checks: list[dict[str, Any]], policy: dict[str, Any], evaluated_at: datetime) -> dict[str, Any]:
     blocking = [check for check in checks if not check["passed"]]
     decision = "approved_for_confirmation" if not blocking else "blocked_by_policy"
+    outcome = "allow" if not blocking else "deny"
+    deciding_rule = "all_rules_passed" if not blocking else blocking[0]["name"]
+    audit_log = [
+        {
+            "rule": check["name"],
+            "outcome": "allow" if check["passed"] else "deny",
+            "details": check["details"],
+        }
+        for check in checks
+    ]
+    audit_log.append({
+        "rule": deciding_rule,
+        "outcome": outcome,
+        "details": f"final decision at {evaluated_at.isoformat()}",
+    })
     return {
         "decision": decision,
+        "outcome": outcome,
+        "deciding_rule": deciding_rule,
+        "evaluated_at": evaluated_at.isoformat(),
+        "policy_passed": not blocking,
         "checks": checks,
         "blocking_reasons": [check["name"] for check in blocking],
+        "audit_log": audit_log,
         "policy_hash": "0x" + sha256_json(policy),
     }
 
@@ -318,13 +515,19 @@ def build_eip712_typed_data(
 ) -> dict[str, Any]:
     """Create wallet-readable EIP-712 typed data for the voice mandate."""
     scope = mandate["scope"]
+    try:
+        units = amount_to_units(scope["max_amount"])
+    except ValueError:
+        if policy_decision["outcome"] != "deny":
+            raise
+        units = "0"  # Rejected requests get a non-signable diagnostic payload.
     message = {
         "subject": mandate["subject"],
         "actionId": action_id,
         "action": scope["action"],
         "chainId": scope["chain_id"],
         "token": scope["token"],
-        "amount": amount_to_units(scope["max_amount"]),
+        "amount": units,
         "recipient": scope["recipient"] if ADDRESS_RE.fullmatch(str(scope["recipient"])) else ZERO_VERIFYING_CONTRACT,
         "voiceHash": bytes32(mandate["voice_hash"]),
         "intentHash": bytes32(intent.intent_hash),
@@ -455,7 +658,18 @@ def build_transaction_preview(intent: VoiceIntent, voice_hash: str) -> dict[str,
     }
 
 
-def prepare_action(state: GatewayState, intent: VoiceIntent, mode: str) -> PreparedAction:
+def prepare_action(
+    state: GatewayState,
+    intent: VoiceIntent,
+    mode: str,
+    policy_config: Optional[dict[str, Any]] = None,
+    evaluated_at: Optional[datetime] = None,
+) -> PreparedAction:
+    if mode not in {"mock", "wallet"}:
+        raise ValueError("mode must be mock or wallet")
+    if evaluated_at is not None and mode != "mock":
+        raise ValueError("replay time is supported only in mock mode")
+    intent = deepcopy(intent)
     voice_material = {
         "committed_turns": state.committed_turns,
         "interrupts": state.interrupts,
@@ -477,22 +691,31 @@ def prepare_action(state: GatewayState, intent: VoiceIntent, mode: str) -> Prepa
         "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
     }
 
+    policy_source = deepcopy(DEFAULT_POLICY if policy_config is None else policy_config)
+    validate_policy(policy_source)
     policy = {
+        **policy_source,
         "requires_confirmation": intent.requires_confirmation,
-        "max_voice_payment": f"{DEFAULT_POLICY['max_single_payment']} {DEFAULT_POLICY['native_token']} in demo policy",
-        "allowed_tokens": DEFAULT_POLICY["allowed_tokens"],
-        "trusted_recipients": DEFAULT_POLICY["trusted_recipients"],
+        "max_voice_payment": f"{policy_source['max_single_payment']} {policy_source['native_token']} in policy",
+        "allowed_tokens": policy_source["allowed_tokens"],
+        "trusted_recipients": policy_source["trusted_recipients"],
+        "allowed_time_windows": policy_source["allowed_time_windows"],
         "never_signs_private_keys": True,
         "mock_first": mode == "mock",
         "confirmation_phrases": ["confirm", "确认执行", "approve"],
     }
-    policy_decision = evaluate_policy(intent, mandate, {**DEFAULT_POLICY, **policy})
+    policy_decision = evaluate_policy(
+        intent,
+        mandate,
+        {**policy_source, **policy},
+        evaluated_at or datetime.now(timezone.utc),
+    )
     challenge = build_challenge(action_id, intent, mandate, policy_decision)
     audit_timeline = build_audit_timeline(state, intent, ConfirmationDecision("not_checked", False, ""), mandate, policy_decision)
     eip712 = build_eip712_typed_data(action_id, intent, mandate, policy_decision, challenge)
     registry_call = build_registry_call(action_id, intent, mandate, eip712)
 
-    return PreparedAction(
+    prepared = PreparedAction(
         action_id=action_id,
         chain=DEFAULT_CHAIN.copy(),
         mode=mode,
@@ -507,9 +730,56 @@ def prepare_action(state: GatewayState, intent: VoiceIntent, mode: str) -> Prepa
         eip712=eip712,
         registry_call=registry_call,
     )
+    prepared.integrity_hash = prepared_fingerprint(prepared)
+    return prepared
 
 
-def submit_or_simulate(prepared: PreparedAction, confirmation: ConfirmationDecision) -> SubmissionResult:
+def prepared_fingerprint(prepared: PreparedAction) -> str:
+    """An accidental-mutation guard, NOT authentication of in-process code."""
+    material = asdict(prepared)
+    material.pop("integrity_hash", None)
+    material.pop("audit_timeline", None)
+    return sha256_json(material)
+
+
+def submit_or_simulate(
+    prepared: PreparedAction,
+    confirmation: ConfirmationDecision,
+    evaluated_at: Optional[datetime] = None,
+) -> SubmissionResult:
+    try:
+        intact = bool(prepared.integrity_hash) and prepared_fingerprint(prepared) == prepared.integrity_hash
+    except (TypeError, ValueError, RecursionError):
+        intact = False
+    if not intact:
+        prepared.audit_timeline.append({"step": "integrity_check", "result": "deny"})
+        return SubmissionResult(
+            prepared.action_id, prepared.mode, "blocked_by_integrity", "", "",
+            {"reason": "prepared action changed; prepare and confirm again",
+             "deciding_rule": "prepared_integrity", "execution_attempted": False,
+             "mock_executor_called": False},
+        )
+    if evaluated_at is not None and prepared.mode != "mock":
+        raise ValueError("replay time is supported only in mock mode")
+    expected_preview = build_transaction_preview(
+        prepared.intent, prepared.proof_payload["voice_hash"].removeprefix("0x"),
+    )
+    if expected_preview != prepared.transaction_preview:
+        return SubmissionResult(
+            prepared.action_id, prepared.mode, "blocked_by_integrity", "", "",
+            {"reason": "transaction preview does not match intent",
+             "deciding_rule": "prepared_integrity", "execution_attempted": False,
+             "mock_executor_called": False},
+        )
+    # Never reuse an earlier allow after the policy's time window closes.
+    latest = evaluate_policy(prepared.intent, prepared.mandate, prepared.policy, evaluated_at)
+    if prepared.policy_decision["outcome"] == "allow":
+        prepared.policy_decision = latest
+    prepared.integrity_hash = prepared_fingerprint(prepared)
+    prepared.audit_timeline.append({
+        "step": "policy_rechecked", "result": latest["outcome"],
+        "evaluated_at": latest["evaluated_at"], "deciding_rule": latest["deciding_rule"],
+    })
     if prepared.policy_decision["decision"] != "approved_for_confirmation":
         return SubmissionResult(
             action_id=prepared.action_id,
@@ -520,6 +790,9 @@ def submit_or_simulate(prepared: PreparedAction, confirmation: ConfirmationDecis
             receipt={
                 "reason": "policy checks failed before confirmation",
                 "blocking_reasons": prepared.policy_decision["blocking_reasons"],
+                "deciding_rule": prepared.policy_decision["deciding_rule"],
+                "execution_attempted": False,
+                "mock_executor_called": False,
                 "policy_hash": prepared.policy_decision["policy_hash"],
             },
         )
@@ -531,7 +804,11 @@ def submit_or_simulate(prepared: PreparedAction, confirmation: ConfirmationDecis
             status="blocked_by_confirmation_gate",
             tx_hash="",
             explorer_url="",
-            receipt={"reason": confirmation.reason},
+            receipt={
+                "reason": confirmation.reason,
+                "execution_attempted": False,
+                "mock_executor_called": False,
+            },
         )
 
     stable_proof = {
@@ -540,10 +817,13 @@ def submit_or_simulate(prepared: PreparedAction, confirmation: ConfirmationDecis
     material = {
         "action_id": prepared.action_id,
         "chain_id": prepared.chain["chain_id"],
-        "preview": prepared.transaction_preview,
+        "preview": expected_preview,
         "proof": stable_proof,
         "mandate": prepared.mandate,
-        "policy_decision": prepared.policy_decision,
+        "policy_decision": {
+            key: value for key, value in prepared.policy_decision.items()
+            if key not in {"evaluated_at", "audit_log"}
+        },
         "typed_data_hash": prepared.eip712["typed_data_hash"],
         "mode": prepared.mode,
     }
@@ -564,6 +844,8 @@ def submit_or_simulate(prepared: PreparedAction, confirmation: ConfirmationDecis
             "policy_hash": prepared.policy_decision["policy_hash"],
             "typed_data_hash": prepared.eip712["typed_data_hash"],
             "note": "mock mode creates deterministic evidence without broadcasting a transaction",
+            "execution_attempted": False,
+            "mock_executor_called": prepared.mode == "mock",
         },
     )
 
@@ -608,14 +890,23 @@ def tool_schema() -> list[dict[str, Any]]:
     ]
 
 
-def run(input_path: Path, mode: str = "mock") -> GatewayRun:
+def run(
+    input_path: Path,
+    mode: str = "mock",
+    policy_config: Optional[dict[str, Any]] = None,
+    evaluated_at: Optional[datetime] = None,
+) -> GatewayRun:
+    if mode not in {"mock", "wallet"}:
+        raise ValueError("mode must be mock or wallet")
+    if evaluated_at is not None and mode != "mock":
+        raise ValueError("replay time is supported only in mock mode")
     events = load_events(input_path)
     state = process_events(events)
     intent = extract_voice_intent(state)
     confirmation = decide_confirmation(state, intent)
-    prepared = prepare_action(state, intent, mode)
+    prepared = prepare_action(state, intent, mode, policy_config, evaluated_at)
     prepared.audit_timeline = build_audit_timeline(state, intent, confirmation, prepared.mandate, prepared.policy_decision)
-    submission = submit_or_simulate(prepared, confirmation)
+    submission = submit_or_simulate(prepared, confirmation, evaluated_at)
     return GatewayRun(
         source=str(input_path),
         generated_at=datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -672,11 +963,15 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Run Pharos voice-to-onchain action gateway on JSONL events.")
     parser.add_argument("input", help="JSONL event file")
     parser.add_argument("--mode", choices=["mock", "wallet"], default="mock")
+    parser.add_argument("--policy", help="JSON policy file")
+    parser.add_argument("--at", help="Mock replay time, ISO-8601 with offset; omitted uses server UTC")
     parser.add_argument("--output", "-o")
     args = parser.parse_args(argv)
 
     try:
-        result = run(Path(args.input).expanduser(), args.mode)
+        policy = load_policy(Path(args.policy).expanduser()) if args.policy else None
+        evaluated_at = parse_evaluation_time(args.at) if args.at else None
+        result = run(Path(args.input).expanduser(), args.mode, policy, evaluated_at)
         output = Path(args.output).expanduser() if args.output else None
         report_path = write_report(result, output)
         print_summary(result, report_path)

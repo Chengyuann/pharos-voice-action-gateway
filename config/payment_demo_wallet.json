@@ -1,0 +1,15 @@
+{
+  "network": {
+    "name": "Pharos Atlantic Testnet",
+    "chain_id": 688689,
+    "source": "demo_config"
+  },
+  "wallet": {
+    "address": "0x3333333333333333333333333333333333333333",
+    "source": "demo_wallet_snapshot"
+  },
+  "balances": {
+    "PHRS": "0.31"
+  },
+  "policy_time": "2026-10-20T10:00:00Z"
+}

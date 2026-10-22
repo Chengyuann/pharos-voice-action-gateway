@@ -1,0 +1,12 @@
+{
+  "network_chain_id": 688689,
+  "source": "demo_token_registry",
+  "tokens": [
+    {
+      "symbol": "PHRS",
+      "name": "PHRS",
+      "type": "native",
+      "decimals": 18
+    }
+  ]
+}

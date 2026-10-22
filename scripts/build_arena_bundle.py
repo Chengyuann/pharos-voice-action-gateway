@@ -9,6 +9,7 @@ from pathlib import Path
 import zipfile
 
 from payment_proof import verify_proof
+from skill_chain_flow import verify_flow
 from pharos_voice_action_gateway import strict_json_loads
 
 
@@ -29,6 +30,7 @@ PUBLIC_FILES = [
         "policy-allow.json", "policy-deny-amount.json", "policy-deny-recipient.json",
         "policy-deny-time.json", "language-demo.json", "pros-allow-live.json",
         "wpros-allow-live.json", "usdc-deny-live.json", "pros-20261022-live.json",
+        "installed-skill-flow.json",
     ]],
     ROOT / "docs" / "p0-release-status.md",
     *sorted((ROOT / "docs" / "submissions").glob("*.md")),
@@ -81,7 +83,9 @@ def validate() -> list[dict]:
         relative = path.relative_to(ROOT).as_posix()
         if path.parent == ROOT / "site" / "proofs":
             value = strict_json_loads(data.decode("utf-8"))
-            if path.name.endswith("-live.json"):
+            if path.name == "installed-skill-flow.json":
+                verify_flow(value)
+            elif path.name.endswith("-live.json"):
                 verify_proof(value.get("proof", value))
             elif not isinstance(value, dict):
                 raise ValueError(f"{relative} must contain an object")

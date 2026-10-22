@@ -1,7 +1,6 @@
 # Arena submission draft — Natural-Language Payment Agent
 
-Status: **not submitted**. The MCY-narrated final video is ready in
-`site/media/02-payment-agent-mcy.mp4`; public deployment is being finalized.
+Status: **published, not submitted**. Arena login and final submit confirmation remain pending.
 
 ## Description
 
@@ -28,14 +27,15 @@ prevents late work from publishing. The app never requests keys, signs or sends.
 - On-chain checks: `scripts/payment_chain.py`
 - Lifecycle: `scripts/payment_actions.py`
 - Local UI: `/payment-preview`, **Official Chain MCP** mode
-- Public evidence tab after hosting: `#payment`
+- Public evidence tab: `#payment`
 - Clarification: `site/proofs/language-demo.json`
 - Native success: `site/proofs/pros-allow-live.json`
 - ERC-20 success: `site/proofs/wpros-allow-live.json`
 - Balance denial: `site/proofs/usdc-deny-live.json`
 - Tests: `scripts/test_payment_chain.py`
 
-The saved chain samples date from October 21, 2026. Successful samples inspect
+The original samples date from October 21, 2026. A new successful PROS
+review at block 20911380 was collected on October 22 and is also public. Successful samples inspect
 a third-party public address without ownership claims. They are historical
 review candidates, not signed transactions or current payment authority.
 
@@ -49,8 +49,10 @@ One payment only. No batching, scheduling, ENS resolution or EIP-55 validation.
 Mixed-case addresses are rejected. The static proof page does not accept
 payments or simulate live chain data.
 
-## Submission fields to complete after approval
+## Submission fields
 
-- Proof URL: actual public evidence deployment, `#payment`.
-- Repo URL: published release commit.
-- Video URL: final reviewed task walkthrough.
+- Proof URL: https://chengyuann.github.io/pharos-voice-action-gateway/#payment
+- Repo URL: https://github.com/Chengyuann/pharos-voice-action-gateway
+- Video URL: https://chengyuann.github.io/pharos-voice-action-gateway/media/02-payment-agent-mcy.mp4
+
+The proof page displays recorded evidence, not a live payment service.

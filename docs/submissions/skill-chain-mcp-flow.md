@@ -1,6 +1,6 @@
 # Arena submission draft — Skill + Chain MCP Flow
 
-Status: **not submitted**. Hosted SkillEngine acceptance is not yet verified.
+Status: **published, not submitted**. Arena login and final submit confirmation remain pending.
 
 ## Description
 
@@ -35,10 +35,19 @@ network/token configuration and transaction prechecks from
 `a873387c9e34e9ae8e71360d43dc33329a335a24`. The executable handler applies the
 upstream `ceil(estimate × 1.2)` gas rule to actual Chain MCP output.
 
-This does not claim an installed hosted SkillEngine service, a `cast` execution,
-or a run inside `ai.pharos.xyz`. The current proof is local Skill-format
-composition. Validate the accepted runtime/packaging with reviewers before
-claiming full task acceptance.
+The official Skill Engine page describes an installable skill and recommends
+`npx skills add https://github.com/PharosNetwork/pharos-skill-engine`.
+Both that Skill and the local extension were installed for Codex. The October
+22 run at block **20913011** records installed file hashes, 10 actual official
+MCP calls, a real `cast balance` at that block, and a final decision dependent
+on balance agreement. The evidence runner adds this gate after MCP collection
+and before retaining the candidate. A disagreement removes the candidate;
+unavailable MCP stops the run without RPC fallback.
+
+`site/proofs/installed-skill-flow.json` holds the real run. This is local Agent
+execution of installed Skills, not hosted chat inside `ai.pharos.xyz`, and not
+a claim of task approval. The extra official-Skill/cast gate belongs to the
+evidence runner; it is not falsely represented as an existing UI feature.
 
 ## Reproduce
 
@@ -46,18 +55,25 @@ claiming full task acceptance.
 python3 scripts/payment_proof.py review "Pay alice 0.001 PROS" \
   --sender "0x…public-address…" --output /tmp/new-proof.json
 python3 scripts/payment_proof.py verify /tmp/new-proof.json
+python3 scripts/skill_chain_flow.py --verify site/proofs/installed-skill-flow.json
 ```
 
 The CLI collects review evidence without performing the final UI handoff.
 The local `/payment-preview` supplies human confirmation and draft rechecks.
 Saved success and denial samples are under `site/proofs/*live.json`; open the
-public `#composition` tab after hosting to inspect call order and arguments.
+public `#composition` tab to inspect call order and arguments.
 
 Offline replay checks consistency, not chain provenance or wallet ownership.
 No signature or broadcast occurs.
 
-## Submission fields to complete after approval
+## Submission fields
 
-- Proof URL: actual public evidence deployment, `#composition`.
-- Repo URL: published release commit including the Skill package.
-- Video URL: final reviewed composition walkthrough.
+- Proof URL: https://chengyuann.github.io/pharos-voice-action-gateway/#composition
+- Repo URL: https://github.com/Chengyuann/pharos-voice-action-gateway
+- Video URL: https://chengyuann.github.io/pharos-voice-action-gateway/media/03-skill-chain-mcp-mcy.mp4
+
+The proof page displays recorded evidence, not a live payment service.
+
+The video explains earlier recorded composition. The newer installed-Skill
+run is in the evidence selector and downloadable JSON, not retroactively
+claimed as footage in the video.

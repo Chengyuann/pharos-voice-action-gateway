@@ -52,10 +52,36 @@ ownership. A wallet must independently validate everything before signing.
 
 ## Upstream Skill Engine composition
 
-This is a repository-local extension of the Pharos Skill Engine workflow, not
-an installed hosted SkillEngine service or a claim that `cast` was executed.
+This is an installable local extension of the Pharos Skill Engine workflow,
+not a hosted `ai.pharos.xyz` chat service.
 It applies the upstream transaction prechecks and gas-budget rule
 `ceil(estimate × 1.2)` to actual Chain MCP data in the same request.
+
+The official Skill Engine page offers the skills-CLI installation method:
+
+```sh
+npx skills add https://github.com/PharosNetwork/pharos-skill-engine --agent codex
+npx skills add ./skills/pharos-payment-review --agent codex
+```
+
+For an installed-Skill evidence run, use the actual paths returned by the
+installer and a working Foundry `cast`:
+
+```sh
+python3 scripts/skill_chain_flow.py \
+  --request "Pay alice 0.001 PROS" --sender "0x…public-address…" \
+  --installed-upstream /path/to/installed/pharos-skill-engine \
+  --installed-local /path/to/installed/pharos-payment-review \
+  --cast /path/to/cast --output /tmp/installed-skill-flow.json
+```
+
+This follows the installed official Skill's `cast balance` template at the
+MCP snapshot block. The additional gate requires balance agreement before
+retaining an unsigned candidate. If official MCP is unavailable, it stops;
+direct RPC through cast is never a fallback. It invokes no `cast send`, key
+access or signing. Recorded October 22 evidence, including executed commands,
+installed-file hashes and their results, is in
+`site/proofs/installed-skill-flow.json`.
 
 - Upstream: `PharosNetwork/pharos-skill-engine`
 - Pinned commit: `a873387c9e34e9ae8e71360d43dc33329a335a24`

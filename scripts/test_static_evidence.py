@@ -9,6 +9,7 @@ import pytest
 
 from build_arena_bundle import OUTPUT, PUBLIC_FILES, main, validate
 from payment_proof import verify_proof
+from skill_chain_flow import verify_flow
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -72,6 +73,13 @@ def test_three_reviewed_videos_are_public_with_matching_hashes():
         assert (SITE / "media" / item["subtitles"]).is_file()
     html = (SITE / "index.html").read_text()
     assert 'id="walkthrough"' in html and "controls" in html
+
+
+def test_published_installed_skill_flow_replays():
+    result = verify_flow(json.loads((SITE / "proofs/installed-skill-flow.json").read_text()))
+    assert result["verified"] is True
+    assert result["decision"] == "allow_review"
+    assert result["signed"] is result["broadcast"] is False
 
 def test_bundle_has_allowlist_only_and_valid_manifest():
     manifest = validate()

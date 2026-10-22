@@ -17,8 +17,9 @@ Full decode, picture dimensions, black-frame, silence and loudness checks
 passed. Local Whisper-small checked source and encoded narration. Policy's
 isolated final phrase showed homophone errors; a contextual recheck scored
 0.9615 and is documented with the original failed isolated transcript.
-Subjective listening approval remains the user's review; no uploads or Arena
-submissions were performed.
+The user subsequently authorized completion: all three MP4s and SRTs are now
+published in the public evidence site's media directory. Subjective listening
+approval is not claimed. Arena submissions remain pending login.
 
 The raw-capture notes and earlier narration drafts below are historical.
 
@@ -89,4 +90,4 @@ local verifier output. Do not claim a hosted `ai.pharos.xyz` execution.
 - Use no unlicensed music and no invented endorsement or point totals.
 - Decode the encoded final MP4, verify captions against speech and inspect
   rendered frames. Publish only after reviewing the final artifacts.
-- Public hosting and final video URLs remain pending.
+- Public hosting is complete; actual URLs are in each task submission document.

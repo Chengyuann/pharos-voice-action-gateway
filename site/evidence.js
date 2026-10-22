@@ -18,8 +18,8 @@ const tasks = {
   composition: {
     video: "03-skill-chain-mcp-mcy",
     title: "Skill + Chain MCP", kind: "RECORDED COMPOSED FLOW",
-    description: "The local payment skill consumes actual Chain MCP results. Changing the returned balance, simulation result or gas quote changes its decision.",
-    scenarios: [["Native transfer · latest", "pros-20261022-live"], ["ERC-20 transfer", "wpros-allow-live"],
+    description: "Installed official Pharos Skill instructions and the local payment Skill consume actual Chain MCP results. A same-block balance disagreement, failed simulation or policy denial removes the candidate.",
+    scenarios: [["Installed Skill · Oct 22", "installed-skill-flow"], ["Native transfer · Oct 22", "pros-20261022-live"], ["ERC-20 transfer", "wpros-allow-live"],
       ["Fail closed", "usdc-deny-live"]],
   },
 };
@@ -48,10 +48,38 @@ async function selectScenario(task, name, button) {
     if (revision !== generation) return;
     $("raw").textContent = JSON.stringify(data, null, 2);
     $("download").href = `proofs/${name}.json`; $("download").hidden = false;
-    const decision = data.decision || data.policy_decision;
+    const installedFlow = data.schema === "pharos-installed-skill-flow/1";
+    const decision = installedFlow ? {outcome: data.steps[2].decision === "allow_review" ? "allow" : "deny"}
+      : data.decision || data.policy_decision;
     $("result-heading").textContent = decision ? decision.outcome.toUpperCase() : "CLARIFY";
     $("result-heading").className = decision?.outcome === "deny" ? "deny" : "";
-    if (name === "language-demo") {
+    if (installedFlow) {
+      const [mcp, skill, result] = data.steps;
+      fact("Run time", data.created_at);
+      fact("Runtime", "Local agent following installed skills (skills CLI / Codex)");
+      fact("Official Skill", data.installed_skills.official.name);
+      fact("Skill version", data.installed_skills.official.reviewed_commit);
+      fact("State block", mcp.block);
+      fact("Official MCP calls", mcp.calls);
+      fact("Read-only Skill command", skill.command.join(" "));
+      fact("Cast version", skill.version);
+      fact("Inspected public sender · no ownership claim", mcp.proof.input.sender);
+      check("Official Chain MCP result", mcp.proof.decision.outcome === "allow",
+        mcp.proof.decision.deciding_rule);
+      check("Installed Skill executed", skill.exit_code === 0,
+        `${skill.command[0]} ${skill.command[1]} returned ${skill.stdout} wei`);
+      check("Same-block balance agreement", result.same_block_balance_agrees,
+        "The candidate is absent if the Skill balance differs from the MCP snapshot.");
+      check("No signature or broadcast", data.signed === false && data.broadcast === false,
+        "Evidence only. Human approval and a new wallet review are still required.");
+      $("boundary").textContent = "Recorded local installed-Skill execution, not a hosted ai.pharos.xyz chat. Cast is an additional same-block gate, never a substitute for official MCP. This expired candidate cannot authorize payment.";
+      for (const entry of mcp.proof.trace) {
+        const li = node("li", entry.tool);
+        li.append(node("small", JSON.stringify(entry.arguments))); $("trace").append(li);
+      }
+      $("trace").append(node("li", "installed official Skill → cast balance at MCP block"),
+        node("li", `payment Skill → ${result.decision} (${result.deciding_rule})`));
+    } else if (name === "language-demo") {
       fact("Original instruction", data.request);
       fact("Follow-up", data.first.question);
       fact("Explicit answer", data.answer.amount);

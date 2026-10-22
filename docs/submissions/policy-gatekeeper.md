@@ -1,6 +1,6 @@
 # Arena submission draft — Policy Gatekeeper
 
-Status: **not submitted**. Publish and verify the source and evidence URL first.
+Status: **published, not submitted**. Arena login and final submit confirmation remain pending.
 
 ## Description
 
@@ -19,7 +19,7 @@ none of these examples sends an on-chain transaction.
 - Config: `config/policy_gatekeeper.json`
 - Enforcement: `scripts/pharos_voice_action_gateway.py`
 - Inspector: local `/policy-gatekeeper`
-- Public evidence page after hosting: `#policy`
+- Public evidence page: `#policy`
 - Allow: `site/proofs/policy-allow.json`
 - Spend denial: `site/proofs/policy-deny-amount.json`
 - Allowlist denial: `site/proofs/policy-deny-recipient.json`
@@ -33,12 +33,10 @@ Open the Policy tab. Select each denial. Compare the deciding rule, mock
 executor flag and audit checks. Download the JSON to inspect the stored outcome.
 Run the local inspector to generate new records instead of viewing snapshots.
 
-## Submission fields to complete after approval
+## Submission fields
 
-- Proof URL: actual public evidence deployment, `#policy`.
-- Repo URL: published `Chengyuann/pharos-voice-action-gateway` release commit.
-- Video URL: upload only after the final recording is checked.
+- Proof URL: https://chengyuann.github.io/pharos-voice-action-gateway/#policy
+- Repo URL: https://github.com/Chengyuann/pharos-voice-action-gateway
+- Video URL: https://chengyuann.github.io/pharos-voice-action-gateway/media/01-policy-gatekeeper-mcy.mp4
 
-Do not submit a localhost address. The static page is a recorded evidence
-viewer; the loopback product generates new decisions. Local audit files are
-not authenticated immutable storage. Voice is fixture replay.
+The proof page displays recorded evidence, not a live payment service.

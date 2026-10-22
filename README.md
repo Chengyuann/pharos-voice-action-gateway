@@ -38,8 +38,9 @@ checks, read-only simulation, pending nonce, unsigned wallet requests and
 offline proof replay. The isolated `site/` folder is a recorded evidence
 viewer with three MCY-narrated, Chinese-captioned walkthroughs under `site/media/`.
 The [public evidence site](https://chengyuann.github.io/pharos-voice-action-gateway/)
-is deployed with all three videos. Arena authentication and submission remain
-separate. A new installed-Skill + MCP run at block 20913011 includes official
+is deployed with all three videos. All three Arena tasks were submitted on
+October 22 and are **IN REVIEW**, not yet approved or scored.
+A new installed-Skill + MCP run at block 20913011 includes official
 Skill `cast balance` execution and a same-block comparison gate.
 See
 [P0 release status](docs/p0-release-status.md) and the

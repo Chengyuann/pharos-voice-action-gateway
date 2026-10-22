@@ -19,7 +19,8 @@ isolated final phrase showed homophone errors; a contextual recheck scored
 0.9615 and is documented with the original failed isolated transcript.
 The user subsequently authorized completion: all three MP4s and SRTs are now
 published in the public evidence site's media directory. Subjective listening
-approval is not claimed. Arena submissions remain pending login.
+approval is not claimed. All three Arena entries, including these video links,
+were submitted on October 22, 2026 and are IN REVIEW; no video bonus is claimed.
 
 The raw-capture notes and earlier narration drafts below are historical.
 

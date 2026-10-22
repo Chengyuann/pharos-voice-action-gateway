@@ -1,6 +1,9 @@
-# Arena submission draft — Policy Gatekeeper
+# Arena submission — Policy Gatekeeper
 
-Status: **published, not submitted**. Arena login and final submit confirmation remain pending.
+Status: **submitted, IN REVIEW**, October 22, 2026, account `Chengyuann`.
+Submitted release: `ffe94cc7eb058dbb041aa21f6ff8278269d7c0ed`.
+Task-page success and the My work dashboard both confirmed entry into the queue.
+Approval and points are pending.
 
 ## Description
 

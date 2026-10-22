@@ -1,7 +1,7 @@
 # P0 release status — October 22, 2026
 
-**Source, public evidence and all three narrated videos are published.
-Arena login and three final task submissions remain incomplete.**
+**P0 implementation, publication and the three task submissions are complete.
+All three Arena entries are IN REVIEW; approval and points remain pending.**
 
 ## Published release
 
@@ -78,7 +78,7 @@ No video points or task approval are promised.
 
 ## Verification
 
-The final local regression suite passed **314 tests in 70.93 seconds**.
+The final presubmission regression suite passed **314 tests in 71.02 seconds**.
 Initial public Linux CI also passed after adding the new PROS proof. Both legacy smoke suites, Skill validation,
 proof replay, a published-source privacy-marker scan and all public video
 hashes passed. The final suite includes the installed-Skill replay tests.
@@ -96,17 +96,31 @@ The hosted MCP intermittently returns HTTP 503. Two new complete runs succeeded
 after recovery. Transient errors use bounded backoff and fail closed; no
 permanent service recovery or guaranteed uptime is claimed.
 
-## Remaining external steps
+## Arena submission receipt — October 22, 2026
 
-1. **Arena authentication:** the browser is at GitHub login. The user must
-   complete login and review any OAuth grant. Do not use CLI tokens to bypass
-   browser authentication. An earlier ungranted consent page requested
-   read-only email access for Pharos Agent Arena, owned by janeshbalchandani.
-2. Inspect the authenticated profile and existing submissions to avoid
-   duplicates. A missing leaderboard entry does not prove no registration.
-3. Submit three separate entries using the actual proof, repository and video
-   URLs in docs/submissions/. Obtain final submit confirmation and record
-   actual submission IDs/statuses. No submission has occurred yet.
+The user completed login and explicitly authorized a final check followed by
+submission. The authenticated account was `Chengyuann`, with no existing
+submissions before these three were created. Public links, video hashes,
+source commit and CI were rechecked before clicking Submit for review.
+
+| Task | Confirmed status | Submitted release |
+|---|---|---|
+| Policy Gatekeeper | IN REVIEW | `ffe94cc7eb058dbb041aa21f6ff8278269d7c0ed` |
+| Natural-Language Payment Agent | IN REVIEW | `ffe94cc7eb058dbb041aa21f6ff8278269d7c0ed` |
+| Skill + Chain MCP Flow | IN REVIEW | `ffe94cc7eb058dbb041aa21f6ff8278269d7c0ed` |
+
+Each task page displayed “Submitted — it's in the review queue.” A refreshed
+My work dashboard independently listed exactly these three entries, all
+IN REVIEW, checked at **09:36 UTC / 17:36 Asia/Shanghai**. No resubmit was
+clicked. The visible UI did not expose separate submission IDs; the account
+and task-page URLs identify the entries.
+
+The receipt and screenshot are saved locally in
+`output/p0/release/arena-submitted-receipt.json` and
+`output/p0/release/arena-submitted-my-work.jpg`; no account-session data is
+published. Awarded points were still zero at the check. Reward-wallet settings
+were not changed. Reviewer feedback, approval and any points remain external
+outcomes, not completed or guaranteed by this P0 delivery.
 
 DoraHacks BUIDL 44805 is separate from Agent Arena registration.
 

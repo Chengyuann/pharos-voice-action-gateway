@@ -103,7 +103,7 @@ def payment_transaction(payment: dict, sender: str, token: dict) -> dict:
     }
 
 
-def collect_chain_state(client, payment: dict, sender: str, token: dict) -> dict:
+def collect_chain_state(client, payment: dict, sender: str, token: dict, *, block_number=None) -> dict:
     """Pinned state and eth_call; nonce pending and fee quotes explicitly use live state."""
     tx = payment_transaction(payment, sender, token)
     sender = tx["from"]
@@ -111,7 +111,10 @@ def collect_chain_state(client, payment: dict, sender: str, token: dict) -> dict
     if (type(chain.get("chainId")) is not int or chain["chainId"] != 1672
             or chain.get("chainIdMatches") is not True or chain.get("nativeSymbol") != "PROS"):
         raise ValueError("Chain MCP is not serving Pacific Mainnet (1672 / PROS)")
-    block = quantity(client.call("get_block_number")["blockNumber"], "block")
+    if block_number is not None and (type(block_number) is not int or not 0 <= block_number < 2**64):
+        raise ValueError("Invalid requested snapshot block")
+    block = (quantity(client.call("get_block_number")["blockNumber"], "block")
+             if block_number is None else block_number)
     tag = hex(block)
     header = client.call("get_block", {"block": tag})
     if (not isinstance(header, dict) or quantity(header.get("number"), "block") != block
@@ -203,7 +206,7 @@ def decide_mainnet_payment(payment: dict, state: dict, token: dict, policy: dict
 
 def make_mainnet_review(text: str, answers: dict | None = None, *, sender: str = "",
                         policy_path: Path = MAINNET_POLICY, client=None,
-                        now: datetime | None = None) -> dict:
+                        now: datetime | None = None, block_number=None) -> dict:
     fixed_now = now
     now = now or datetime.now(timezone.utc)
     if now.tzinfo is None:
@@ -252,7 +255,8 @@ def make_mainnet_review(text: str, answers: dict | None = None, *, sender: str =
             if own_client:
                 client = PharosMcpClient()
             try:
-                state = collect_chain_state(client, parsed["payment"], sender, token)
+                trace_start = len(client.trace)
+                state = collect_chain_state(client, parsed["payment"], sender, token, block_number=block_number)
                 # Recheck time-window policy after I/O, not at the start of a slow call.
                 now = fixed_now or datetime.now(timezone.utc)
                 head_time = datetime.fromtimestamp(state["block_timestamp"], timezone.utc)
@@ -300,11 +304,13 @@ def make_mainnet_review(text: str, answers: dict | None = None, *, sender: str =
                     "input": {"payment": deepcopy(parsed["payment"]), "sender": sender},
                     "policy": deepcopy(policy), "token": deepcopy(token),
                     "evaluated_at": now.isoformat(), "state": deepcopy(state),
-                    "trace": deepcopy(client.trace), "decision": deepcopy(decision),
+                    "trace": deepcopy(client.trace[trace_start:]), "decision": deepcopy(decision),
                     "transaction": deepcopy(result.get("prepared_transaction")),
                     "boundary": "Evidence replay is not authenticated chain provenance or wallet authorization.",
                     "unpinned": ["get_transaction_count: pending", "estimate_gas: current", "get_gas_price: current"],
                 }
+                if block_number is not None:
+                    result["proof"]["snapshot_block"] = block_number
                 result["proof"]["digest"] = "0x" + sha256_json(result["proof"])
             except (ValueError, OSError, KeyError, TypeError, OverflowError) as exc:
                 result.pop("prepared_transaction", None)

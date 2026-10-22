@@ -73,7 +73,7 @@ def verify_proof(proof):
     if now.tzinfo is None:
         raise ValueError("Proof time must be timezone-aware")
     replay = ReplayClient(proof["trace"])
-    state = collect_chain_state(replay, payment, sender, token)
+    state = collect_chain_state(replay, payment, sender, token, block_number=proof.get("snapshot_block"))
     if replay.index != len(replay.entries):
         raise ValueError("Unused Chain MCP calls in proof")
     if state != proof["state"]:

@@ -8,7 +8,7 @@
   <link rel="preload" href="/assets/fonts/barlow-condensed-700.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="preload" href="/assets/fonts/manrope-400.ttf" as="font" type="font/ttf" crossorigin>
   <link rel="icon" href="/assets/logo.png"><link rel="stylesheet" href="/assets/payment-preview.css">
-  <script src="/assets/payment-preview.js" defer></script><script src="/assets/voice-console.js" defer></script>
+  <script src="/assets/payment-preview.js" defer></script><script src="/assets/payment-batch.js" defer></script><script src="/assets/voice-console.js" defer></script>
 </head>
 <body>
 <div class="ambient" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -70,6 +70,10 @@
             <section class="panel" aria-labelledby="request-title">
               <div class="section-title"><span class="step-number">01</span><h2 id="request-title">Voice intent</h2></div>
               <form id="payment-form">
+                <fieldset class="mode-field payment-kind"><legend>Payment scope</legend><div class="source-options">
+                  <label><input type="radio" name="payment-kind" value="single" checked><span><strong>Single payment</strong></span></label>
+                  <label><input type="radio" name="payment-kind" value="batch"><span><strong>Batch</strong><small>Up to 5 payments</small></span></label>
+                </div></fieldset>
                 <label for="request">Committed transcript or typed fallback</label><textarea id="request" maxlength="500" spellcheck="false" required placeholder="Send 0.02 PHRS to 0x…"></textarea>
                 <p class="field-hint">Only committed text enters the payment parser. Partial ASR and raw audio are not used here.</p>
                 <p id="intent-source" class="intent-source">INPUT SOURCE / TYPED FALLBACK</p>

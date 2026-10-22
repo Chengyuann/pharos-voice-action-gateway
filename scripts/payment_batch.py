@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
-"""P1 batch planning only: exact grammar, local memos and aggregate MCP proof checks.
-
-This module never issues a transaction, nonce sequence or signing request.
-It does not call the action API or circumvent its rolling issuance budget.
-"""
+"""Batch parsing, common-block reviews and ordered unsigned payment requests."""
 from __future__ import annotations
 
 import argparse
 from copy import deepcopy
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 import unicodedata
+from uuid import uuid4
 
 from evm_address import validate_address
-from payment_language import parse_mainnet_request
-from payment_chain import load_mainnet_registry
-from payment_proof import verify_proof
+from payment_language import parse_mainnet_request, load_contacts
+from payment_chain import load_mainnet_registry, make_mainnet_review, mainnet_draft, MAINNET_POLICY
+from payment_preview import review_fingerprint, units_to_amount
+from payment_proof import verify_proof, ReplayMismatch
 from pharos_voice_action_gateway import amount_to_units, strict_json_loads, sha256_json
 
 
@@ -138,6 +136,8 @@ def aggregate_proofs(plan, proofs):
     if native_required >= 2**256 or any(amount >= 2**256 for amount in totals.values()):
         raise ValueError("Aggregate quantities exceed uint256")
     checks = [{"name": "individual_policy_and_simulation", "passed": all_allowed},
+              {"name": "ordinary_recipient_accounts", "passed":
+               all(proof["state"]["recipient_code"] == "0x" for proof in proofs)},
               {"name": "aggregate_native_plus_fees", "passed": native_required <= reference[3]}]
     for symbol, amount in totals.items():
         checks.append({"name": f"aggregate_{symbol}_balance", "passed": amount <= available[symbol]})
@@ -146,8 +146,128 @@ def aggregate_proofs(plan, proofs):
             "totals_base_units": {k: str(v) for k, v in totals.items()},
             "native_fee_budget_wei": str(native_fee), "checks": checks,
             "block": reference[1], "signing_ready": False, "signed": False, "broadcast": False,
-            "boundary": "Offline planning evidence only. No nonce allocation or sequential-state simulation, "
-                        "no reservation against rolling budget and no multi-payment signing/export endpoint."}
+            "boundary": "Aggregate evidence only. Independent simulations, not sequential or atomic execution. "
+                        "This aggregate object allocates no nonce and reserves no issuance allowance."}
+
+
+BATCH_BOUNDARY = (
+    "Ordered unsigned requests, not an atomic transaction. Each transfer was simulated independently "
+    "at one block, not against the results of preceding transfers. Recheck each request in your wallet. "
+    "Memos remain local. Nothing is signed or sent."
+)
+
+
+def make_batch_review(text, answers=None, *, sender="", policy_path=MAINNET_POLICY, client=None, now=None):
+    started = now or datetime.now(timezone.utc)
+    if started.tzinfo is None:
+        raise ValueError("Review time must be timezone-aware")
+    plan = parse_batch(text, answers, contacts=load_contacts())
+    result = {
+        "id": uuid4().hex, "record_type": "payment_review", "kind": "batch",
+        "created_at": started.isoformat(), "expires_at": (started + timedelta(minutes=10)).isoformat(),
+        "mode": "mcp", "request_text": text, "answers": deepcopy(answers or {}),
+        "status": plan["status"], "message": plan.get("message", ""), "plan": plan,
+        "questions": plan.get("questions", []), "payments": plan.get("payments", []),
+        "payment": None, "items": [], "checks": [], "draft_allowed": False,
+        "draft_label": "Create unsigned batch", "wallet": {"address": sender, "source": "configured_readonly_address"},
+        "network": {"name": "Pharos Pacific Mainnet", "chain_id": 1672, "source": "chain_mcp"},
+        "fee": {"status": "not_checked"}, "recorded": False, "boundary": BATCH_BOUNDARY,
+    }
+    if plan["status"] == "planned":
+        block = None
+        try:
+            for payment in plan["payments"]:
+                row = make_mainnet_review(
+                    f"Send {payment['amount']} {payment['token']} to {payment['recipient']}",
+                    sender=sender, policy_path=policy_path, client=client, now=now, block_number=block,
+                )
+                result["items"].append(row)
+                if row["status"] != "ready":
+                    result.update(status=row["status"], message=f"Payment {len(result['items'])}: {row['message'] or 'Checks did not pass.'}")
+                    break
+                block = row["network"]["block_number"]
+            else:
+                configs = {item["configuration_hash"] for item in result["items"]}
+                if len(configs) != 1:
+                    raise ValueError("Configuration changed during batch collection")
+                aggregate = aggregate_proofs(plan, [row["proof"] for row in result["items"]])
+                finished = now or datetime.now(timezone.utc)
+                if not 0 <= (finished - started).total_seconds() <= 60:
+                    raise ValueError("Batch collection exceeded 60 seconds; retry the review")
+                first = result["items"][0]
+                base_nonce = first["proof"]["state"]["nonce"]
+                if base_nonce + len(result["items"]) > 2**64 - 1:
+                    raise ValueError("Batch nonce range exceeds EVM account limits")
+                ready = aggregate["status"] == "candidate_plan"
+                result.update(
+                    status="ready" if ready else "blocked", draft_allowed=ready,
+                    configuration_hash=first["configuration_hash"], aggregate=aggregate,
+                    network=deepcopy(first["network"]), pending_nonce=str(base_nonce),
+                    nonce_sequence=[str(base_nonce + i) for i in range(len(result["items"]))],
+                    fee={"status": "estimated", "amount": units_to_amount(int(aggregate["native_fee_budget_wei"]), 18),
+                         "symbol": "PROS"},
+                    checks=[{"name": check["name"], "label": check["name"].replace("_", " ").title(),
+                             "passed": check["passed"], "detail": "Whole-batch check", "source": "chain_mcp_skill"}
+                            for check in aggregate["checks"]],
+                    message=BATCH_BOUNDARY,
+                )
+        except (ValueError, ReplayMismatch, KeyError, TypeError, OSError, OverflowError) as exc:
+            result.update(status="data_unavailable", draft_allowed=False,
+                          message=f"Batch checks failed: {str(exc)[:240]}")
+    result["integrity_hash"] = review_fingerprint(result)
+    return result
+
+
+def batch_comparison(review):
+    """Only a fresh snapshot may differ; authorization-relevant fields may not."""
+    return {
+        key: review.get(key) for key in ("configuration_hash", "plan", "pending_nonce", "nonce_sequence")
+    } | {
+        "items": [{key: item.get(key) for key in
+                   ("configuration_hash", "payment", "prepared_transaction", "fee", "balance")}
+                  for item in review["items"]]
+    }
+
+
+def batch_draft(review, now=None):
+    now = now or datetime.now(timezone.utc)
+    if (review.get("kind") != "batch" or review.get("status") != "ready"
+            or review.get("draft_allowed") is not True
+            or review.get("integrity_hash") != review_fingerprint(review)
+            or not 0 <= (now - datetime.fromisoformat(review["created_at"])).total_seconds() <= 60
+            or now >= datetime.fromisoformat(review["expires_at"])):
+        raise ValueError("A fresh, intact and allowed batch review is required")
+    aggregate = aggregate_proofs(review["plan"], [item["proof"] for item in review["items"]])
+    if aggregate != review["aggregate"] or aggregate["status"] != "candidate_plan":
+        raise ValueError("Batch aggregate changed or failed")
+    if review["payments"] != review["plan"]["payments"]:
+        raise ValueError("Batch rows or memos disagree with the reviewed plan")
+    base_nonce = review["items"][0]["proof"]["state"]["nonce"]
+    sequence = [str(base_nonce + i) for i in range(len(review["items"]))]
+    if (review.get("nonce_sequence") != sequence or review.get("pending_nonce") != str(base_nonce)
+            or int(sequence[-1]) >= 2**64 - 1):
+        raise ValueError("Invalid batch nonce sequence")
+    items = []
+    for index, (source, payment) in enumerate(zip(review["items"], review["payments"])):
+        item = mainnet_draft(source, now)
+        item["transaction"]["nonce"] = hex(int(sequence[index]))
+        item.update(order=index + 1, memo=payment["memo"], wallet_ready=False,
+                    simulation_nonce=str(base_nonce), nonce_scope="ordered_request_not_sequential_simulation")
+        item.pop("wallet_uri", None)
+        item["integrity_hash"] = review_fingerprint(item)
+        items.append(item)
+    result = {
+        "id": uuid4().hex, "record_type": "payment_draft", "kind": "unsigned_batch", "mode": "mcp",
+        "review_id": review["id"], "created_at": now.isoformat(), "expires_at": review["expires_at"],
+        "status": "draft_created", "items": items, "payments": deepcopy(review["payments"]),
+        "network": deepcopy(review["network"]), "fee": deepcopy(review["fee"]),
+        "plan": deepcopy(review["plan"]), "aggregate": aggregate, "nonce_sequence": sequence,
+        "transaction_count": len(items), "wallet_ready": False, "signing_ready": False,
+        "atomic_execution": False, "sequential_simulation": False,
+        "signed": False, "broadcast": False, "recorded": False, "message": BATCH_BOUNDARY,
+    }
+    result["integrity_hash"] = review_fingerprint(result)
+    return result
 
 
 def main():

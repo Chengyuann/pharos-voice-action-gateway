@@ -19,6 +19,7 @@ let config = null, review = null, draft = null, followField = "", busy = false;
 let revision = 0, expiryTimer = null, records = [];
 let actionSession = null, actionQueue = Promise.resolve(), actionSyncError = "";
 let cancelling = false, correcting = false;
+let followItem = null;
 const answers = {};
 
 function element(tag, text = "", className = "") {
@@ -28,6 +29,18 @@ function element(tag, text = "", className = "") {
   return value;
 }
 function mode() { return document.querySelector('input[name="mode"]:checked').value; }
+function isBatch() { return document.querySelector('input[name="payment-kind"]:checked').value === "batch"; }
+function syncPaymentKind() {
+  const batch = isBatch();
+  if (batch) document.querySelector('input[name="mode"][value="mcp"]').checked = true;
+  $("request").maxLength = batch ? 2000 : 500;
+  $("request").placeholder = batch ? 'Pay alice 0.1 USDC memo "Invoice 24"; Pay alice 0.001 PROS' : "Send 0.02 PHRS to 0x...";
+  $("edit-details").hidden = batch;
+  $("correction-form").hidden = batch;
+  for (const input of document.querySelectorAll('input[name="mode"]')) {
+    input.disabled = busy || (batch && input.value !== "mcp");
+  }
+}
 function shortAddress(value) { return value ? `${value.slice(0, 10)}…${value.slice(-8)}` : "Not configured"; }
 // Display actual app states only. Animation never advances or authorizes a payment.
 function setFlowState(state) {
@@ -78,6 +91,8 @@ function resetIntentSource() {
 function importVoicePayment(text, source) {
   if (busy || !config) return false;
   if (typeof text !== "string" || !/^(send|pay|transfer)\b/i.test(text) || text.length > 500) return false;
+  document.querySelector('input[name="payment-kind"][value="single"]').checked = true;
+  syncPaymentKind();
   $("request").value = text;
   $("request").dispatchEvent(new Event("input"));
   $("intent-source").textContent = `FIXTURE TEXT / ${source} · REQUIRES A NEW REVIEW`;
@@ -229,6 +244,7 @@ async function correctCurrentAction(event) {
 function resetAnswers() {
   for (const key of Object.keys(answers)) delete answers[key];
   followField = "";
+  followItem = null;
   $("follow-up").hidden = true;
   $("follow-input").required = false;
   $("review-button").textContent = "Review payment →";
@@ -260,6 +276,7 @@ function setBusy(value) {
   busy = value;
   $("payment-form").setAttribute("aria-busy", String(value));
   for (const control of $("payment-form").elements) control.disabled = value;
+  syncPaymentKind();
   $("review-button").disabled = value || !config;
   if ($("confirm-details")) $("confirm-details").disabled = value || Boolean(draft);
   if ($("draft-button")) $("draft-button").disabled = value || Boolean(draft) || !$("confirm-details")?.checked;
@@ -346,6 +363,11 @@ function renderReview(result) {
   $("status").className = `pill ${result.status}`;
   $("review-time").textContent = `Checked ${new Date(result.created_at).toLocaleTimeString()} · ${result.mode === "mcp" ? "Official Chain MCP" : result.mode === "demo" ? "Demo data" : "Live network"}`;
   $("review-body").replaceChildren();
+  if (result.kind === "batch") {
+    scheduleExpiry(result);
+    renderBatchReview(result);
+    return;
+  }
   showDirectFields(result.payment);
   if (result.payment?.amount && result.payment?.token && result.payment?.recipient) {
     $("request").value = `Send ${result.payment.amount} ${result.payment.token} to ${result.payment.recipient}`;
@@ -442,9 +464,12 @@ async function submitReview(event) {
   if (followField) {
     const value = $("follow-input").value.trim();
     if (!value) { $("follow-input").reportValidity(); return; }
-    answers[followField] = value;
+    if (isBatch() && followItem !== null) {
+      answers[String(followItem)] = { ...answers[String(followItem)], [followField]: value };
+    } else answers[followField] = value;
   }
   const payload = { text: $("request").value.trim(), answers: { ...answers }, mode: mode() };
+  if (isBatch()) payload.kind = "batch";
   review = null;
   draft = null;
   clearTimeout(expiryTimer);
@@ -524,14 +549,16 @@ function renderDraft(result) {
   setFlowState("draft");
   const box = element("div", "", "draft");
   box.id = "draft-result";
-  box.append(element("h3", result.wallet_ready ? "Unsigned request created" : "Example draft created"), element("p", result.message));
+  const batch = result.kind === "unsigned_batch";
+  box.append(element("h3", batch ? `${result.transaction_count} unsigned requests created` : result.wallet_ready ? "Unsigned request created" : "Example draft created"), element("p", result.message));
   if (result.rolling_budget) box.append(element("p",
     "This draft counts against the rolling issuance allowance. Cancelling or restarting does not refund it. No funds were moved."));
   const details = element("details", "", "developer");
-  details.append(element("summary", "View transaction fields"), element("pre", JSON.stringify(result.transaction, null, 2)));
+  const transactions = batch ? result.items.map(item => ({ order: item.order, memo: item.memo, transaction: item.transaction })) : result.transaction;
+  details.append(element("summary", batch ? "View ordered requests" : "View transaction fields"), element("pre", JSON.stringify(transactions, null, 2)));
   box.append(details);
   const actions = element("div", "", "draft-actions");
-  const copy = element("button", result.wallet_ready ? "Copy unsigned request" : "Copy example report", "plain");
+  const copy = element("button", batch ? "Copy batch report" : result.wallet_ready ? "Copy unsigned request" : "Copy example report", "plain");
   copy.type = "button";
   copy.onclick = async () => {
     if (draft !== result || Date.now() >= Date.parse(result.expires_at)) { invalidate("This draft expired. Run a new review."); return; }
@@ -585,7 +612,8 @@ function renderDraft(result) {
 }
 function recordCard(record) {
   const item = element("div", "", "record"), payment = element("div");
-  payment.append(element("strong", record.amount && record.token ? `${record.amount} ${record.token}` : "Incomplete payment"),
+  payment.append(element("strong", record.kind === "batch" || record.kind === "unsigned_batch"
+    ? `Batch · ${record.payment_count} payments` : record.amount && record.token ? `${record.amount} ${record.token}` : "Incomplete payment"),
     element("p", `${labels[record.status] || record.status} · ${record.mode === "mcp" ? "Chain MCP" : record.mode === "demo" ? "Demo" : "Live"} · ${shortAddress(record.recipient)}`));
   const time = element("time", record.created_at ? new Date(record.created_at).toLocaleString() : "—");
   const button = element("button", "View", "plain");
@@ -677,9 +705,16 @@ $("edit-token").addEventListener("change", editDirectFields);
 for (const input of document.querySelectorAll('input[name="mode"]')) input.addEventListener("change", () => {
   resetAnswers(); invalidate(); setModeText(); showDirectFields(null);
 });
+for (const input of document.querySelectorAll('input[name="payment-kind"]')) input.addEventListener("change", () => {
+  resetAnswers(); invalidate(); syncPaymentKind(); setModeText();
+});
 for (const button of document.querySelectorAll("[data-example]")) button.onclick = () => {
   if (busy) return;
-  $("request").value = mode() === "mcp"
+  $("request").value = isBatch()
+    ? {complete:'Pay alice 0.1 USDC memo "Invoice 24"; Pay alice 0.001 PROS',
+       missing:"Send USDC to alice; Pay alice 0.001 PROS",
+       balance:"Pay alice 0.6 USDC; Pay alice 0.7 USDC"}[button.dataset.example]
+    : mode() === "mcp"
     ? {complete:"Pay alice 0.001 PROS", missing:"Send USDC to alice", balance:"Pay alice 999999 USDC"}[button.dataset.example]
     : examples[button.dataset.example];
   $("request").dispatchEvent(new Event("input"));

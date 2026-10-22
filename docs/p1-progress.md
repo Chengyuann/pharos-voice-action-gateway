@@ -16,6 +16,10 @@ Arena.** P0 `main` and the curated public `site/` files are preserved.
 | Contacts | Exact configured alias, including 1–5 explicitly listed addresses with a user-selected full address; no first-match guessing or ENS resolution |
 | Secondary RPC | Optional read-only same-block chain/header/balance/code/call comparison, after mandatory valid official MCP evidence |
 | Batch foundation | 1–5 semicolon-separated planning rows, per-row clarification, local JSON-quoted memo, duplicate-row rejection and aggregate same-snapshot balance checks |
+| Batch lifecycle | Existing capability-token and revision state machine now binds confirmation to all rows and memos; any edit or cancellation revokes confirmation |
+| Batch review and export | One common block, separately replayable row proofs, whole-batch balance/fee checks, fresh full recheck before one unsigned export |
+| Shared nonce reservation | Contiguous ordered nonces reserved atomically with all asset/fee charges in the same ledger as single MCP payments; overlaps fail closed |
+| Batch interface | Single/batch switch, indexed follow-up questions, full recipient list, local memos, aggregate totals and nonce order, explicit whole-batch confirmation, activity and audit downloads |
 
 ## Boundaries that must remain explicit
 
@@ -38,10 +42,24 @@ Arena.** P0 `main` and the curated public `site/` files are preserved.
 - **Secondary path is not independent infrastructure.** The tested direct RPC
   endpoint may share infrastructure with MCP. It supplies corroboration, not
   authenticated provenance or a fallback.
-- **Batch planning is not complete batch payment.** No nonce allocation,
-  sequential-state simulation, batch confirmation, atomic batch reservation,
-  signing/export endpoint or full batch UI has been implemented. The planner
-  returns `signing_ready: false`, even when aggregate checks pass.
+- **Batch export is not atomic execution.** Only Pacific Mainnet PROS, USDC
+  and WPROS with ordinary EOA recipients are supported. Each row is simulated
+  independently at the same block, not after applying earlier rows. Stateful
+  token behavior and external pending transactions can still change outcomes.
+  The export remains `signing_ready: false` and `wallet_ready: false`; each
+  request needs an independent wallet check. No signing or broadcast is added.
+- **Nonces do not expire locally.** Cancelling, restarting or waiting for the
+  allowance window to expire does not release an exported or reserved nonce.
+  A conflicting pending nonce is blocked rather than silently skipped.
+  When the chain advances to a new non-overlapping pending range, a fresh
+  review can proceed. This does not coordinate other apps or prove that a
+  previous exported payment was executed. Legacy P1 mainnet reservations
+  without nonce metadata block further exports for that sender until a
+  separately designed reconciliation process exists.
+- **Time and precision.** Common-block collection must finish within 60
+  seconds; all rows must agree on sender, block/hash, native balance, gas price,
+  pending nonce and policy. Nonce sequences use decimal strings in JSON to
+  preserve integers above JavaScript's safe-integer range.
 
 ## Reproduce
 
@@ -95,16 +113,26 @@ the candidate rather than silently dropping the extra gate.
   `output/p1/secondary-live-review.json`, not substituted into P0 evidence.
 - The copied P0 static-file baseline matched the working tree exactly.
 
-## Next P1 milestone
+## Batch verification
 
-1. Introduce a batch action/revision state machine, confirmation tied to every
-   row and memo, and a complete batch UI.
-2. Collect all batch state at a common block, then recheck before export.
-3. Define ordered nonce and sequential-state behavior rather than treating
-   independently simulated transfers as one atomic transaction.
-4. Atomically reserve **all** batch asset/fee allowances before issuing any
-   signing requests; cancellation/failure must never partially bypass policy.
-5. Add integration tests, then review P1 for merge/publication separately.
+- 30 dedicated batch lifecycle tests passed, covering shared single/batch nonce
+  conflicts, whole-batch budget denial, fee-inclusive charges, clarification,
+  memo edits, partial simulation failure, policy changes, cancellation during
+  work, restart, disk failure, exact large nonces and legacy reservations.
+- Final complete regression: **415 tests passed in 90.08 seconds**.
+- Browser QA used an isolated, visibly marked `FakeChain` server. Missing amount
+  follow-up, disabled export before confirmation, two-request export and the
+  audit link were exercised. Screenshots and DOM checks at 320, 390, 768, 1280
+  and 1600 pixels had no horizontal overflow. The final code repeated the
+  mixed USDC/PROS example, whole-batch confirmation and two-request export.
+- The curated P0 bundle still validates; `site/` is unchanged. Private QA
+  records remain under ignored `output/p1/`, not in the public evidence.
+
+## Next decision
+
+Review P1 for merge/publication separately. Live microphone capture, ASR/TTS,
+speaker verification, wallet signing and sequential transaction simulation
+remain outside this batch milestone. No Arena resubmission is automatic.
 
 Primary references used for this implementation:
 

@@ -312,7 +312,7 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == "/payment-preview":
             self.send_file(ROOT / "web" / "payment-preview.html", "text/html; charset=utf-8")
             return
-        if parsed.path in {"/assets/payment-preview.css", "/assets/payment-preview.js", "/assets/voice-console.js"}:
+        if parsed.path in {"/assets/payment-preview.css", "/assets/payment-preview.js", "/assets/payment-batch.js", "/assets/voice-console.js"}:
             filename = parsed.path.rsplit("/", 1)[-1]
             content_type = "text/css" if filename.endswith(".css") else "text/javascript"
             self.send_file(ROOT / "web" / filename, content_type + "; charset=utf-8")
@@ -696,12 +696,20 @@ class Handler(BaseHTTPRequestHandler):
                 "amount": payment.get("amount"),
                 "token": payment.get("token"),
                 "recipient": payment.get("recipient"),
+                "kind": record.get("kind"),
+                "payment_count": len(record.get("payments", [])),
             })
             if len(records) == 100:
                 break
         return records
 
     def evaluate_payment(self, payload: dict) -> dict:
+        if isinstance(payload, dict) and payload.get("kind") == "batch":
+            from payment_actions import validate_input
+            from payment_batch import make_batch_review
+            validate_input(payload)
+            return make_batch_review(payload["text"], payload["answers"], sender=mainnet_sender(),
+                                     policy_path=getattr(self.server, "mainnet_policy_path", MAINNET_POLICY))
         if not isinstance(payload, dict) or set(payload) - {"text", "answers", "mode"}:
             raise ValueError("expected text, answers and mode")
         text = payload.get("text")
@@ -782,6 +790,27 @@ class Handler(BaseHTTPRequestHandler):
                 getattr(self.server, "budget_policy_path", DEFAULT_POLICY)):
             raise ActionConflict("The rolling issuance policy changed. Review again.")
         mode = review.get("mode")
+        if review.get("kind") == "batch":
+            from payment_batch import make_batch_review, batch_comparison, batch_draft
+            fresh = make_batch_review(
+                review["request_text"], review.get("answers"), sender=mainnet_sender(),
+                policy_path=getattr(self.server, "mainnet_policy_path", MAINNET_POLICY),
+            )
+            if fresh["status"] == "data_unavailable":
+                raise PaymentNetworkError()
+            if fresh["status"] != "ready" or batch_comparison(fresh) != batch_comparison(review):
+                raise ActionConflict("Batch rows, account, nonce, fees, balance or policy changed. Review the whole batch again.")
+            fresh["previous_review_id"] = review["id"]
+            for key in ("action_id", "action_revision"):
+                if key in review:
+                    fresh[key] = review[key]
+            fresh["integrity_hash"] = review_fingerprint(fresh)
+            draft = batch_draft(fresh)
+            draft["original_review_id"] = review["id"]
+            draft["integrity_hash"] = review_fingerprint(draft)
+            if not defer_live_recheck:
+                raise ActionAccessDenied("Batch export requires its confirmed action session.")
+            return draft, fresh
         if mode == "mcp":
             fresh = make_mainnet_review(
                 review["request_text"], review.get("answers"), sender=mainnet_sender(),

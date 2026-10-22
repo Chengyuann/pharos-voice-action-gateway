@@ -551,3 +551,12 @@ html[data-motion="off"] .waveform i { transform: scaleY(.55); opacity: .75; }
 @media (prefers-reduced-motion: reduce) {
   .waveform i { animation: none; transform: scaleY(.55); opacity: .75; }
 }
+/* Batch rows remain a flat, readable list on narrow screens. */
+.payment-kind { margin: 0 0 20px; }
+.batch-payments { padding-left: 24px; margin: 20px 0; }
+.batch-payments li { padding: 14px 0; border-bottom: 1px solid #dce1e7; }
+.batch-payments li::marker { font-variant-numeric: tabular-nums; color: #245bd6; }
+.batch-payments p { margin: 6px 0; overflow-wrap: anywhere; }
+.batch-payments strong { font-size: 18px; font-variant-numeric: tabular-nums; }
+.batch-payments .address { font-size: 12px; }
+.batch-memo { color: #5d6571; white-space: pre-wrap; }

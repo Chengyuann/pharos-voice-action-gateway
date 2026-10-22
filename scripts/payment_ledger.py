@@ -54,6 +54,19 @@ def load_budget_policy(path=DEFAULT_POLICY):
 
 def draft_charges(draft, policy):
     """Count native fee budgets too; no cross-chain, cross-sender or asset pooling."""
+    if draft.get("kind") == "unsigned_batch":
+        if not isinstance(draft.get("items"), list) or not 1 <= len(draft["items"]) <= 5:
+            raise ValueError("Expected 1-5 batch items")
+        combined = {}
+        for item in draft["items"]:
+            if item.get("kind") == "unsigned_batch" or item.get("mode") != "mcp":
+                raise ValueError("Nested or non-mainnet batches are unsupported")
+            for charge in draft_charges(item, policy):
+                scope = charge["scope"]
+                if scope not in combined:
+                    combined[scope] = {**charge, "units": "0"}
+                combined[scope]["units"] = str(int(combined[scope]["units"]) + int(charge["units"]))
+        return [combined[scope] for scope in sorted(combined)]
     chain = str(draft["network"]["chain_id"])
     sender = validate_address(draft["transaction"]["from"])
     token = draft["payment"]["token"]
@@ -78,6 +91,30 @@ def draft_charges(draft, policy):
         charges.append({"scope": f"{mode}:{chain}:{sender}:{symbol}", "asset": symbol,
                         "units": str(units), "limit_units": str(limit)})
     return charges
+
+
+def draft_nonces(draft):
+    """Only explicit mainnet nonce requests are reserved; never invent a gap."""
+    if draft.get("mode") != "mcp":
+        return []
+    transactions = ([item["transaction"] for item in draft["items"]]
+                    if draft.get("kind") == "unsigned_batch" else [draft["transaction"]])
+    if not 1 <= len(transactions) <= 5:
+        raise ValueError("Invalid nonce request count")
+    reservations = []
+    for tx in transactions:
+        if (tx.get("chainId") != 1672 or type(tx["chainId"]) is not int
+                or not isinstance(tx.get("nonce"), str)
+                or not re.fullmatch(r"0x(?:0|[1-9a-f][0-9a-f]*)", tx["nonce"])
+                or int(tx["nonce"], 16) >= 2**64 - 1):
+            raise ValueError("Invalid mainnet nonce request")
+        reservations.append({"scope": f"1672:{validate_address(tx['from'])}",
+                             "nonce": str(int(tx["nonce"], 16))})
+    if any(item["scope"] != reservations[0]["scope"]
+           or int(item["nonce"]) != int(reservations[0]["nonce"]) + index
+           for index, item in enumerate(reservations)):
+        raise ValueError("Batch requires one sender and contiguous ordered nonces")
+    return reservations
 
 
 def verify_audit_chain(value, expected_tip=None):
@@ -230,6 +267,21 @@ class PaymentLedger:
             if old["material_hash"] != material_hash:
                 raise ValueError("Draft ID was reused with different details")
             return {"status": "already_counted", "counting_basis": "unsigned_draft_issued"}
+        nonces = draft_nonces(draft)
+        requested = {(item["scope"], item["nonce"]) for item in nonces}
+        for entry in chain["entries"]:
+            if entry["kind"] != "draft_budget_reserved" or not nonces:
+                continue
+            previous = entry["payload"]
+            if "nonce_reservations" not in previous:
+                for charge in previous["charges"]:
+                    scope = charge["scope"].split(":")
+                    if scope[0] == "mcp" and ":".join(scope[1:3]) == nonces[0]["scope"]:
+                        raise BudgetDenied("Legacy mainnet exports need nonce reconciliation before new exports.")
+            for item in previous.get("nonce_reservations", []):
+                if (item["scope"], item["nonce"]) in requested:
+                    raise BudgetDenied("Pending nonce is already reserved by a local export. "
+                                       "Wait for chain progress and review again; cancellation does not release it.")
         cutoff = (now - timedelta(seconds=window_seconds)).isoformat()
         used = {scope: 0 for scope in scopes}
         for row in connection.execute("SELECT charges FROM p1_issuances WHERE issued_at > ?", (cutoff,)):
@@ -244,9 +296,11 @@ class PaymentLedger:
         event = cls.append_to(connection, "draft_budget_reserved", {
             "draft_id": draft["id"], "action_id": action_id, "charges": charges,
             "material_hash": material_hash, "window_seconds": window_seconds,
+            "nonce_reservations": nonces,
             "counting_basis": "unsigned_draft_issued"}, now)
         return {"status": "counted", "counting_basis": "unsigned_draft_issued", "charges": charges,
                 "window_seconds": window_seconds, "audit_hash": event["entry_hash"],
+                "nonce_reservations": nonces,
                 "boundary": "Includes conservatively reserved/failed exports, not actual on-chain spend; cancellation does not refund."}
 
     def authorize(self, **kwargs):

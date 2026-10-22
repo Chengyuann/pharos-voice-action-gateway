@@ -32,22 +32,38 @@ class ActionAccessDenied(ValueError):
 
 
 def validate_input(payload):
-    if not isinstance(payload, dict) or set(payload) != {"text", "answers", "mode"}:
+    if (not isinstance(payload, dict)
+            or set(payload) not in ({"text", "answers", "mode"}, {"text", "answers", "mode", "kind"})):
         raise ValueError("expected text, answers and mode")
-    if not isinstance(payload["text"], str) or not 1 <= len(payload["text"].strip()) <= 500:
-        raise ValueError("instruction must contain 1-500 characters")
+    batch = payload.get("kind") == "batch"
+    if "kind" in payload and not batch:
+        raise ValueError("Unsupported action kind")
+    limit = 2000 if batch else 500
+    if not isinstance(payload["text"], str) or not 1 <= len(payload["text"].strip()) <= limit:
+        raise ValueError(f"instruction must contain 1-{limit} characters")
     if payload["mode"] not in ("demo", "live", "mcp"):
         raise ValueError("mode must be demo, live or mcp")
     answers = payload["answers"]
-    if (not isinstance(answers, dict) or set(answers) - {"amount", "token", "recipient"}
-            or any(not isinstance(v, str) or not 1 <= len(v.strip()) <= 100 for v in answers.values())):
-        raise ValueError("invalid payment answers")
+    if batch:
+        if payload["mode"] != "mcp":
+            raise ValueError("Batch review requires Official Chain MCP mode")
+        if not isinstance(answers, dict) or set(answers) - {str(i) for i in range(5)}:
+            raise ValueError("Batch answers require item indices 0-4")
+        values = answers.values()
+    else:
+        values = [answers]
+    for value in values:
+        if (not isinstance(value, dict) or set(value) - {"amount", "token", "recipient"}
+                or any(not isinstance(v, str) or not 1 <= len(v.strip()) <= 100 for v in value.values())):
+            raise ValueError("invalid payment answers")
     return deepcopy(payload)
 
 
 def revise_amount(payload, instruction):
     """Only explicit, single-field corrections are accepted; ambiguous input is not guessed."""
     payload = validate_input(payload)
+    if payload.get("kind") == "batch":
+        raise ValueError("Edit the full batch to change an amount, recipient or memo.")
     if not isinstance(instruction, str) or not 1 <= len(instruction.strip()) <= 100:
         raise ValueError("correction must contain 1-100 characters")
     match = re.fullmatch(
@@ -172,7 +188,8 @@ class ActionStore:
                 message = "Amount corrected. A new review is required."
             except ValueError as exc:
                 # Even an unclear correction invalidates the old review and confirmation.
-                payload = {"text": instruction, "answers": {}, "mode": previous.get("mode", "demo")}
+                payload = (previous if previous.get("kind") == "batch" else
+                           {"text": instruction, "answers": {}, "mode": previous.get("mode", "demo")})
                 payload = validate_input(payload)
                 change, message = None, str(exc)
             connection.execute(

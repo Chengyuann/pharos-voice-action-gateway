@@ -52,12 +52,12 @@ def parse_mainnet_request(text, answers=None, contacts=None):
     source = re.sub(r"^(?:please\s+)?(?:could|can)\s+you\s+", "", source, flags=re.I)
     # "Pay alice 1 USDC" is an alternative order, but every word must match.
     reversed_form = re.fullmatch(
-        r"(?:please\s+)?pay\s+([A-Za-z][A-Za-z0-9_.-]*)\s+(\d+(?:\.\d+)?)\s+([A-Za-z]+)[.!]?",
+        r"(?:please\s+)?pay\s+([A-Za-z][A-Za-z0-9_.-]*)\s+(?:(\d+(?:\.\d+)?)\s+)?([A-Za-z]+)[.!]?",
         source, re.I,
     )
     if reversed_form:
         recipient, amount, token = reversed_form.groups()
-        source = f"Send {amount} {token} to {recipient}"
+        source = f"Send {amount or ''} {token} to {recipient}"
 
     ambiguous_amount = re.fullmatch(
         r"(?:please\s+)?(?:send|pay|transfer)\s+(\d+(?:\.\d+)?)\s+or\s+"

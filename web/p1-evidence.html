@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Pharos Voice Action Gateway: recorded P1 batch review evidence.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Pharos Voice Action Gateway | P1 Evidence</title>
+  <style>
+    :root { color-scheme: light; --blue:#245bda; --ink:#172024; --muted:#56636e; --line:#dfe5eb; --green:#147447; }
+    * { box-sizing:border-box; letter-spacing:0; }
+    body { margin:0; color:var(--ink); background:#f6f8fb; font:15px/1.6 system-ui,sans-serif; }
+    button,a { -webkit-tap-highlight-color:transparent; }
+    a { color:var(--blue); text-underline-offset:4px; overflow-wrap:anywhere; }
+    :focus-visible { outline:3px solid #cf6a19; outline-offset:4px; }
+    .skip { position:absolute;top:-60px;left:12px;background:white;padding:8px;z-index:2; }
+    .skip:focus { top:8px; }
+    header { border-bottom:1px solid var(--line); background:#fff; }
+    .header-inner { max-width:1200px;margin:auto;padding:20px 32px;display:flex;gap:24px;justify-content:space-between;align-items:center; }
+    .brand { display:flex;align-items:center;gap:12px; }
+    .brand img { width:42px;height:42px;object-fit:contain;border-radius:6px; }
+    .brand strong { display:block;font-size:17px;line-height:1.3; }
+    .brand span,.status { font-size:12px;color:var(--muted); }
+    .status { border-left:3px solid var(--blue);padding-left:12px; }
+    main { max-width:1200px;margin:auto;padding:32px; }
+    .heading { display:flex;justify-content:space-between;align-items:end;gap:24px;margin-bottom:24px; }
+    .eyebrow { margin:0 0 4px;font:12px ui-monospace,monospace;color:var(--blue); }
+    h1 { font:600 36px/1.15 system-ui,sans-serif;margin:0; }
+    h2 { font-size:19px;line-height:1.3;margin:0 0 18px; }
+    h3 { font-size:16px;margin:0; }
+    p { margin:8px 0; }
+    .result { color:var(--green);font-weight:650;white-space:nowrap; }
+    .result[data-denied="true"] { color:#a13f26; }
+    .summary { display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:20px 0;gap:20px; }
+    .metric { min-width:0; }
+    .metric span { display:block;font-size:12px;color:var(--muted); }
+    .metric strong { display:block;font:500 26px/1.5 ui-monospace,monospace;overflow-wrap:anywhere; }
+    nav { display:flex;gap:26px;border-bottom:1px solid var(--line);margin:20px 0 26px; }
+    nav button { appearance:none;background:none;border:0;border-bottom:3px solid transparent;padding:12px 0;min-height:48px;color:var(--muted);font:600 14px system-ui;cursor:pointer; }
+    nav button[aria-selected="true"] { color:var(--blue);border-bottom-color:var(--blue); }
+    nav button:hover { color:var(--ink); }
+    .layout { display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:40px; }
+    section,aside { min-width:0; }
+    .payments { list-style:none;padding:0;margin:0;counter-reset:payment; }
+    .payments li { counter-increment:payment;position:relative;padding:18px 0 18px 42px;border-top:1px solid var(--line); }
+    .payments li::before { content:counter(payment,decimal-leading-zero);position:absolute;left:0;top:19px;font:12px ui-monospace,monospace;color:var(--blue); }
+    .payment-title { display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap; }
+    .payment-title strong { font-size:20px;font-variant-numeric:tabular-nums; }
+    .payment-title small { color:var(--muted);font:12px ui-monospace,monospace;align-self:center; }
+    .address { font:12px/1.7 ui-monospace,monospace;overflow-wrap:anywhere; }
+    .muted { color:var(--muted);font-size:13px; }
+    .totals { margin-top:20px;border-top:2px solid var(--ink);padding-top:14px; }
+    .total { display:flex;justify-content:space-between;gap:12px;padding:7px 0; }
+    .total strong { font:500 15px ui-monospace,monospace;text-align:right;overflow-wrap:anywhere; }
+    .checks { padding:0;list-style:none;margin:0; }
+    .checks li { display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--line); }
+    .check-state { font:12px ui-monospace,monospace;color:var(--green);padding-top:4px;min-width:36px; }
+    .check-state.fail { color:#a13f26; }
+    .notice { margin-top:24px;border-left:3px solid #ba7026;padding:3px 0 3px 14px;font-size:13px;color:var(--muted); }
+    dl { display:grid;grid-template-columns:150px minmax(0,1fr);gap:14px 22px;margin:0; }
+    dt { color:var(--muted);font-size:13px; }
+    dd { margin:0;overflow-wrap:anywhere; }
+    .downloads { display:flex;gap:24px;flex-wrap:wrap;margin-top:28px; }
+    .downloads a { font-size:14px;font-weight:600; }
+    .trace { margin:0;padding-left:28px; }
+    .trace li { padding:8px 0 12px;border-top:1px solid var(--line); }
+    .trace code { font-size:13px; }
+    .trace small { display:block;font:12px/1.6 ui-monospace,monospace;overflow-wrap:anywhere;color:var(--muted); }
+    details { margin-top:26px; }
+    summary { cursor:pointer;color:var(--blue);padding:8px 0; }
+    pre { padding:20px;background:#edf1f6;overflow:auto;max-height:420px;font:12px/1.65 ui-monospace,monospace; }
+    footer { margin-top:36px;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--muted); }
+    [hidden] { display:none!important; }
+    @media(max-width:720px) {
+      .header-inner,main { padding:20px; }
+      .header-inner { align-items:start;gap:14px; }
+      .brand strong { font-size:14px;max-width:175px; }
+      .brand img { width:32px;height:32px; }
+      .status { max-width:95px; }
+      h1 { font-size:29px; }
+      .heading { align-items:start;flex-direction:column;gap:12px; }
+      .summary { grid-template-columns:repeat(2,minmax(0,1fr));gap:18px; }
+      .metric strong { font-size:22px; }
+      .layout { grid-template-columns:1fr;gap:28px; }
+      nav { gap:20px; }
+      nav button { font-size:13px; }
+      dl { grid-template-columns:1fr;gap:3px; }
+      dd { margin-bottom:14px; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to evidence</a>
+  <header><div class="header-inner">
+    <div class="brand"><img alt="Pharos" src="data:image/png;base64,__P1_LOGO__"><div><strong>Pharos Voice Action Gateway</strong><span>P1 / batch evidence</span></div></div>
+    <div class="status">Local release preview<br>Not submitted to Arena</div>
+  </div></header>
+  <main id="main">
+    <div class="heading"><div><p class="eyebrow">RECORDED MAINNET OBSERVATIONS</p><h1>Batch payment review</h1><p id="captured" class="muted"></p></div><span id="result" class="result"></span></div>
+    <div class="summary">
+      <div class="metric"><span>Payment rows</span><strong id="row-count"></strong></div>
+      <div class="metric"><span>State block</span><strong id="block"></strong></div>
+      <div class="metric"><span>Official MCP calls</span><strong id="call-count"></strong></div>
+      <div class="metric"><span>Secondary comparisons</span><strong id="secondary-count"></strong></div>
+    </div>
+    <nav role="tablist" aria-label="Evidence views">
+      <button role="tab" id="tab-summary" aria-controls="panel-summary" aria-selected="true">Payments</button>
+      <button role="tab" id="tab-evidence" aria-controls="panel-evidence" aria-selected="false" tabindex="-1">Evidence</button>
+      <button role="tab" id="tab-trace" aria-controls="panel-trace" aria-selected="false" tabindex="-1">Request trace</button>
+    </nav>
+    <section role="tabpanel" id="panel-summary" aria-labelledby="tab-summary">
+      <div class="layout"><section><h2>Reviewed payments</h2><ol id="payments" class="payments"></ol><div id="totals" class="totals"></div></section>
+      <aside><h2>Batch checks</h2><ul id="checks" class="checks"></ul><div class="notice">Independent simulations, not atomic execution. No confirmation, budget reservation, signature or broadcast was performed. Nonces shown are historical proposals, not instructions for a wallet.</div></aside></div>
+    </section>
+    <section role="tabpanel" id="panel-evidence" aria-labelledby="tab-evidence" hidden>
+      <h2>Capture and verification</h2><dl id="facts"></dl>
+      <div class="downloads"><a id="download-json" download="pharos-p1-batch-evidence.json">Download evidence JSON</a><a id="download-verification" download="pharos-p1-verification.json">Download verification result</a></div>
+      <div class="notice">Offline replay checks consistency between recorded calls, decisions and displayed values. It does not authenticate a chain provider or prove ownership of the inspected address. The secondary endpoint may share infrastructure with the primary service.</div>
+      <details><summary>Recorded JSON</summary><pre id="raw"></pre></details>
+    </section>
+    <section role="tabpanel" id="panel-trace" aria-labelledby="tab-trace" hidden><h2>Official MCP call sequence</h2><ol id="trace" class="trace"></ol></section>
+    <footer>Recorded payment checks only. This capture does not demonstrate live microphone recognition, speaker authentication or voice authorization. P0 competition evidence is unchanged.</footer>
+  </main>
+  <script type="application/json" id="evidence-data">__P1_EVIDENCE_DATA__</script>
+  <script>
+    "use strict";
+    const data=JSON.parse(document.getElementById("evidence-data").textContent);
+    const {evidence_json,verification,sources}=data, evidence=JSON.parse(evidence_json), review=evidence.review;
+    const $=id=>document.getElementById(id);
+    const node=(tag,text,className="")=>{const n=document.createElement(tag);n.textContent=text;n.className=className;return n;};
+    function amount(units,decimals){const s=String(units).padStart(decimals+1,"0");const fraction=s.slice(-decimals).replace(/0+$/,"");return s.slice(0,-decimals)+(fraction?"."+fraction:"");}
+    $("captured").textContent="Captured "+new Date(evidence.captured_at).toISOString().replace("T"," ").replace("Z"," UTC")+" · Pacific Mainnet 1672";
+    $("result").textContent=review.status==="ready"?"Checks passed at capture":"Batch blocked at capture";
+    $("result").dataset.denied=String(review.status!=="ready");
+    $("row-count").textContent=verification.rows;$("block").textContent=verification.block;
+    $("call-count").textContent=verification.calls;$("secondary-count").textContent=verification.secondary_checks;
+    review.payments.forEach((payment,index)=>{
+      const li=node("li",""),title=node("div","","payment-title");
+      title.append(node("strong",payment.amount+" "+payment.token),node("small","Proposed nonce "+review.nonce_sequence[index]));
+      li.append(title,node("p",payment.recipient,"address"));
+      if(payment.memo)li.append(node("p","Memo: "+payment.memo,"muted"));
+      li.append(node("p","Gas budget: "+review.items[index].fee.amount+" PROS","muted"));$("payments").append(li);
+    });
+    const total=(label,value)=>{const n=node("div","","total");n.append(node("span",label),node("strong",value));$("totals").append(n);};
+    Object.entries(review.aggregate.totals_base_units).forEach(([token,units])=>total(token+" total",amount(units,token==="USDC"?6:18)+" "+token));
+    total("Combined gas budget",review.fee.amount+" PROS");
+    review.checks.forEach(c=>{const li=node("li","");li.append(node("span",c.passed?"PASS":"FAIL","check-state"+(c.passed?"":" fail")),node("span",c.label));$("checks").append(li);});
+    const fact=(name,value)=>$("facts").append(node("dt",name),node("dd",String(value),"address"));
+    fact("Inspected sender",review.wallet.address);fact("Ownership","Not claimed or verified");
+    fact("Collection time",evidence.elapsed_seconds+" seconds");fact("Block hash",review.network.block_hash);
+    fact("Nonce proposals",review.nonce_sequence.join(", "));fact("Replay",verification.scope);
+    fact("Source base",sources.base_commit);fact("Source state",sources.working_tree_dirty?"Working-tree snapshot; see source hashes":"Committed source snapshot");
+    fact("Evidence digest",evidence.digest);fact("Payment execution","Not attempted");
+    review.items.forEach((item,index)=>item.proof.trace.forEach(entry=>{
+      const li=node("li","");li.append(node("code","Row "+(index+1)+" / "+entry.tool),node("small",JSON.stringify(entry.arguments)));$("trace").append(li);
+    }));
+    $("raw").textContent=evidence_json;
+    for(const [id,text] of [["download-json",evidence_json],["download-verification",JSON.stringify(verification,null,2)]])
+      $(id).href=URL.createObjectURL(new Blob([text],{type:"application/json"}));
+    const tabs=Array.from(document.querySelectorAll('[role="tab"]'));
+    function selectTab(tab){tabs.forEach(t=>{const active=t===tab;t.setAttribute("aria-selected",String(active));t.tabIndex=active?0:-1;$(t.getAttribute("aria-controls")).hidden=!active;});}
+    tabs.forEach((tab,index)=>{tab.addEventListener("click",()=>selectTab(tab));tab.addEventListener("keydown",event=>{
+      let target=null;if(event.key==="ArrowRight")target=tabs[(index+1)%tabs.length];if(event.key==="ArrowLeft")target=tabs[(index+tabs.length-1)%tabs.length];
+      if(event.key==="Home")target=tabs[0];if(event.key==="End")target=tabs[tabs.length-1];
+      if(target){event.preventDefault();selectTab(target);target.focus();}
+    });});
+  </script>
+</body>
+</html>

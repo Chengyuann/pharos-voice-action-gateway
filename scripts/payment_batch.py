@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 import json
 from pathlib import Path
 import unicodedata
+import time
 from uuid import uuid4
 
 from evm_address import validate_address
@@ -115,7 +116,7 @@ def aggregate_proofs(plan, proofs):
             raise ValueError("Proof does not match its payment row")
         state = proof["state"]
         snapshot = (proof["input"]["sender"], state["block_number"], state["block_hash"],
-                    state["native_balance"], state["nonce"], state["gas_price"])
+                    state["native_balance"], state["nonce"], state["gas_price"], state["block_timestamp"])
         if reference is not None and (snapshot != reference or proof["policy"] != policy):
             raise ValueError("Batch evidence requires one sender, block, native balance, nonce and policy")
         reference, policy = snapshot, proof["policy"]
@@ -159,6 +160,7 @@ BATCH_BOUNDARY = (
 
 def make_batch_review(text, answers=None, *, sender="", policy_path=MAINNET_POLICY, client=None, now=None):
     started = now or datetime.now(timezone.utc)
+    deadline = time.monotonic() + 60
     if started.tzinfo is None:
         raise ValueError("Review time must be timezone-aware")
     plan = parse_batch(text, answers, contacts=load_contacts())
@@ -177,9 +179,12 @@ def make_batch_review(text, answers=None, *, sender="", policy_path=MAINNET_POLI
         block = None
         try:
             for payment in plan["payments"]:
+                if time.monotonic() >= deadline:
+                    raise ValueError("Batch collection exceeded 60 seconds; retry the review")
                 row = make_mainnet_review(
                     f"Send {payment['amount']} {payment['token']} to {payment['recipient']}",
-                    sender=sender, policy_path=policy_path, client=client, now=now, block_number=block,
+                    sender=sender, policy_path=policy_path, client=client, now=now,
+                    block_number=block, deadline=deadline,
                 )
                 result["items"].append(row)
                 if row["status"] != "ready":
@@ -192,7 +197,7 @@ def make_batch_review(text, answers=None, *, sender="", policy_path=MAINNET_POLI
                     raise ValueError("Configuration changed during batch collection")
                 aggregate = aggregate_proofs(plan, [row["proof"] for row in result["items"]])
                 finished = now or datetime.now(timezone.utc)
-                if not 0 <= (finished - started).total_seconds() <= 60:
+                if time.monotonic() >= deadline or not 0 <= (finished - started).total_seconds() <= 60:
                     raise ValueError("Batch collection exceeded 60 seconds; retry the review")
                 first = result["items"][0]
                 base_nonce = first["proof"]["state"]["nonce"]
@@ -249,6 +254,8 @@ def batch_draft(review, now=None):
         raise ValueError("Invalid batch nonce sequence")
     items = []
     for index, (source, payment) in enumerate(zip(review["items"], review["payments"])):
+        if source.get("prepared_transaction") != source["proof"]["transaction"]:
+            raise ValueError("Prepared row transaction disagrees with its MCP proof")
         item = mainnet_draft(source, now)
         item["transaction"]["nonce"] = hex(int(sequence[index]))
         item.update(order=index + 1, memo=payment["memo"], wallet_ready=False,

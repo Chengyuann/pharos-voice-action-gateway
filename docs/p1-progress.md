@@ -130,6 +130,12 @@ the candidate rather than silently dropping the extra gate.
 
 ## Next decision
 
+The October 25 release preparation added actual read-only batch evidence,
+independent replay, an isolated offline preview/ZIP builder and review fixes.
+Final regression is **439 passed / 89.82s**. The latest recorded batch at
+block **21189980** contains 19 MCP calls and 12 matching secondary comparisons.
+See [release preparation](p1-release-preparation.md) for exact scope and commands.
+
 Review P1 for merge/publication separately. Live microphone capture, ASR/TTS,
 speaker verification, wallet signing and sequential transaction simulation
 remain outside this batch milestone. No Arena resubmission is automatic.

@@ -185,6 +185,9 @@ class PharosMcpClient:
         if not self.session_id:
             return
         try:
+            remaining = self.deadline - time.monotonic()
+            if remaining <= 0:
+                return
             request = Request(
                 self.url,
                 headers={"Accept": "application/json, text/event-stream",
@@ -192,7 +195,7 @@ class PharosMcpClient:
                          "mcp-session-id": self.session_id},
                 method="DELETE",
             )
-            self.opener.open(request, timeout=min(self.timeout, 5)).close()
+            self.opener.open(request, timeout=min(self.timeout, 5, remaining)).close()
         except Exception:
             pass
         finally:

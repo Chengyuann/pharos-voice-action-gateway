@@ -7,6 +7,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 import os
 import re
+import time
 from typing import Any
 from uuid import uuid4
 from evm_address import validate_address
@@ -206,7 +207,7 @@ def decide_mainnet_payment(payment: dict, state: dict, token: dict, policy: dict
 
 def make_mainnet_review(text: str, answers: dict | None = None, *, sender: str = "",
                         policy_path: Path = MAINNET_POLICY, client=None,
-                        now: datetime | None = None, block_number=None) -> dict:
+                        now: datetime | None = None, block_number=None, deadline=None) -> dict:
     fixed_now = now
     now = now or datetime.now(timezone.utc)
     if now.tzinfo is None:
@@ -255,6 +256,10 @@ def make_mainnet_review(text: str, answers: dict | None = None, *, sender: str =
             if own_client:
                 client = PharosMcpClient()
             try:
+                if deadline is not None:
+                    if time.monotonic() >= deadline:
+                        raise ValueError("Batch review time budget exceeded")
+                    client.deadline = min(getattr(client, "deadline", deadline), deadline)
                 trace_start = len(client.trace)
                 state = collect_chain_state(client, parsed["payment"], sender, token, block_number=block_number)
                 # Recheck time-window policy after I/O, not at the start of a slow call.
@@ -324,7 +329,10 @@ def make_mainnet_review(text: str, answers: dict | None = None, *, sender: str =
         from payment_crosscheck import crosscheck, SecondaryRpc
         from payment_proof import ReplayMismatch
         try:
-            result["secondary_check"] = crosscheck(result["proof"], SecondaryRpc(secondary_url))
+            reader = SecondaryRpc(secondary_url)
+            if deadline is not None:
+                reader.deadline = min(reader.deadline, deadline)
+            result["secondary_check"] = crosscheck(result["proof"], reader)
         except (ValueError, OSError, ReplayMismatch):
             result["secondary_check"] = {"status": "unavailable", "role": "secondary_only_no_fallback"}
         if result["secondary_check"]["status"] != "matched":

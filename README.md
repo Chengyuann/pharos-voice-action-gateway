@@ -48,9 +48,14 @@ See
 
 **P1 development checkpoint:** the separate work branch adds rolling unsigned-
 draft allowance, hash-chain audit, EIP-55 checks, contact disambiguation and
-optional secondary RPC verification. Batch/memo support is **planning-only**,
-not batch transaction issuance. See [P1 scope and verification](docs/p1-progress.md).
-This work has not changed the submitted P0 public evidence.
+optional secondary RPC verification. A 1-5 payment batch supports row-specific
+follow-up questions, whole-batch confirmation, shared asset/fee budgets and
+ordered unsigned requests with durable nonce reservations. These are separate
+transactions, not atomic execution or sequential simulation.
+The October 25 read-only batch run passed 19 official MCP calls and 12 secondary
+comparisons at block 21189980. The standalone evidence collector, verifier and
+preview builder are described in [P1 release preparation](docs/p1-release-preparation.md).
+This work has not changed the submitted P0 public evidence or Arena entries.
 
 [Quick start](#quick-start) |
 [Payment Preview](#payment-preview) |

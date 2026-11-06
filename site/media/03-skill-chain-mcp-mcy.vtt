@@ -1,90 +1,61 @@
 WEBVTT
 
-1
-00:00:00.000 --> 00:00:02.700
-This walkthrough follows one request through
-the installed
+00:00:00.000 --> 00:00:01.620
+This is one request through
 
-2
-00:00:02.700 --> 00:00:05.600
-official Pharos Skill and the local payment
-skill.
+00:00:01.620 --> 00:00:04.080
+connected tools, not independent logs.
 
-3
-00:00:05.600 --> 00:00:07.960
-Inspect a connected execution path where
-tool
+00:00:04.840 --> 00:00:06.860
+The installed official skill works with the
 
-4
-00:00:07.960 --> 00:00:10.260
-results become inputs to the next decision,
+00:00:06.860 --> 00:00:09.580
+local payment skill and official Chain MCP
+data
 
-5
-00:00:10.280 --> 00:00:12.460
-not just logs displayed side by side.
+00:00:09.580 --> 00:00:12.140
+to decide whether a review is allowed.
 
-6
-00:00:12.830 --> 00:00:15.490
-Use official Pharos Chain MCP to
+00:00:12.160 --> 00:00:15.260
+The recorded run reads one network snapshot.
 
-7
-00:00:15.490 --> 00:00:17.570
-collect a snapshot at one block.
+00:00:15.780 --> 00:00:17.400
+The installed skill then checks the balance
 
-8
-00:00:18.270 --> 00:00:20.070
-Then execute cast balance for the
+00:00:17.400 --> 00:00:19.840
+at exactly the same address and block.
 
-9
-00:00:20.070 --> 00:00:22.590
-same address at that same block.
+00:00:20.240 --> 00:00:22.220
+Both balance results must agree.
 
-10
-00:00:22.790 --> 00:00:26.250
-Compare the returned balances rather than
-assuming they agree.
+00:00:22.240 --> 00:00:23.620
+Both the policy and
 
-11
-00:00:26.620 --> 00:00:28.320
-The final decision depends on balance
+00:00:23.620 --> 00:00:26.100
+the balance comparison must pass.
 
-12
-00:00:28.320 --> 00:00:30.360
-agreement and the payment policy.
+00:00:26.640 --> 00:00:29.960
+Missing data or disagreement stops the
+output.
 
-13
-00:00:30.360 --> 00:00:32.020
-If a required source is unavailable,
+00:00:30.340 --> 00:00:31.920
+The tool trace shows the real
 
-14
-00:00:32.240 --> 00:00:34.800
-or the balances disagree, deny output.
+00:00:31.920 --> 00:00:34.540
+inputs and results behind the decision.
 
-15
-00:00:34.800 --> 00:00:36.220
-A successful tool call alone
+00:00:34.560 --> 00:00:37.400
+Inspect the unsigned candidate and download
 
-16
-00:00:36.220 --> 00:00:37.800
-is not permission to proceed.
+00:00:37.400 --> 00:00:40.260
+the original proof to replay the checks.
 
-17
-00:00:38.170 --> 00:00:40.790
-When every required check passes, inspect
+00:00:40.460 --> 00:00:42.480
+The run date remains visible:
 
-18
-00:00:40.790 --> 00:00:43.070
-the unsigned candidate for human review.
+00:00:42.580 --> 00:00:46.160
+historical evidence is not a current payment
+authorization.
 
-19
-00:00:43.110 --> 00:00:45.410
-This is a demonstration of the decision
-flow,
-
-20
-00:00:45.410 --> 00:00:47.310
-not a claim about a current balance.
-
-21
-00:00:47.410 --> 00:00:49.030
+00:00:46.380 --> 00:00:48.460
 Nothing is signed or broadcast.

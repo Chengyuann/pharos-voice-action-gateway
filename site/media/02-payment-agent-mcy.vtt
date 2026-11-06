@@ -1,87 +1,68 @@
 WEBVTT
 
-1
-00:00:00.000 --> 00:00:03.180
-Start this payment walkthrough with a
-natural request:
+00:00:00.000 --> 00:00:00.940
+Say what you want
 
-2
-00:00:03.220 --> 00:00:06.180
-I would like to send one USDC to Alice.
+00:00:00.940 --> 00:00:02.800
+to prepare in plain English.
 
-3
-00:00:06.180 --> 00:00:07.820
-If the request instead says one
+00:00:03.340 --> 00:00:05.880
+If the instruction contains one or two
+possible
 
-4
-00:00:07.820 --> 00:00:09.640
-or two, the agent asks:
+00:00:05.880 --> 00:00:09.100
+amounts, the agent asks you to choose.
 
-5
-00:00:09.640 --> 00:00:11.020
-do you mean one or two?
+00:00:09.120 --> 00:00:10.700
+It never guesses the payment.
 
-6
-00:00:11.390 --> 00:00:14.470
-After clarification, inspect the exact token
-amount.
+00:00:10.720 --> 00:00:12.800
+For a complete request, official Chain
 
-7
-00:00:14.490 --> 00:00:16.270
-The flow uses official Pharos Chain
+00:00:12.800 --> 00:00:14.660
+MCP checks the network, balance,
 
-8
-00:00:16.270 --> 00:00:19.750
-MCP checks for balance, contract details,
-fees,
+00:00:14.660 --> 00:00:17.540
+recipient, fees, and read only simulation.
 
-9
-00:00:19.750 --> 00:00:21.710
-and a read only transfer simulation.
+00:00:17.660 --> 00:00:19.000
+The review shows an exact amount
 
-10
-00:00:21.710 --> 00:00:24.170
-These are review steps, not a completed
-payment.
+00:00:19.000 --> 00:00:20.940
+and the full recipient address.
 
-11
-00:00:24.540 --> 00:00:26.560
-Read the human readable summary:
+00:00:20.960 --> 00:00:22.820
+You stay in control.
 
-12
-00:00:26.720 --> 00:00:30.960
-sender, recipient, asset, amount, and fee
-budget.
+00:00:22.820 --> 00:00:25.200
+Change the amount, and
 
-13
-00:00:31.060 --> 00:00:33.920
-Confirmation applies to this version only.
+00:00:25.200 --> 00:00:28.060
+the previous review becomes invalid.
 
-14
-00:00:33.920 --> 00:00:35.860
-Revise or cancel the request, and
+00:00:28.320 --> 00:00:29.900
+Cancel the action, and no
 
-15
-00:00:35.860 --> 00:00:37.960
-the old confirmation becomes invalid.
+00:00:29.900 --> 00:00:32.920
+old confirmation can be reused.
 
-16
-00:00:38.330 --> 00:00:41.050
-After confirmation and fresh checks, export
+00:00:33.360 --> 00:00:35.660
+A new instruction needs a new review.
 
-17
-00:00:41.050 --> 00:00:44.510
-one unsigned request or an ordered batch.
+00:00:35.680 --> 00:00:38.900
+After explicit confirmation and fresh
+checks,
 
-18
-00:00:44.510 --> 00:00:47.550
-The receiving wallet must review it
-independently.
+00:00:38.900 --> 00:00:41.980
+the local workspace creates an unsigned
+request.
 
-19
-00:00:47.550 --> 00:00:50.050
-This flow never requests private keys,
+00:00:42.080 --> 00:00:44.800
+Batches can contain up to five separate
+payments.
 
-20
-00:00:50.110 --> 00:00:52.870
-signs a transaction, or broadcasts one.
+00:00:44.840 --> 00:00:47.180
+Your wallet must verify them independently.
+
+00:00:47.280 --> 00:00:49.740
+No private keys, signatures, or broadcasts.

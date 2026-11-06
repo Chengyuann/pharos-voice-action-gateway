@@ -62,7 +62,8 @@ def test_language_evidence_requires_explicit_answer():
 
 
 def test_javascript_syntax():
-    subprocess.run(["node", "--check", str(SITE / "evidence.js")], check=True)
+    for name in ["evidence.js", "video-controls.js"]:
+        subprocess.run(["node", "--check", str(SITE / name)], check=True)
 
 
 def test_three_reviewed_videos_are_public_with_matching_hashes():
@@ -105,3 +106,12 @@ def test_release_language_is_english():
         assert not re.search("[\u4e00-\u9fff]", path.read_text()), path.name
     for file in (SITE / "media").glob("*.vtt"):
         assert file.read_text().startswith("WEBVTT")
+
+
+def test_english_player_labels_do_not_depend_on_browser_locale():
+    html = (SITE / "index.html").read_text()
+    js = (SITE / "video-controls.js").read_text()
+    assert 'aria-label="English video controls"' in html
+    assert "video.controls = false" in js
+    assert '"Play"' in js and '"Pause"' in js
+    assert '"Full screen"' in js

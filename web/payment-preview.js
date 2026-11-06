@@ -200,7 +200,7 @@ async function correctCurrentAction(event) {
   if (!actionSession || correcting || cancelling || actionSyncError) return;
   const text = $("correction-text").value.trim();
   if (!text) return;
-  if (/^(?:stop|cancel|abort|取消|停止|暂停|先别转|先别执行)[。.!]?$/i.test(text)) {
+  if (/^(?:stop|cancel|abort)[.!]?$/i.test(text)) {
     await cancelCurrentAction();
     return;
   }
@@ -361,7 +361,7 @@ function renderReview(result) {
   $("error").hidden = true;
   $("status").textContent = labels[result.status] || result.status;
   $("status").className = `pill ${result.status}`;
-  $("review-time").textContent = `Checked ${new Date(result.created_at).toLocaleTimeString()} · ${result.mode === "mcp" ? "Official Chain MCP" : result.mode === "demo" ? "Demo data" : "Live network"}`;
+  $("review-time").textContent = `Checked ${new Date(result.created_at).toLocaleTimeString("en-US", {hour12:false})} · ${result.mode === "mcp" ? "Official Chain MCP" : result.mode === "demo" ? "Demo data" : "Live network"}`;
   $("review-body").replaceChildren();
   if (result.kind === "batch") {
     scheduleExpiry(result);
@@ -607,7 +607,7 @@ function renderDraft(result) {
   $("confirm-details").disabled = true;
   $("status").textContent = "Draft created";
   $("status").className = "pill";
-  $("review-time").textContent = `Saved locally · expires ${new Date(result.expires_at).toLocaleTimeString()}`;
+  $("review-time").textContent = `Saved locally · expires ${new Date(result.expires_at).toLocaleTimeString("en-US", {hour12:false})}`;
   scheduleExpiry(result);
 }
 function recordCard(record) {
@@ -615,7 +615,7 @@ function recordCard(record) {
   payment.append(element("strong", record.kind === "batch" || record.kind === "unsigned_batch"
     ? `Batch · ${record.payment_count} payments` : record.amount && record.token ? `${record.amount} ${record.token}` : "Incomplete payment"),
     element("p", `${labels[record.status] || record.status} · ${record.mode === "mcp" ? "Chain MCP" : record.mode === "demo" ? "Demo" : "Live"} · ${shortAddress(record.recipient)}`));
-  const time = element("time", record.created_at ? new Date(record.created_at).toLocaleString() : "—");
+  const time = element("time", record.created_at ? new Date(record.created_at).toLocaleString("en-US", {hour12:false}) : "—");
   const button = element("button", "View", "plain");
   button.type = "button";
   button.setAttribute("aria-label", `View ${record.record_type === "payment_draft" ? "draft" : "review"} ${record.id.slice(0, 8)}`);

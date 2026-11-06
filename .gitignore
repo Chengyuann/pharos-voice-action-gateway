@@ -24,3 +24,6 @@ duplex_voice_report_*.json
 .DS_Store
 *_report.md
 *_report.json
+
+output/mcy-en-release/
+outputs/pharos-mcy-en/

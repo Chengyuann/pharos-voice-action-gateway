@@ -23,7 +23,7 @@ PUBLIC_FILES = [
     ROOT / "site" / "evidence.css",
     ROOT / "site" / "evidence.js",
     ROOT / "site" / "icon.svg",
-    *[ROOT / "site" / name for name in ["product.css", "product.js", "sandbox.js", "privacy.html", "404.html"]],
+    *[ROOT / "site" / name for name in ["product.css", "product.js", "sandbox.js", "video-controls.js", "privacy.html", "404.html"]],
     *[ROOT / "site" / "fonts" / name for name in ["barlow-condensed-700.ttf", "barlow-condensed-600-italic.ttf", "manrope-400.ttf", "manrope-700.ttf", "ibm-plex-mono-400.ttf", "LICENSE-Barlow-Condensed.txt", "LICENSE-Manrope.txt", "LICENSE-IBM-Plex-Mono.txt"]],
     ROOT / "site" / "media" / "manifest.json",
     *[ROOT / "site" / "media" / (name + suffix)

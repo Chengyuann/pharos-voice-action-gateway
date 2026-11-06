@@ -2,31 +2,42 @@
   "schema": "pharos-public-media/1",
   "recorded_date": "2026-11-06",
   "language": "en",
-  "voice": "AI-generated English narration (designed voice, not a personal clone)",
+  "voice": "MCY authorized personal voice speaking English",
   "presenter": false,
   "background_music": false,
   "private_reference_included": false,
+  "capture_method": "New local Chrome screencast recordings, edited and retimed; archived proof dates displayed",
+  "captions": "Burned English captions, English SRT and VTT",
   "files": [
     {
       "file": "01-policy-gatekeeper-mcy.mp4",
-      "bytes": 14946973,
-      "sha256": "a6daede96d6a9df49c2cbfd90642257d81e6261615704306e2d3a484b492e3ef",
+      "bytes": 13760270,
+      "sha256": "6171977421cb7537138babd56f322141f8ed6964280b6dc6fd4c66decae02354",
+      "duration_seconds": 42.453333,
       "subtitles": "01-policy-gatekeeper-mcy.srt",
-      "captions": "01-policy-gatekeeper-mcy.vtt"
+      "captions": "01-policy-gatekeeper-mcy.vtt",
+      "language": "en",
+      "voice": "MCY"
     },
     {
       "file": "02-payment-agent-mcy.mp4",
-      "bytes": 13066403,
-      "sha256": "679d937a0095f57644422280e342a4d41daa81cdd479a9a9cf078d2af8f6fbe1",
+      "bytes": 16880459,
+      "sha256": "a2c3df732df519035cd4db7baf31c91176820cf5703c136da1a80cbe1bfa221b",
+      "duration_seconds": 49.813333,
       "subtitles": "02-payment-agent-mcy.srt",
-      "captions": "02-payment-agent-mcy.vtt"
+      "captions": "02-payment-agent-mcy.vtt",
+      "language": "en",
+      "voice": "MCY"
     },
     {
       "file": "03-skill-chain-mcp-mcy.mp4",
-      "bytes": 18157387,
-      "sha256": "95d57ffdf0e38cb3b274b03de2f86522458314eb22365629d392a889fc398e01",
+      "bytes": 14857977,
+      "sha256": "4d0d0df1432ca2a8cf0cf36385282d02423c89ef5c8882faeb12319385f737c2",
+      "duration_seconds": 48.533333,
       "subtitles": "03-skill-chain-mcp-mcy.srt",
-      "captions": "03-skill-chain-mcp-mcy.vtt"
+      "captions": "03-skill-chain-mcp-mcy.vtt",
+      "language": "en",
+      "voice": "MCY"
     }
   ]
 }

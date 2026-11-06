@@ -1,86 +1,77 @@
 1
-00:00:00,000 --> 00:00:03,520
-This walkthrough demonstrates the Pharos
-Policy Gatekeeper.
+00:00:00,000 --> 00:00:02,520
+Start with a payment request.
 
 2
-00:00:03,640 --> 00:00:06,100
-Start with a configurable single request
-limit, a
+00:00:02,520 --> 00:00:04,540
+The gateway separates what you ask from
 
 3
-00:00:06,100 --> 00:00:09,100
-recipient allowlist, and a permitted time
-window.
+00:00:04,540 --> 00:00:06,900
+what an agent is allowed to prepare.
 
 4
-00:00:09,100 --> 00:00:10,740
-These rules determine whether a proposed
+00:00:06,920 --> 00:00:08,640
+Amount, recipient, and time
 
 5
-00:00:10,740 --> 00:00:12,460
-payment can proceed to review.
+00:00:08,640 --> 00:00:10,540
+are checked before any draft.
 
 6
-00:00:12,830 --> 00:00:15,130
-First, evaluate a request that meets
+00:00:10,560 --> 00:00:13,100
+An allowed example passes the policy.
 
 7
-00:00:15,130 --> 00:00:17,970
-every rule and inspect the allow decision.
+00:00:13,100 --> 00:00:15,100
+Increase the amount beyond its limit,
 
 8
-00:00:17,970 --> 00:00:20,490
-Then increase the amount beyond the limit.
+00:00:15,100 --> 00:00:17,120
+and the result changes to blocked.
 
 9
-00:00:20,490 --> 00:00:21,770
-The amount rule denies the
+00:00:17,120 --> 00:00:19,980
+A failed rule cannot be overridden by
+approval.
 
 10
-00:00:21,770 --> 00:00:24,170
-request, with the reason recorded.
+00:00:20,000 --> 00:00:22,100
+Now change the recipient, or move
 
 11
-00:00:24,540 --> 00:00:26,500
-Next, choose a recipient outside the
-allowlist.
+00:00:22,100 --> 00:00:24,380
+outside the permitted time window.
 
 12
-00:00:27,420 --> 00:00:29,260
-That request is denied.
+00:00:24,440 --> 00:00:26,840
+Each rejection names the exact rule.
 
 13
-00:00:29,260 --> 00:00:31,280
-Return to an allowed recipient, then
+00:00:26,940 --> 00:00:28,500
+The local mock executor is not
 
 14
-00:00:31,280 --> 00:00:33,700
-test outside the permitted time window.
+00:00:28,500 --> 00:00:30,540
+called for these denied requests.
 
 15
-00:00:33,700 --> 00:00:35,360
-The time rule denies it.
+00:00:30,560 --> 00:00:33,140
+The audit keeps the decisions together.
 
 16
-00:00:35,360 --> 00:00:38,120
-Explicit approval cannot override these
-rules.
+00:00:33,140 --> 00:00:35,000
+In the payment workspace, a shared
 
 17
-00:00:38,490 --> 00:00:41,030
-Each decision is saved for inspection.
+00:00:35,000 --> 00:00:38,120
+rolling allowance also limits unsigned
+exports.
 
 18
-00:00:41,030 --> 00:00:43,550
-Single and batch unsigned exports share a
+00:00:38,260 --> 00:00:40,860
+This demo prepares reviewable information.
 
 19
-00:00:43,550 --> 00:00:46,690
-rolling allowance, so repeated exports count
-together.
-
-20
-00:00:46,710 --> 00:00:50,630
-This demonstration produces no signature and
-sends no transaction.
+00:00:40,860 --> 00:00:42,380
+Nothing is signed or sent.

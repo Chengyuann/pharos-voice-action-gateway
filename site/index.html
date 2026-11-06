@@ -16,6 +16,7 @@
   <script src="evidence.js" defer></script>
   <script src="product.js" defer></script>
   <script src="sandbox.js" defer></script>
+  <script src="video-controls.js" defer></script>
 </head>
 <body>
   <div class="ambient" aria-hidden="true"><span></span><span></span><span></span></div>
@@ -64,7 +65,7 @@
         <h2 id="demos-title" class="section-label">From request to review</h2>
         <span class="recorded-label"><span aria-hidden="true"></span>Recorded demo</span>
       </div>
-      <p class="section-intro">Three walkthroughs from the local workspace, with the original decision records.</p>
+      <p class="section-intro">Three new walkthroughs with MCY narration in English, recorded from the current workspace.</p>
       <nav class="task-nav" aria-label="Recorded demonstrations">
         <a id="policy" href="#policy" data-task="policy" aria-current="true"><span class="task-number">01</span><span>Policy Gatekeeper</span><span class="task-arrow" aria-hidden="true">&nearr;</span></a>
         <a id="payment" href="#payment" data-task="payment"><span class="task-number">02</span><span>Natural-language payment</span><span class="task-arrow" aria-hidden="true">&nearr;</span></a>
@@ -72,9 +73,17 @@
       </nav>
       <section class="video-panel spotlight" aria-label="Selected English walkthrough">
         <video id="walkthrough" controls preload="metadata" playsinline aria-label="Policy Gatekeeper English walkthrough" src="media/01-policy-gatekeeper-mcy.mp4">
-          <track kind="captions" src="media/01-policy-gatekeeper-mcy.vtt" srclang="en" label="English" default>
+          <track kind="captions" src="media/01-policy-gatekeeper-mcy.vtt" srclang="en" label="English">
           <p>Your browser cannot play this video. <a href="media/01-policy-gatekeeper-mcy.mp4">Download the English walkthrough</a>.</p>
         </video>
+        <div class="english-player" id="english-player" role="group" aria-label="English video controls" hidden>
+          <button id="video-play" type="button" aria-label="Play walkthrough">Play</button>
+          <span id="video-time" class="video-clock">0:00 / 0:00</span>
+          <input id="video-seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="Video position">
+          <span class="caption-label">English captions</span>
+          <button id="video-mute" type="button" aria-pressed="false">Mute</button>
+          <button id="video-fullscreen" type="button">Full screen</button>
+        </div>
         <div class="video-caption">
           <p id="walkthrough-title">Policy Gatekeeper <span class="muted">/ English walkthrough</span></p>
           <div class="media-links">

@@ -198,7 +198,7 @@ function showTask() {
   track.kind = "captions";
   track.srclang = "en";
   track.label = "English";
-  track.default = true;
+  track.default = false; // English captions are burned into the film; avoid duplicate text.
   track.src = `media/${spec.video}.vtt`;
   track.addEventListener("error", () => {
     if (activeTask !== task) return;

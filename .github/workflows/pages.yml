@@ -9,6 +9,8 @@ on:
       - "config/**"
       - "docs/submissions/**"
       - "docs/p0-release-status.md"
+      - "docs/v2-release-status.md"
+      - "README.md"
       - "skills/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:

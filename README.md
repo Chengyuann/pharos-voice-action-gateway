@@ -13,7 +13,7 @@ Prepare Pharos payments from voice or text. Check policy, balance and fees, revi
 
 **No private keys, signatures or broadcasts.** The public site contains recorded demonstrations. The interactive service runs locally; do not expose it as a multi-user payment backend.
 
-This branch is a release candidate, not a claim of publication or Arena approval. The previous P0 submissions remain pending until the approved V2 release is explicitly resubmitted.
+This source records the November 6, 2026 V2 release. Arena task approval remains a separate process; this website deployment does not create or resubmit tasks.
 
 ### Run locally
 
@@ -49,7 +49,7 @@ The stdio MCP surface exposes `parse_payment`, `plan_batch` and `review_payment`
 - October 25 batch: common block **21189980**, 19 MCP calls and 12 secondary comparisons.
 - October 22 installed official Skill run: block **20913011**, executed `cast balance` and same-block agreement.
 
-Dates stay attached to their original evidence. MCP service latency/errors can stop a review; recorded success is never silently substituted for live data. Video narration is AI-generated English using a designed voice, not a personal voice clone.
+Dates stay attached to their original evidence. MCP service latency/errors can stop a review; recorded success is never silently substituted for live data. The three new walkthroughs use MCY’s authorized personal voice speaking English. The private reference audio is never published; only final narration is included.
 
 The historical engineering reference below describes earlier layers. The V2 release note above and `docs/v2-release-status.md` take precedence for current UI behavior.
 

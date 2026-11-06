@@ -7,6 +7,7 @@ Prepared and published November 6, 2026. **Website release only; Arena tasks wer
 - English blue-motion product homepage, restored orbit/coin hero, waveform, workflow components, spotlight interactions, scroll reveals, mobile layouts, task deep links, privacy page and 404.
 - Interactive browser-only policy sandbox: exact example amounts, named limits, allowlist and time checks; no network calls or wallet output.
 - Three newly recorded English 1080p walkthroughs with authorized MCY narration, burned captions, SRT and VTT.
+- Low-volume background music: `Our Future` by Declan DP, attributed on the site and ducked approximately 27–28 LU below narration.
 - Common English prefixes, exact number words, sentence punctuation and follow-up handling.
 - Integrated P1: up to five independent payments, address checks, common-block reviews,
   shared amounts/fees, rolling unsigned allowance, hash-linked audit and durable nonce reservations.

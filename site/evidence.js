@@ -1,4 +1,5 @@
 "use strict";
+const mediaRevision = "20261106-bgm";
 const tasks = {
   policy: {
     video: "01-policy-gatekeeper-mcy",
@@ -206,12 +207,12 @@ function showTask() {
     $("video-status").textContent = "English captions are unavailable. The English SRT download is below.";
   });
   video.append(track);
-  video.src = `media/${spec.video}.mp4`;
+  video.src = `media/${spec.video}.mp4?v=${mediaRevision}`;
   video.setAttribute("aria-label", `${spec.title} English walkthrough`);
-  video.querySelector("p a").href = `media/${spec.video}.mp4`;
+  video.querySelector("p a").href = `media/${spec.video}.mp4?v=${mediaRevision}`;
   $("walkthrough-title").replaceChildren(document.createTextNode(`${spec.title} `),
     node("span", "/ English walkthrough", "muted"));
-  $("video-download").href = `media/${spec.video}.mp4`;
+  $("video-download").href = `media/${spec.video}.mp4?v=${mediaRevision}`;
   $("subtitle-download").href = `media/${spec.video}.srt`;
   for (const a of document.querySelectorAll("[data-task]")) {
     if (a.dataset.task === task) a.setAttribute("aria-current", "true"); else a.removeAttribute("aria-current");

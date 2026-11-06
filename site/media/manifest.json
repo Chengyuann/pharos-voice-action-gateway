@@ -4,40 +4,56 @@
   "language": "en",
   "voice": "MCY authorized personal voice speaking English",
   "presenter": false,
-  "background_music": false,
+  "background_music": true,
   "private_reference_included": false,
   "capture_method": "New local Chrome screencast recordings, edited and retimed; archived proof dates displayed",
   "captions": "Burned English captions, English SRT and VTT",
   "files": [
     {
       "file": "01-policy-gatekeeper-mcy.mp4",
-      "bytes": 13760270,
-      "sha256": "6171977421cb7537138babd56f322141f8ed6964280b6dc6fd4c66decae02354",
-      "duration_seconds": 42.453333,
+      "bytes": 13101145,
+      "sha256": "38dde3b6721bb948a933683f02a25f0baf694172ae56c96888c14c70c2afa376",
+      "duration_seconds": 42.453,
       "subtitles": "01-policy-gatekeeper-mcy.srt",
       "captions": "01-policy-gatekeeper-mcy.vtt",
       "language": "en",
-      "voice": "MCY"
+      "voice": "MCY",
+      "background_music": "our-future-declan-dp",
+      "mix": "Music gain 0.065; side-chain ducked; narration gain unchanged"
     },
     {
       "file": "02-payment-agent-mcy.mp4",
-      "bytes": 16880459,
-      "sha256": "a2c3df732df519035cd4db7baf31c91176820cf5703c136da1a80cbe1bfa221b",
-      "duration_seconds": 49.813333,
+      "bytes": 16111032,
+      "sha256": "54a5c5d103081b0c473567965fb0c48730ae80922e6510909ca2b0efc35b28ed",
+      "duration_seconds": 49.813,
       "subtitles": "02-payment-agent-mcy.srt",
       "captions": "02-payment-agent-mcy.vtt",
       "language": "en",
-      "voice": "MCY"
+      "voice": "MCY",
+      "background_music": "our-future-declan-dp",
+      "mix": "Music gain 0.065; side-chain ducked; narration gain unchanged"
     },
     {
       "file": "03-skill-chain-mcp-mcy.mp4",
-      "bytes": 14857977,
-      "sha256": "4d0d0df1432ca2a8cf0cf36385282d02423c89ef5c8882faeb12319385f737c2",
-      "duration_seconds": 48.533333,
+      "bytes": 14104476,
+      "sha256": "bbdbbdea386cd29642f865ff80276b449ef28aafeff3f4ad1faa5c059e506b16",
+      "duration_seconds": 48.533,
       "subtitles": "03-skill-chain-mcp-mcy.srt",
       "captions": "03-skill-chain-mcp-mcy.vtt",
       "language": "en",
-      "voice": "MCY"
+      "voice": "MCY",
+      "background_music": "our-future-declan-dp",
+      "mix": "Music gain 0.065; side-chain ducked; narration gain unchanged"
     }
-  ]
+  ],
+  "music": {
+    "id": "our-future-declan-dp",
+    "title": "Our Future",
+    "artist": "Declan DP",
+    "source_url": "https://www.audiolibrary.com.co/declan-dp/our-future",
+    "license_url": "https://license.declandp.info",
+    "credit": "Music: Our Future by Declan DP. License: https://license.declandp.info. Free Download / Stream: https://links.al/CaH. Music promoted by Audio Library: https://links.al/youtube",
+    "source_sha256": "86c9e9bd0a49177b62537c2a1df0b07d24d2cf75217993629eb0e1dc213e3bfb",
+    "mix": "Low-volume music bed (gain 0.065), side-chain ducking under unchanged MCY narration gain, 2.4-second fades. Raw MP3 is not served by this site."
+  }
 }

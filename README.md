@@ -5,6 +5,7 @@ Prepare Pharos payments from voice or text. Check policy, balance and fees, revi
 ## V2 local release — November 6, 2026
 
 - English product website and three English-narrated, captioned walkthroughs.
+- Low-volume attributed background music, side-chain ducked under narration.
 - Common English request forms, exact number words and explicit ambiguity questions.
 - Single payments or batches of up to five; EIP-55 recipient checks, shared fee/balance budgets and durable nonce reservations.
 - Rolling unsigned-export allowance and hash-linked audit history.

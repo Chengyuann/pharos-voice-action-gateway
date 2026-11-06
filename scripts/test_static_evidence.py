@@ -115,3 +115,18 @@ def test_english_player_labels_do_not_depend_on_browser_locale():
     assert "video.controls = false" in js
     assert '"Play"' in js and '"Pause"' in js
     assert '"Full screen"' in js
+
+
+def test_background_music_is_credited_without_publishing_the_source_mp3():
+    manifest = json.loads((SITE / "media/manifest.json").read_text())
+    html = (SITE / "index.html").read_text()
+    assert manifest["background_music"] is True
+    assert manifest["music"]["title"] == "Our Future"
+    assert manifest["music"]["artist"] == "Declan DP"
+    assert "Our Future" in html and "Declan DP" in html
+    for url in ["https://license.declandp.info", "https://links.al/CaH",
+                "https://links.al/youtube"]:
+        assert url in html
+    assert not list(SITE.rglob("*.mp3"))
+    assert all(item["background_music"] == "our-future-declan-dp"
+               for item in manifest["files"])

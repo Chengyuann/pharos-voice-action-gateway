@@ -1,5 +1,7 @@
 .demo-section { padding-bottom: 88px; }
 .demo-section > .section-intro { margin: 12px 0 28px; }
+.music-credit { margin: -16px 0 28px; color: var(--muted); font: 10px/1.7 var(--mono); }
+.music-credit cite { color: var(--text); font-style: normal; }
 .recorded-label { display: inline-flex; align-items: center; gap: 9px; flex-shrink: 0; font-size: 14px; color: var(--text); }
 .recorded-label > span { width: 7px; height: 7px; background: var(--accent); border-radius: 50%; }
 .task-nav { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid var(--line); }

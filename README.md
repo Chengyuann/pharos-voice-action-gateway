@@ -1,68 +1,57 @@
 # Pharos Voice Action Gateway
 
-> A confirmation-gated voice-to-onchain safety layer for Pharos agents.
+Prepare Pharos payments from voice or text. Check policy, balance and fees, review the result, then export an unsigned request.
 
-[![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![License: Apache-2.0](https://img.shields.io/badge/License-Apache--2.0-blue.svg)](LICENSE)
-[![Execution: Offline demo](https://img.shields.io/badge/Execution-Offline%20demo-00897B)](#current-boundaries)
-[![DoraHacks BUIDL](https://img.shields.io/badge/DoraHacks-BUIDL%2044805-6C5CE7)](https://dorahacks.io/build/44805)
+## V2 local release — November 6, 2026
 
-![Pharos Voice Action Gateway cover](assets/cover.jpg)
+- English product website and three English-narrated, captioned walkthroughs.
+- Common English request forms, exact number words and explicit ambiguity questions.
+- Single payments or batches of up to five; EIP-55 recipient checks, shared fee/balance budgets and durable nonce reservations.
+- Rolling unsigned-export allowance and hash-linked audit history.
+- Optional on-device speech recognition with bounded recording, cancellation and explicit transcript review.
+- A read-only stdio MCP server for parser, batch planning and official Chain MCP review.
 
-Pharos Voice Action Gateway is a dependency-free reference implementation for
-safer voice-driven blockchain agents. It solves two problems that are easy to
-underestimate:
+**No private keys, signatures or broadcasts.** The public site contains recorded demonstrations. The interactive service runs locally; do not expose it as a multi-user payment backend.
 
-1. **When is a spoken instruction complete?**
-2. **When is an agent actually allowed to prepare or execute an onchain
-   action?**
+This branch is a release candidate, not a claim of publication or Arena approval. The previous P0 submissions remain pending until the approved V2 release is explicitly resubmitted.
 
-The gateway reads timestamped speech-event fixtures, decides when an utterance
-appears complete, and turns committed text into a structured Pharos action
-preview. Before an action can proceed to simulation, it must pass both a
-policy check and, where required, a confirmation check.
+### Run locally
 
-Instead of broadcasting transactions, the default demo produces inspectable
-artifacts: a transaction preview, voice and intent hashes, a voice mandate,
-policy results, an EIP-712-shaped typed-data payload, a proof-registry call
-preview, an audit timeline, and a deterministic simulation hash.
+```sh
+python3 scripts/policy_gatekeeper_server.py --port 8766
+```
 
-**Try it without moving funds.** Demo mode runs entirely offline. Payment
-Preview also has an optional read-only RPC mode for chain ID, balance and fee
-estimation. Neither mode connects a wallet, requests a signature, or submits a
-transaction.
+Open `http://127.0.0.1:8766/payment-preview`. Demo mode uses local sample data. Set `PHAROS_MCP_READ_ADDRESS` to the public address to inspect for official mainnet reads.
 
-**P0 update — October 22, 2026.** The local workspace now includes an
-**Official Chain MCP** mode for Pacific Mainnet PROS/USDC/WPROS, token metadata
-checks, read-only simulation, pending nonce, unsigned wallet requests and
-offline proof replay. The isolated `site/` folder is a recorded evidence
-viewer with three MCY-narrated, Chinese-captioned walkthroughs under `site/media/`.
-The [public evidence site](https://chengyuann.github.io/pharos-voice-action-gateway/)
-is deployed with all three videos. All three Arena tasks were submitted on
-October 22 and are **IN REVIEW**, not yet approved or scored.
-A new installed-Skill + MCP run at block 20913011 includes official
-Skill `cast balance` execution and a same-block comparison gate.
-See
-[P0 release status](docs/p0-release-status.md) and the
-[payment Skill package](skills/pharos-payment-review/SKILL.md).
+### Optional offline speech
 
-**P1 development checkpoint:** the separate work branch adds rolling unsigned-
-draft allowance, hash-chain audit, EIP-55 checks, contact disambiguation and
-optional secondary RPC verification. A 1-5 payment batch supports row-specific
-follow-up questions, whole-batch confirmation, shared asset/fee budgets and
-ordered unsigned requests with durable nonce reservations. These are separate
-transactions, not atomic execution or sequential simulation.
-The October 25 read-only batch run passed 19 official MCP calls and 12 secondary
-comparisons at block 21189980. The standalone evidence collector, verifier and
-preview builder are described in [P1 release preparation](docs/p1-release-preparation.md).
-This work has not changed the submitted P0 public evidence or Arena entries.
+```sh
+PHAROS_ASR_PYTHON=/path/to/python-with-transformers \
+PHAROS_ASR_MODEL=/path/to/local-whisper-model \
+python3 scripts/policy_gatekeeper_server.py --port 8766
+```
 
-[Quick start](#quick-start) |
-[Payment Preview](#payment-preview) |
-[Policy Gatekeeper](#policy-gatekeeper-agent-arena-build) |
-[Product plan](docs/payment-agent-plan.md) |
-[Watch the narrated demo](assets/demo/pharos-voice-action-gateway-demo-mimo-voiced.mp4) |
-[DoraHacks submission](https://dorahacks.io/build/44805)
+The model must already be downloaded. Processing is offline; a 16 kHz mono recording lasts at most 20 seconds. Audio is removed after the worker finishes. Cancellation discards its result. Review the transcript and then run a new payment review; speech never confirms a transaction. The UI can read a response with an available local English browser voice. Starting another recording stops playback.
+
+This is a bounded turn-based voice flow, not a full-duplex streaming ASR or a speaker-authentication system. Real microphone/noise/latency tests and consented Speaker Guard evaluation remain separate from automated synthetic-audio tests.
+
+### Agent integration
+
+```sh
+python3 scripts/payment_skill_mcp.py
+```
+
+The stdio MCP surface exposes `parse_payment`, `plan_batch` and `review_payment`. It has no signing, confirmation, execution or deletion tool. See `skills/pharos-payment-review/SKILL.md`.
+
+### Release evidence
+
+- November 6 official Chain MCP: 10 calls, block **22244464**, exact native transfer and simulation.
+- October 25 batch: common block **21189980**, 19 MCP calls and 12 secondary comparisons.
+- October 22 installed official Skill run: block **20913011**, executed `cast balance` and same-block agreement.
+
+Dates stay attached to their original evidence. MCP service latency/errors can stop a review; recorded success is never silently substituted for live data. Video narration is AI-generated English using a designed voice, not a personal voice clone.
+
+The historical engineering reference below describes earlier layers. The V2 release note above and `docs/v2-release-status.md` take precedence for current UI behavior.
 
 ## Contents
 

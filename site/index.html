@@ -5,64 +5,180 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; connect-src 'self'; img-src 'self'; media-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <meta name="referrer" content="no-referrer">
-  <meta name="description" content="Inspect recorded Policy Gatekeeper and official Chain MCP payment evidence. No wallet connection, live transfer, or signing.">
-  <title>Pharos · Payment Evidence</title>
+  <meta name="description" content="Pharos Voice Action Gateway prepares reviewable payment drafts with clear policy checks, exact amounts and human confirmation. Explore three recorded walkthroughs and build locally.">
+  <meta property="og:title" content="Pharos Voice Action Gateway">
+  <meta property="og:description" content="From a payment request to a draft you can review. Explore the recorded demos and build locally.">
+  <meta property="og:type" content="website">
+  <title>Pharos Voice Action Gateway</title>
   <link rel="icon" href="icon.svg">
+  <link rel="stylesheet" href="product.css">
   <link rel="stylesheet" href="evidence.css">
   <script src="evidence.js" defer></script>
+  <script src="product.js" defer></script>
+  <script src="sandbox.js" defer></script>
 </head>
 <body>
-  <a class="skip" href="#evidence">Skip to evidence</a>
-  <header><a class="wordmark" href="./">PHAROS <span>/ VOICE ACTION GATEWAY</span></a><span class="badge">READ-ONLY EVIDENCE</span></header>
-  <main>
-    <section class="hero">
-      <p class="eyebrow">THREE TASKS. ONE SAFETY BOUNDARY.</p>
-      <h1>Check the intent.<br>Inspect the evidence.</h1>
-      <p class="intro">Payment preparation with explicit policy decisions, official Chain MCP reads, and confirmation-bound drafts. No signatures. No funds moved.</p>
-      <div class="notice"><strong>Recorded demonstration, not a live payment app.</strong> This page reads only curated local JSON files. All chain data is historical; it cannot authorize a payment. Run the repository locally to collect new data and review a new request.</div>
-    </section>
-    <nav class="tabs" aria-label="Evidence tasks">
-      <a href="#policy" data-task="policy">01 Policy Gatekeeper</a>
-      <a href="#payment" data-task="payment">02 Natural-language payment</a>
-      <a href="#composition" data-task="composition">03 Skill + Chain MCP</a>
+  <a class="skip" href="#main">Skip to content</a>
+  <header class="site-header wrap">
+    <a class="wordmark" href="./" aria-label="Pharos Voice Action Gateway home">Voice Action<span>Pharos</span></a>
+    <nav aria-label="Main navigation">
+      <a href="#product">Product</a>
+      <a href="#demos">Demos</a>
+      <a href="#build">Build</a>
     </nav>
-    <section id="evidence" tabindex="-1">
-      <div class="section-heading"><div><p id="category" class="eyebrow"></p><h2 id="task-title"></h2></div><span id="kind" class="badge"></span></div>
-      <p id="task-description"></p>
-      <section class="video-panel" aria-labelledby="walkthrough-title">
-        <h3 id="walkthrough-title">Narrated walkthrough</h3>
-        <video id="walkthrough" controls preload="metadata" playsinline aria-label="Task walkthrough with MCY Chinese narration and captions"></video>
-        <p><a id="video-download" download>Download MP4 ↓</a> · <a id="subtitle-download" download>Chinese subtitles ↓</a>
-          <span class="media-note">1080p · MCY narration · no presenter · recorded October 22, 2026</span></p>
-      </section>
-      <div id="scenarios" class="scenarios" role="group" aria-label="Recorded scenarios"></div>
-      <p id="loading" role="status">Loading recorded evidence…</p>
-      <div class="evidence-grid">
-        <article class="summary" aria-labelledby="result-heading">
-          <p class="eyebrow">RECORDED RESULT</p><h3 id="result-heading">—</h3>
-          <p id="boundary"></p>
-          <dl id="facts"></dl>
-          <a id="download" class="button" download>Download evidence JSON ↓</a>
-        </article>
-        <article class="checks-panel" aria-labelledby="checks-heading"><h3 id="checks-heading">Decision checks</h3><ul id="checks"></ul></article>
+  </header>
+  <main id="main" tabindex="-1">
+    <section class="hero wrap" id="product" aria-labelledby="product-title">
+      <p class="eyebrow">Pharos Voice Action Gateway</p>
+      <h1 id="product-title">Voice Action<br><span>Gateway.</span></h1>
+      <div class="hero-bottom">
+        <p class="intro">Turn a payment request into<br class="desktop-break"> a draft you can review.</p>
+        <div class="hero-action">
+          <a class="button primary" href="#try">Try a payment <span aria-hidden="true">&darr;</span></a>
+          <p class="safety">Unsigned only. You approve in your wallet.</p>
+        </div>
       </div>
-      <section class="trace-panel" aria-labelledby="trace-heading">
-        <h3 id="trace-heading">What called what</h3>
-        <p id="flow-description"></p>
-        <ol id="trace"></ol>
-      </section>
-      <details><summary>Inspect raw evidence</summary><pre id="raw"></pre></details>
     </section>
-    <section class="reproduce" id="reproduce">
-      <p class="eyebrow">VERIFY, DO NOT JUST TRUST A SCREENSHOT</p>
-      <h2>Replay the decision locally.</h2>
-      <pre>python3 scripts/payment_proof.py verify site/proofs/pros-allow-live.json
-python3 -m pytest scripts -q</pre>
-      <p>The verifier replays exact tool arguments and results, recomputes checks, and rebuilds the candidate transaction. It detects inconsistent evidence, <strong>not a completely fabricated and internally consistent transcript</strong>. It is not an authenticated chain proof.</p>
-      <p>PROS / WPROS success samples inspect a third party's publicly visible address. We make no ownership claim. Alice and Bob are placeholder contacts. USDC's empty-balance case is intentionally blocked. Voice remains fixture replay, not live microphone input.</p>
-      <p><a href="https://github.com/Chengyuann/pharos-voice-action-gateway" rel="noreferrer">Source repository ↗</a> · <a href="media/manifest.json">Media integrity manifest</a> · Tests and published evidence are not Arena approval.</p>
+    <section class="wrap sandbox-section" id="try" aria-labelledby="sandbox-title">
+      <div><p class="eyebrow">Try it in your browser</p><h2 id="sandbox-title">A request.<br>A clear decision.</h2><p class="section-intro">Change the amount, recipient or time. See which rule decides.</p><p class="safety">Example data only. No network calls or wallet connection.</p></div>
+      <form id="sandbox-form">
+        <label for="sandbox-request">Your instruction</label>
+        <input id="sandbox-request" value="Send 1 USDC to Alice" maxlength="300" required autocomplete="off">
+        <div class="sandbox-settings"><div><label for="sandbox-limit">Per-request limit</label><select id="sandbox-limit"><option value="5">5 token units</option value="0.5">0.5 token units</option value="10">10 token units</option></select></div><div><label for="sandbox-hour">Example UTC time</label><select id="sandbox-hour"><option value="12">12:00 · within window</option value="19">19:00 · outside window</option></select></div></div>
+        <button type="submit" class="button primary">Review example <span aria-hidden="true">&rarr;</span></button>
+        <div id="sandbox-result" role="status"><h3>You stay in control.</h3><p>The example policy allows Alice and Bob between 09:00 and 17:00 UTC.</p></div>
+      </form>
+    </section>
+    <section class="demo-section wrap" id="demos" aria-labelledby="demos-title">
+      <div class="section-heading">
+        <h2 id="demos-title" class="section-label">From request to review</h2>
+        <span class="recorded-label"><span aria-hidden="true"></span>Recorded demo</span>
+      </div>
+      <p class="section-intro">Three walkthroughs from the local workspace, with the original decision records.</p>
+      <nav class="task-nav" aria-label="Recorded demonstrations">
+        <a id="policy" href="#policy" data-task="policy" aria-current="true"><span class="task-number">01</span><span>Policy Gatekeeper</span><span class="task-arrow" aria-hidden="true">&nearr;</span></a>
+        <a id="payment" href="#payment" data-task="payment"><span class="task-number">02</span><span>Natural-language payment</span><span class="task-arrow" aria-hidden="true">&nearr;</span></a>
+        <a id="composition" href="#composition" data-task="composition"><span class="task-number">03</span><span>Skill + Chain MCP</span><span class="task-arrow" aria-hidden="true">&nearr;</span></a>
+      </nav>
+      <section class="video-panel" aria-label="Selected English walkthrough">
+        <video id="walkthrough" controls preload="metadata" playsinline aria-label="Policy Gatekeeper English walkthrough" src="media/01-policy-gatekeeper-mcy.mp4">
+          <track kind="captions" src="media/01-policy-gatekeeper-mcy.vtt" srclang="en" label="English" default>
+          <p>Your browser cannot play this video. <a href="media/01-policy-gatekeeper-mcy.mp4">Download the English walkthrough</a>.</p>
+        </video>
+        <div class="video-caption">
+          <p id="walkthrough-title">Policy Gatekeeper <span class="muted">/ English walkthrough</span></p>
+          <div class="media-links">
+            <a id="video-download" href="media/01-policy-gatekeeper-mcy.mp4" download>MP4 <span aria-hidden="true">&darr;</span></a>
+            <a id="subtitle-download" href="media/01-policy-gatekeeper-mcy.srt" download>English SRT <span aria-hidden="true">&darr;</span></a>
+          </div>
+        </div>
+        <p id="video-status" class="media-status" role="status" hidden></p>
+      </section>
+      <section id="evidence" class="evidence-section" aria-labelledby="task-title" tabindex="-1">
+        <div class="section-heading">
+          <div><p id="category" class="eyebrow">Selected demonstration</p><h2 id="task-title">Policy Gatekeeper</h2></div>
+          <span id="kind" class="evidence-kind">Recorded policy fixtures</span>
+        </div>
+        <p id="task-description" class="section-intro">See how amount, recipient and time rules allow or block a request.</p>
+        <div id="scenarios" class="scenarios" role="group" aria-label="Recorded scenarios"></div>
+        <div class="record-summary" aria-busy="true" id="record-summary">
+          <div class="result"><p class="eyebrow">Recorded result</p><h3 id="result-heading">Loading</h3></div>
+          <div class="record-description">
+            <p id="record-request">Loading the selected record.</p>
+            <p id="record-outcome" class="muted"></p>
+            <p id="record-time" class="record-time"></p>
+          </div>
+          <a id="download" class="text-link" download hidden>Evidence JSON <span aria-hidden="true">&darr;</span></a>
+        </div>
+        <p id="loading" class="load-status" role="status" aria-live="polite">Loading recorded evidence...</p>
+        <button id="retry-evidence" type="button" class="button" hidden>Retry evidence</button>
+        <details class="evidence-details">
+          <summary>Inspect decision checks and source details</summary>
+          <p id="boundary" class="detail-note"></p>
+          <div class="evidence-grid">
+            <section aria-labelledby="facts-heading"><h3 id="facts-heading">Record details</h3><dl id="facts"></dl></section>
+            <section aria-labelledby="checks-heading"><h3 id="checks-heading">Decision checks</h3><ul id="checks"></ul></section>
+          </div>
+          <section class="trace-panel" aria-labelledby="trace-heading">
+            <h3 id="trace-heading">Tool sequence</h3>
+            <p id="flow-description" class="muted"></p>
+            <ol id="trace"></ol>
+          </section>
+          <details class="raw-details"><summary>Original JSON</summary><pre id="raw" tabindex="0" aria-label="Original evidence JSON"></pre></details>
+        </details>
+        <noscript><p>Enable JavaScript to switch records. Every original file is also available in the <a href="#proof-library">evidence library</a>.</p></noscript>
+      </section>
+    </section>
+    <section class="capabilities section-band" aria-labelledby="capabilities-title">
+      <div class="wrap">
+        <div class="section-heading section-top"><p class="eyebrow">Local workspace</p><p class="muted">Voice or text. One careful review.</p></div>
+        <h2 id="capabilities-title" class="display-heading">The details matter.<br><span class="muted">Keep them in view.</span></h2>
+        <div class="capability-grid">
+          <article><span class="feature-index">01 / Batch</span><h3>Up to five payments.<br>One review.</h3><p>Prepare one to five payment rows with individual recipients and local memos. Check totals and ordered nonces before exporting the batch.</p></article>
+          <article><span class="feature-index">02 / Precision</span><h3>Speak naturally.<br>Review exact amounts.</h3><p>Use text or optional offline voice input. Keep exact token amounts; missing or ambiguous details become a question, not a guess.</p></article>
+          <article><span class="feature-index">03 / Recipients</span><h3>Check the address,<br>not just the alias.</h3><p>Validate mixed-case addresses with EIP-55. Resolve configured contacts to a full address and reject zero, known burn and known token-contract recipients.</p></article>
+          <article><span class="feature-index">04 / Allowance</span><h3>A rolling limit<br>on unsigned drafts.</h3><p>Reserve amounts and native fee budgets before export. The local allowance counts issued drafts, not on-chain spending.</p></article>
+          <article><span class="feature-index">05 / Audit</span><h3>A record of<br>every action.</h3><p>Keep an append-only, hash-linked local audit. Export its history and check it against an independently retained trusted tip.</p></article>
+          <article><span class="feature-index">06 / Confirmation</span><h3>Change the request.<br>Review it again.</h3><p>Confirmation belongs to the current review. Editing or cancelling invalidates it; export checks the policy and payment again.</p></article>
+        </div>
+      </div>
+    </section>
+    <section class="build-section wrap" id="build" aria-labelledby="build-title">
+      <div class="build-heading">
+        <p class="eyebrow">Build locally</p>
+        <h2 id="build-title" class="display-heading">Your machine.<br>Your review.</h2>
+        <p class="section-intro">Start the local workspace with demo data. Explore the request, policy decision and confirmation flow before configuring read-only network access.</p>
+        <a class="text-link" href="https://github.com/Chengyuann/pharos-voice-action-gateway" rel="noreferrer">View the source on GitHub <span aria-hidden="true">&nearr;</span></a>
+      </div>
+      <div class="quick-start">
+        <div class="section-heading"><h3>Quick start</h3><span class="muted">Python 3.9+</span></div>
+        <p>From your local repository checkout:</p>
+        <pre id="start-command" tabindex="0" aria-label="Local start command"><code>python3 scripts/policy_gatekeeper_server.py --port 8791</code></pre>
+        <button class="button" type="button" data-copy="start-command" hidden>Copy command</button>
+        <p id="copy-status" role="status" class="copy-status" aria-live="polite"></p>
+        <p>Then open <code class="local-address">http://127.0.0.1:8791/payment-preview</code> on the same machine.</p>
+        <p class="muted">Demo mode needs no wallet, API key or third-party Python package. The public demos above remain archived records.</p>
+        <details><summary>Check an archived record locally</summary><pre tabindex="0" aria-label="Evidence verification command"><code>python3 scripts/payment_proof.py verify site/proofs/pros-allow-live.json</code></pre><p class="muted">This checks the record's internal consistency. It does not authenticate the source chain data.</p></details>
+      </div>
+    </section>
+    <section class="archive-section wrap" id="proof-library" aria-labelledby="archive-title">
+      <details>
+        <summary id="archive-title">Evidence library and technical notes</summary>
+        <div class="archive-content">
+          <div>
+            <h3>Original records</h3>
+            <ul class="archive-links">
+              <li><a href="proofs/policy-allow.json">Policy: allow</a></li>
+              <li><a href="proofs/policy-deny-amount.json">Policy: amount blocked</a></li>
+              <li><a href="proofs/policy-deny-recipient.json">Policy: recipient blocked</a></li>
+              <li><a href="proofs/policy-deny-time.json">Policy: time blocked</a></li>
+              <li><a href="proofs/language-demo.json">Payment: amount clarification</a></li>
+              <li><a href="proofs/pros-20261106-live.json">PROS: October 22, 2026</a></li>
+              <li><a href="proofs/pros-allow-live.json">PROS: October 21, 2026</a></li>
+              <li><a href="proofs/wpros-allow-live.json">WPROS: allowed review</a></li>
+              <li><a href="proofs/usdc-deny-live.json">USDC: insufficient balance</a></li>
+              <li><a href="proofs/installed-skill-flow.json">Installed Skill + Chain MCP flow</a></li>
+              <li><a href="media/manifest.json">Media manifest</a></li>
+            </ul>
+          </div>
+          <div class="technical-notes">
+            <h3>About these demonstrations</h3>
+            <p>This static site selects saved JSON and videos. It does not connect to a wallet, request microphone access, query a chain or create a payment. The policy examples use a local mock; the other records contain historical read-only results.</p>
+            <p>Public sender addresses are not proof of ownership. Alice and Bob are example contacts. Candidate transaction fields are historical, and fee and pending-nonce quotes were not pinned to the recorded block.</p>
+            <p>The installed-Skill record shows local execution, not a hosted Pharos chat. Voice-event fixtures do not establish microphone input, speech recognition or speaker verification.</p>
+            <h3>Local P1 scope</h3>
+            <p>Batch support covers Pacific Mainnet PROS, USDC and WPROS with ordinary externally owned accounts. Rows are simulated separately at a common block; an export is not an atomic transaction and remains subject to wallet-side review.</p>
+            <p>Cancelling does not refund an issued draft's allowance. Reservations survive restarts; allowance ages out with the rolling window, while reserved nonces are not automatically released.</p>
+            <p>Audit hashes detect inconsistent changes, not source authenticity. Detecting a replaced or shortened history requires a trusted tip stored separately. Keep local reports and payment data private.</p>
+          </div>
+        </div>
+      </details>
     </section>
   </main>
-  <footer>PHAROS / INDEPENDENT PROJECT · NOT AN OFFICIAL WALLET · HISTORICAL EVIDENCE ONLY</footer>
+  <footer class="site-footer wrap">
+    <a class="wordmark" href="./">Voice Action<span>Pharos</span></a>
+    <p>An independent project for Pharos.</p>
+    <nav aria-label="Footer navigation"><a href="#proof-library">Evidence</a><a href="privacy.html">Privacy</a><a href="https://github.com/Chengyuann/pharos-voice-action-gateway" rel="noreferrer">GitHub</a></nav>
+  </footer>
 </body>
 </html>

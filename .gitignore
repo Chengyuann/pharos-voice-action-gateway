@@ -6,6 +6,9 @@ output/research/
 .playwright-cli/
 output/p0/
 output/p1/
+output/v2/
+output/v2-video/
+outputs/pharos-v2/
 outputs/pharos-mcy/
 .venv/
 .env

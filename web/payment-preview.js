@@ -71,7 +71,7 @@ function setFlowState(state) {
     else node.removeAttribute("aria-current");
   });
   const responses = {
-    idle: "Use a committed payment from the voice demo, or type one. I will ask for missing details before checking it.",
+    idle: "Speak or type a payment. I will ask for missing details before checking it.",
     input: "The request changed. Run a new review; no previous confirmation is carried over.",
     checking: "Checking this request against the selected balance source and payment rules.",
     ready: "The checks are ready. Verify the amount, full address and data source yourself before creating a draft.",
@@ -294,8 +294,8 @@ function setLoading(message) {
 }
 function setModeText() {
   const live = mode() === "live", mcp = mode() === "mcp";
-  $("hero-source").textContent = mcp ? "OFFICIAL CHAIN MCP / MAINNET / READ ONLY" : live ? "VOICE FIXTURE + READ-ONLY RPC" : "VOICE FIXTURE + DEMO PAYMENT";
-  $("environment").textContent = mcp ? "Mainnet · unsigned only" : live ? "Fixture + live" : "Fixture + demo";
+  $("hero-source").textContent = mcp ? "OFFICIAL CHAIN MCP / MAINNET / READ ONLY" : live ? "READ-ONLY RPC" : "LOCAL DEMO";
+  $("environment").textContent = mcp ? "Mainnet · unsigned only" : live ? "Live read-only" : "Demo";
   $("mode-note").textContent = mcp ? "Pacific Mainnet (1672): PROS, USDC, WPROS. Real reads and simulation through official Chain MCP; nothing signed or sent."
     : live
     ? (config?.live_available ? "Reads the configured address, balance and estimated fee. Nothing is signed." : "Live mode needs a server connection. Open Connection for setup instructions.")

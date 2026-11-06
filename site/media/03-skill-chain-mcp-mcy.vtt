@@ -1,0 +1,90 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:02.700
+This walkthrough follows one request through
+the installed
+
+2
+00:00:02.700 --> 00:00:05.600
+official Pharos Skill and the local payment
+skill.
+
+3
+00:00:05.600 --> 00:00:07.960
+Inspect a connected execution path where
+tool
+
+4
+00:00:07.960 --> 00:00:10.260
+results become inputs to the next decision,
+
+5
+00:00:10.280 --> 00:00:12.460
+not just logs displayed side by side.
+
+6
+00:00:12.830 --> 00:00:15.490
+Use official Pharos Chain MCP to
+
+7
+00:00:15.490 --> 00:00:17.570
+collect a snapshot at one block.
+
+8
+00:00:18.270 --> 00:00:20.070
+Then execute cast balance for the
+
+9
+00:00:20.070 --> 00:00:22.590
+same address at that same block.
+
+10
+00:00:22.790 --> 00:00:26.250
+Compare the returned balances rather than
+assuming they agree.
+
+11
+00:00:26.620 --> 00:00:28.320
+The final decision depends on balance
+
+12
+00:00:28.320 --> 00:00:30.360
+agreement and the payment policy.
+
+13
+00:00:30.360 --> 00:00:32.020
+If a required source is unavailable,
+
+14
+00:00:32.240 --> 00:00:34.800
+or the balances disagree, deny output.
+
+15
+00:00:34.800 --> 00:00:36.220
+A successful tool call alone
+
+16
+00:00:36.220 --> 00:00:37.800
+is not permission to proceed.
+
+17
+00:00:38.170 --> 00:00:40.790
+When every required check passes, inspect
+
+18
+00:00:40.790 --> 00:00:43.070
+the unsigned candidate for human review.
+
+19
+00:00:43.110 --> 00:00:45.410
+This is a demonstration of the decision
+flow,
+
+20
+00:00:45.410 --> 00:00:47.310
+not a claim about a current balance.
+
+21
+00:00:47.410 --> 00:00:49.030
+Nothing is signed or broadcast.

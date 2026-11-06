@@ -560,3 +560,13 @@ html[data-motion="off"] .waveform i { transform: scaleY(.55); opacity: .75; }
 .batch-payments strong { font-size: 18px; font-variant-numeric: tabular-nums; }
 .batch-payments .address { font-size: 12px; }
 .batch-memo { color: #5d6571; white-space: pre-wrap; }
+
+/* Product workspace: keep advanced fixture inspection out of the main flow. */
+.compact-hero {min-height:0!important;padding:1.5rem 0 2rem!important;display:block!important}
+.compact-hero h1{font:600 clamp(2.6rem,5vw,4.5rem)/1.06 Manrope,sans-serif!important;letter-spacing:-.055em}
+.compact-hero .live-readout{margin-top:1rem}.live-voice-panel{margin-bottom:1.5rem}
+.live-voice-panel>p{color:var(--muted,#a2b0c2);max-width:65ch;line-height:1.6}
+.live-voice-panel textarea{width:100%;margin:.5rem 0;padding:1rem;font:inherit;background:#111b2a;border:1px solid #344458;color:#edf2f7;border-radius:8px}
+.live-voice-panel .voice-actions{flex-wrap:wrap;gap:.65rem}.mic-auto{display:flex;align-items:center;gap:.6rem;margin:1rem 0}
+.fixture-details{margin:1rem 0 2rem}.fixture-details>summary{cursor:pointer;font-size:1rem;color:#aebdce;padding:.5rem 0}
+#mic-status{min-height:1.5rem}#mic-start{min-width:165px}.trust-strip,.hero-orbit,.signal-rail,.step-note{display:none!important}

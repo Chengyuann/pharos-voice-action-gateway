@@ -127,3 +127,21 @@ and JSON-quoted local memos. It can compare same-snapshot MCP proofs against
 aggregate balances, but it does not allocate nonces, reserve batch allowance,
 issue signing requests or implement batch confirmation. Do not present its
 output as an executable batch.
+
+
+## V2 interface and language
+
+Use `python3 scripts/payment_skill_mcp.py` for stdio MCP. Initialize protocol
+2025-03-26, then discover `parse_payment`, `plan_batch`, and `review_payment`.
+Only read/prepare operations exist. Never treat returned evidence as confirmation.
+
+The local parser accepts common English prefixes and exact number words, including
+`I would like to send one USDC to alice.` and `zero point zero zero one PROS`.
+Approximate amounts or unknown recipients require explicit user revision.
+The P1 local workspace also supports 1–5 independent batch rows separated by
+semicolons. Shared balances, fees, rolling unsigned allowance and nonce reservations
+are checked before export. Batches are not atomic or sequentially simulated.
+
+Optional local speech requires an installed offline model and runtime selected by
+`PHAROS_ASR_MODEL` and `PHAROS_ASR_PYTHON`. The transcript is untrusted input:
+show it to the user before copying it to a new payment revision.

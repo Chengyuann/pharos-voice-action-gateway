@@ -312,7 +312,7 @@ class Handler(BaseHTTPRequestHandler):
         if parsed.path == "/payment-preview":
             self.send_file(ROOT / "web" / "payment-preview.html", "text/html; charset=utf-8")
             return
-        if parsed.path in {"/assets/payment-preview.css", "/assets/payment-preview.js", "/assets/payment-batch.js", "/assets/voice-console.js"}:
+        if parsed.path in {"/assets/payment-preview.css", "/assets/payment-preview.js", "/assets/payment-batch.js", "/assets/voice-console.js", "/assets/live-voice.js", "/assets/voice-capture.js"}:
             filename = parsed.path.rsplit("/", 1)[-1]
             content_type = "text/css" if filename.endswith(".css") else "text/javascript"
             self.send_file(ROOT / "web" / filename, content_type + "; charset=utf-8")
@@ -332,6 +332,10 @@ class Handler(BaseHTTPRequestHandler):
             return
         if parsed.path == "/assets/logo.png":
             self.send_file(ROOT / "assets" / "buidl-logo.png", "image/png")
+            return
+        if parsed.path == "/api/voice/config":
+            from voice_input import runtime_config
+            self.send_json(runtime_config())
             return
         if parsed.path == "/api/policy":
             try:
@@ -464,6 +468,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:
         if not self.valid_request_origin():
+            return
+        if self.path == "/api/voice/transcribe":
+            self.transcribe_audio()
             return
         if self.path not in {
             "/api/evaluate", "/api/payment/review", "/api/payment/draft",
@@ -884,13 +891,35 @@ class Handler(BaseHTTPRequestHandler):
         draft["recorded"] = False
         return (draft, fresh if mode == "live" else None) if defer_live_recheck else draft
 
+    def transcribe_audio(self):
+        from voice_input import MAX_BYTES, transcribe
+        lengths = self.headers.get_all("Content-Length", [])
+        if self.headers.get("Transfer-Encoding") or len(lengths) != 1 or not re.fullmatch(r"[0-9]+", lengths[0]):
+            self.send_json({"error": "One Content-Length is required."}, status=400)
+            return
+        if self.headers.get_content_type() != "audio/wav":
+            self.send_json({"error": "Expected WAV audio."}, status=415)
+            return
+        length = int(lengths[0])
+        if not 44 <= length <= MAX_BYTES:
+            self.send_json({"error": "Audio exceeds the recording limit."}, status=413)
+            return
+        try:
+            self.connection.settimeout(8)
+            data = self.rfile.read(length)
+            if len(data) != length:
+                raise ValueError("Incomplete recording.")
+            self.send_json(transcribe(data))
+        except (ValueError, OSError) as exc:
+            self.send_json({"error": str(exc)[:200]}, status=400)
+
     def end_headers(self) -> None:
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
         self.send_header("Content-Security-Policy",
                          "default-src 'self'; script-src 'self' 'unsafe-inline'; "
-                         "style-src 'self' 'unsafe-inline'; img-src 'self'; "
+                         "style-src 'self' 'unsafe-inline'; img-src 'self'; media-src 'self' blob:; "
                          "frame-ancestors 'none'; form-action 'none'; base-uri 'none'")
         super().end_headers()
 

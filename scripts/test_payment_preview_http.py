@@ -56,7 +56,7 @@ def test_root_redirects_to_product_and_page_loads(server):
     status, _, page = request(server, "GET", "/payment-preview")
     assert status == 200
     assert b"Pharos Voice Action Gateway" in page
-    assert b"MIC NOT CONNECTED" in page
+    assert b"Start recording" in page and b"Check your transcript" in page
     assert b"Committed transcript or typed fallback" in page
     assert b"This product does not sign or send transactions." in page
 

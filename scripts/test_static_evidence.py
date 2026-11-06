@@ -10,6 +10,7 @@ import pytest
 from build_arena_bundle import OUTPUT, PUBLIC_FILES, main, validate
 from payment_proof import verify_proof
 from skill_chain_flow import verify_flow
+from payment_batch_evidence import verify_evidence
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -20,8 +21,8 @@ def test_static_site_is_isolated_and_references_every_evidence_file():
     html = (SITE / "index.html").read_text()
     js = (SITE / "evidence.js").read_text()
     assert "Content-Security-Policy" in html
-    assert "No signatures. No funds moved." in html
-    assert "127.0.0.1" not in html and "localhost" not in html
+    assert "Unsigned only. You approve in your wallet." in html
+    assert 'href="http://127.0.0.1' not in html and 'href="http://localhost' not in html
     assert "/api/" not in html + js
     for proof in (SITE / "proofs").glob("*.json"):
         assert proof.stem in js
@@ -30,7 +31,10 @@ def test_static_site_is_isolated_and_references_every_evidence_file():
 @pytest.mark.parametrize("path", sorted((SITE / "proofs").glob("*-live.json")))
 def test_published_live_proofs_replay(path):
     value = json.loads(path.read_text())
-    result = verify_proof(value.get("proof", value))
+    if path.name == "batch-p1-live.json":
+        result = verify_evidence(value)
+    else:
+        result = verify_proof(value.get("proof", value))
     assert result["verified"] is True
     assert result["signed"] is result["broadcast"] is False
     assert result["chain_authenticity_verified"] is False
@@ -93,3 +97,11 @@ def test_bundle_has_allowlist_only_and_valid_manifest():
         saved = json.loads(archive.read("MANIFEST.json"))
         assert saved["schema"] == "pharos-arena-p0-bundle/1"
         assert len(saved["files"]) == len(manifest)
+
+
+def test_release_language_is_english():
+    import re
+    for path in [*SITE.glob("*.html"), *SITE.glob("*.js"), *SITE.joinpath("media").glob("*.srt")]:
+        assert not re.search("[\u4e00-\u9fff]", path.read_text()), path.name
+    for file in (SITE / "media").glob("*.vtt"):
+        assert file.read_text().startswith("WEBVTT")

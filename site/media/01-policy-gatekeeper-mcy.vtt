@@ -1,0 +1,88 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:03.520
+This walkthrough demonstrates the Pharos
+Policy Gatekeeper.
+
+2
+00:00:03.640 --> 00:00:06.100
+Start with a configurable single request
+limit, a
+
+3
+00:00:06.100 --> 00:00:09.100
+recipient allowlist, and a permitted time
+window.
+
+4
+00:00:09.100 --> 00:00:10.740
+These rules determine whether a proposed
+
+5
+00:00:10.740 --> 00:00:12.460
+payment can proceed to review.
+
+6
+00:00:12.830 --> 00:00:15.130
+First, evaluate a request that meets
+
+7
+00:00:15.130 --> 00:00:17.970
+every rule and inspect the allow decision.
+
+8
+00:00:17.970 --> 00:00:20.490
+Then increase the amount beyond the limit.
+
+9
+00:00:20.490 --> 00:00:21.770
+The amount rule denies the
+
+10
+00:00:21.770 --> 00:00:24.170
+request, with the reason recorded.
+
+11
+00:00:24.540 --> 00:00:26.500
+Next, choose a recipient outside the
+allowlist.
+
+12
+00:00:27.420 --> 00:00:29.260
+That request is denied.
+
+13
+00:00:29.260 --> 00:00:31.280
+Return to an allowed recipient, then
+
+14
+00:00:31.280 --> 00:00:33.700
+test outside the permitted time window.
+
+15
+00:00:33.700 --> 00:00:35.360
+The time rule denies it.
+
+16
+00:00:35.360 --> 00:00:38.120
+Explicit approval cannot override these
+rules.
+
+17
+00:00:38.490 --> 00:00:41.030
+Each decision is saved for inspection.
+
+18
+00:00:41.030 --> 00:00:43.550
+Single and batch unsigned exports share a
+
+19
+00:00:43.550 --> 00:00:46.690
+rolling allowance, so repeated exports count
+together.
+
+20
+00:00:46.710 --> 00:00:50.630
+This demonstration produces no signature and
+sends no transaction.

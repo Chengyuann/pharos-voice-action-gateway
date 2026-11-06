@@ -10,6 +10,7 @@ import zipfile
 
 from payment_proof import verify_proof
 from skill_chain_flow import verify_flow
+from payment_batch_evidence import verify_evidence
 from pharos_voice_action_gateway import strict_json_loads
 
 
@@ -22,17 +23,19 @@ PUBLIC_FILES = [
     ROOT / "site" / "evidence.css",
     ROOT / "site" / "evidence.js",
     ROOT / "site" / "icon.svg",
+    *[ROOT / "site" / name for name in ["product.css", "product.js", "sandbox.js", "privacy.html", "404.html"]],
     ROOT / "site" / "media" / "manifest.json",
     *[ROOT / "site" / "media" / (name + suffix)
       for name in ["01-policy-gatekeeper-mcy", "02-payment-agent-mcy", "03-skill-chain-mcp-mcy"]
-      for suffix in [".mp4", ".srt"]],
+      for suffix in [".mp4", ".srt", ".vtt"]],
     *[ROOT / "site" / "proofs" / name for name in [
         "policy-allow.json", "policy-deny-amount.json", "policy-deny-recipient.json",
         "policy-deny-time.json", "language-demo.json", "pros-allow-live.json",
         "wpros-allow-live.json", "usdc-deny-live.json", "pros-20261022-live.json",
-        "installed-skill-flow.json",
+        "installed-skill-flow.json", "batch-p1-live.json", "pros-20261106-live.json",
     ]],
     ROOT / "docs" / "p0-release-status.md",
+    ROOT / "docs" / "v2-release-status.md",
     *sorted((ROOT / "docs" / "submissions").glob("*.md")),
     ROOT / "skills" / "pharos-payment-review" / "SKILL.md",
 ]
@@ -41,7 +44,7 @@ PUBLIC_FILES = [
 def validate() -> list[dict]:
     if len(PUBLIC_FILES) != len(set(PUBLIC_FILES)) or any(not path.is_file() for path in PUBLIC_FILES):
         raise ValueError("Arena bundle file list is incomplete or duplicated")
-    if len(PUBLIC_FILES) > 40:
+    if len(PUBLIC_FILES) > 55:
         raise ValueError("Arena bundle file list is unexpectedly large")
     actual_site_files = {p for p in (ROOT / "site").rglob("*") if p.is_file()}
     allowed_site_files = {p for p in PUBLIC_FILES if ROOT / "site" in p.parents}
@@ -71,19 +74,22 @@ def validate() -> list[dict]:
         # Local commands in the release-status document are deliberate, but the
         # static page itself must not direct reviewers to a loopback proof URL.
         page = (ROOT / "site" / "index.html").read_text(encoding="utf-8")
-        if "localhost" in page or "127.0.0.1" in page:
-            raise ValueError("Static evidence page contains a loopback URL")
+        import re
+        if re.search(r'href=["\']https?://(?:localhost|127\.0\.0\.1)', page):
+            raise ValueError("Public proof links must not point to loopback services")
 
     manifest = []
     for path in PUBLIC_FILES:
         data = path.read_bytes()
-        limit = 10_000_000 if path.suffix == ".mp4" else 2_000_000
+        limit = 30_000_000 if path.suffix == ".mp4" else 2_000_000
         if len(data) > limit:
             raise ValueError(f"{path.relative_to(ROOT)} exceeds its public file limit")
         relative = path.relative_to(ROOT).as_posix()
         if path.parent == ROOT / "site" / "proofs":
             value = strict_json_loads(data.decode("utf-8"))
-            if path.name == "installed-skill-flow.json":
+            if path.name == "batch-p1-live.json":
+                verify_evidence(value)
+            elif path.name == "installed-skill-flow.json":
                 verify_flow(value)
             elif path.name.endswith("-live.json"):
                 verify_proof(value.get("proof", value))

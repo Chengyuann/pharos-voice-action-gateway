@@ -9,6 +9,111 @@ from payment_preview import parse_payment_request, UNSUPPORTED_REQUEST_RE
 
 
 CONTACTS_PATH = Path(__file__).resolve().parents[1] / "config/payment_contacts.json"
+SMALL_NUMBERS = dict(zip(
+    "zero one two three four five six seven eight nine ten eleven twelve thirteen fourteen fifteen sixteen seventeen eighteen nineteen".split(),
+    range(20),
+))
+TENS = dict(zip("twenty thirty forty fifty sixty seventy eighty ninety".split(), range(20, 100, 10)))
+
+
+def spoken_amount(value):
+    """Convert only exact decimal spelling; reject approximate and fractional phrases."""
+    value = value.strip().lower()
+    if re.fullmatch(r"\d+(?:\.\d+)?", value):
+        return value
+    if re.fullmatch(r"[1-9]\d{0,2}(?:,\d{3})+(?:\.\d+)?", value):
+        return value.replace(",", "")
+    words = value.replace("-", " ").split()
+    if not words or len(words) > 24:
+        raise ValueError("Use one exact decimal amount")
+    if "point" in words:
+        if words.count("point") != 1:
+            raise ValueError("Use one decimal point")
+        index = words.index("point")
+        fractional = words[index + 1:]
+        if not fractional or any(w not in SMALL_NUMBERS or SMALL_NUMBERS[w] > 9 for w in fractional):
+            raise ValueError("Say each decimal digit separately")
+        whole = spoken_amount(" ".join(words[:index]) or "zero")
+        if "." in whole:
+            raise ValueError("Use one decimal point")
+        return whole + "." + "".join(str(SMALL_NUMBERS[w]) for w in fractional)
+
+    def under_hundred(part):
+        if len(part) == 1 and part[0] in SMALL_NUMBERS:
+            return SMALL_NUMBERS[part[0]]
+        if part and part[0] in TENS:
+            if len(part) == 1:
+                return TENS[part[0]]
+            if len(part) == 2 and part[1] in SMALL_NUMBERS and 0 < SMALL_NUMBERS[part[1]] < 10:
+                return TENS[part[0]] + SMALL_NUMBERS[part[1]]
+        raise ValueError("Use an exact amount, such as one hundred or 0.25")
+
+    def under_thousand(part):
+        if len(part) >= 2 and part[1] == "hundred" and part[0] in SMALL_NUMBERS and 0 < SMALL_NUMBERS[part[0]] < 10:
+            rest = part[2:]
+            if rest[:1] == ["and"]:
+                rest = rest[1:]
+                if not rest:
+                    raise ValueError("Incomplete amount")
+            return SMALL_NUMBERS[part[0]] * 100 + (under_hundred(rest) if rest else 0)
+        return under_hundred(part)
+
+    total, start, previous = 0, 0, 10**12
+    for index, word in enumerate(words):
+        if word not in {"billion", "million", "thousand"}:
+            continue
+        scale = {"billion": 10**9, "million": 10**6, "thousand": 1000}[word]
+        if scale >= previous:
+            raise ValueError("Ambiguous number scale")
+        group = under_thousand(words[start:index])
+        if not group:
+            raise ValueError("Empty number group")
+        total += group * scale
+        previous, start = scale, index + 1
+    if words[start:]:
+        total += under_thousand(words[start:])
+    elif start == 0:
+        raise ValueError("Missing amount")
+    return str(total)
+
+
+def normalize_instruction(text):
+    source = text.strip().rstrip(".!?。！？").strip()
+    source = re.sub(
+        r"^(?:please\s+)?(?:(?:could|can|would)\s+you\s+|I\s+(?:would\s+like|want|need)\s+to\s+|I'd\s+like\s+to\s+)",
+        "", source, flags=re.I,
+    )
+    # A trailing courtesy is not part of an address. No other words are discarded.
+    source = re.sub(r",?\s+please$", "", source, flags=re.I)
+    chinese = re.fullmatch(
+        r"(?:请)?(?:给|向)\s*([A-Za-z0-9_.-]+)\s*(?:转账|转|支付)\s*(\d+(?:\.\d+)?)\s*(PROS|USDC|WPROS)", source, re.I,
+    )
+    if chinese:
+        recipient, amount, token = chinese.groups()
+        source = f"Send {amount} {token} to {recipient}"
+    reverse = re.fullmatch(
+        r"(?:please\s+)?(?:pay|send|transfer)\s+([A-Za-z][A-Za-z0-9_.-]*)\s+(.+?)\s+(PROS|USDC|WPROS|PHRS)",
+        source, re.I,
+    )
+    if reverse:
+        recipient, amount, token = reverse.groups()
+        source = f"Send {amount} {token} to {recipient}"
+    missing = re.fullmatch(
+        r"(?:please\s+)?pay\s+([A-Za-z][A-Za-z0-9_.-]*)\s+(PROS|USDC|WPROS|PHRS)", source, re.I,
+    )
+    if missing:
+        source = f"Send {missing[2]} to {missing[1]}"
+    amount_form = re.fullmatch(
+        r"((?:please\s+)?(?:send|pay|transfer)\s+)(.+?)(\s+(?:PROS|USDC|WPROS|PHRS)(?:\s+to\s+\S+)?)",
+        source, re.I,
+    )
+    if amount_form:
+        prefix, raw, suffix = amount_form.groups()
+        values = re.split(r"\s+or\s+", raw, flags=re.I)
+        if len(values) > 2:
+            raise ValueError("Choose one exact amount")
+        source = prefix + " or ".join(spoken_amount(v) for v in values) + suffix
+    return source
 
 
 def validate_contacts(contacts):
@@ -42,14 +147,22 @@ def parse_mainnet_request(text, answers=None, contacts=None):
     # Check before contact substitution so names cannot erase a negation/cancel.
     if UNSUPPORTED_REQUEST_RE.search(text):
         return {"status": "invalid", "message": "Negated, cancelled or scheduled payments are not supported."}
+    if len(re.findall(r"\b(?:send|pay|transfer)\b", text, re.I)) > 1:
+        return {"status": "invalid", "message": "Use one instruction per payment; separate batch rows with semicolons."}
     answers = {k: v.strip() for k, v in answers.items()}
     if "recipient" in answers:
         try:
             validate_address(answers["recipient"])
         except ValueError as exc:
             return {"status": "invalid", "message": str(exc)}
-    source = text.strip()
-    source = re.sub(r"^(?:please\s+)?(?:could|can)\s+you\s+", "", source, flags=re.I)
+    try:
+        source = normalize_instruction(text)
+        if "amount" in answers:
+            answers["amount"] = spoken_amount(answers["amount"])
+    except ValueError as exc:
+        return {"status": "needs_details", "field": "amount", "requires_rewrite": True,
+                "question": "Enter one exact amount, or rewrite the instruction.",
+                "reason": str(exc)}
     # "Pay alice 1 USDC" is an alternative order, but every word must match.
     reversed_form = re.fullmatch(
         r"(?:please\s+)?pay\s+([A-Za-z][A-Za-z0-9_.-]*)\s+(?:(\d+(?:\.\d+)?)\s+)?([A-Za-z]+)[.!]?",

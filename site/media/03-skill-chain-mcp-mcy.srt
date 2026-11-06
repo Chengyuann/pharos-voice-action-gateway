@@ -1,79 +1,88 @@
 1
-00:00:00,000 --> 00:00:01,895
-这段展示的是历史证据，
+00:00:00,000 --> 00:00:02,700
+This walkthrough follows one request through
+the installed
 
 2
-00:00:01,895 --> 00:00:03,600
-不是正在发送的交易。
+00:00:02,700 --> 00:00:05,600
+official Pharos Skill and the local payment
+skill.
 
 3
-00:00:03,600 --> 00:00:07,000
-支付技能直接使用官方链上工具返回的数据，
+00:00:05,600 --> 00:00:07,960
+Inspect a connected execution path where
+tool
 
 4
-00:00:07,000 --> 00:00:08,779
-在同一个流程里做决定，
+00:00:07,960 --> 00:00:10,260
+results become inputs to the next decision,
 
 5
-00:00:08,779 --> 00:00:12,320
-而不是把查询结果和规则检查简单摆在一起。
+00:00:10,280 --> 00:00:12,460
+not just logs displayed side by side.
 
 6
-00:00:12,500 --> 00:00:14,700
-以代币转账为例，
+00:00:12,830 --> 00:00:15,490
+Use official Pharos Chain MCP to
 
 7
-00:00:14,700 --> 00:00:20,786
-调用轨迹记录了网络、区块、余额、合约代码、代币元数据和只读模拟。
+00:00:15,490 --> 00:00:17,570
+collect a snapshot at one block.
 
 8
-00:00:20,786 --> 00:00:23,710
-余额与模拟固定在同一区块，
+00:00:18,270 --> 00:00:20,070
+Then execute cast balance for the
 
 9
-00:00:23,710 --> 00:00:28,340
-待处理序号和费用报价则明确标为当前查询。
+00:00:20,070 --> 00:00:22,590
+same address at that same block.
 
 10
-00:00:28,520 --> 00:00:31,000
-技能把实际数据代入规则，
+00:00:22,790 --> 00:00:26,250
+Compare the returned balances rather than
+assuming they agree.
 
 11
-00:00:31,000 --> 00:00:33,520
-检查余额和模拟是否通过，
+00:00:26,620 --> 00:00:28,320
+The final decision depends on balance
 
 12
-00:00:33,520 --> 00:00:36,520
-再应用一点二倍的手续费安全预算。
+00:00:28,320 --> 00:00:30,360
+agreement and the payment policy.
 
 13
-00:00:36,520 --> 00:00:39,720
-只有全部通过才出现候选交易字段，
+00:00:30,360 --> 00:00:32,020
+If a required source is unavailable,
 
 14
-00:00:39,720 --> 00:00:43,560
-数据缺失或者检查失败就会关闭草案入口。
+00:00:32,240 --> 00:00:34,800
+or the balances disagree, deny output.
 
 15
-00:00:43,740 --> 00:00:45,630
-切到余额不足的示例，
+00:00:34,800 --> 00:00:36,220
+A successful tool call alone
 
 16
-00:00:45,630 --> 00:00:47,940
-可以看到明确的拒绝结果。
+00:00:36,220 --> 00:00:37,800
+is not permission to proceed.
 
 17
-00:00:47,940 --> 00:00:51,940
-离线校验器能够重放调用并重算决定，
+00:00:38,170 --> 00:00:40,790
+When every required check passes, inspect
 
 18
-00:00:51,940 --> 00:00:54,340
-但只能验证内部一致性，
+00:00:40,790 --> 00:00:43,070
+the unsigned candidate for human review.
 
 19
-00:00:54,340 --> 00:00:56,940
-不能证明链上来源真实性，
+00:00:43,110 --> 00:00:45,410
+This is a demonstration of the decision
+flow,
 
 20
-00:00:56,940 --> 00:00:59,260
-也不能替代钱包授权。
+00:00:45,410 --> 00:00:47,310
+not a claim about a current balance.
+
+21
+00:00:47,410 --> 00:00:49,030
+Nothing is signed or broadcast.

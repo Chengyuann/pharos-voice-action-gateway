@@ -26,9 +26,10 @@
   </aside>
   <div class="main-column">
     <header class="topbar"><div class="topbar-path"><span class="topbar-mark"></span> Workspace <span>/</span> <strong id="breadcrumb">Voice action</strong></div><div class="topbar-meta"><button id="motion-toggle" type="button" class="motion-toggle" aria-pressed="false" hidden>Pause motion</button><span class="pill" id="environment">Demo data</span></div></header>
+    <div class="signal-rail" aria-hidden="true"><div class="signal-track"><div class="signal-group"><span>VOICE INPUT</span><i></i><span>EXPLICIT TRANSCRIPT REVIEW</span><i></i><span>STOP PLAYBACK</span><i></i><span>UNSIGNED REQUEST</span><i></i><span>POLICY BEFORE CONFIRMATION</span><i></i></div><div class="signal-group"><span>VOICE INPUT</span><i></i><span>EXPLICIT TRANSCRIPT REVIEW</span><i></i><span>STOP PLAYBACK</span><i></i><span>UNSIGNED REQUEST</span><i></i><span>POLICY BEFORE CONFIRMATION</span><i></i></div></div></div>
     <main id="main" tabindex="-1">
       <section id="view-payment" class="view">
-        <div class="page-heading hero-heading compact-hero"><div class="hero-copy"><p class="eyebrow">PHAROS VOICE ACTION GATEWAY</p><h1 aria-label="Say it. Check it."><span class="display-line">Say it. Check it.</span><span id="hero-verb" hidden>Review</span></h1><p>Turn an instruction into a payment you can review.</p><div class="live-readout"><strong id="hero-readout">Ready</strong><b id="hero-source">LOCAL WORKSPACE</b></div></div></div>
+        <div class="page-heading hero-heading"><div class="hero-copy"><p class="eyebrow"><span></span> PHAROS VOICE ACTION GATEWAY</p><h1 aria-label="Speak value. Not blindly."><span class="display-line" aria-hidden="true">SPEAK VALUE.</span><span class="verb-line" aria-hidden="true"><em id="hero-verb"><span>NOT BLINDLY.</span><span>THEN VERIFY.</span><span>STAY IN CONTROL.</span><span>NOT BLINDLY.</span></em><i class="type-caret"></i></span></h1><p>Turn voice or text into an exact payment review. Check every field before a wallet is involved.</p><div class="live-readout" aria-hidden="true"><span><i></i>VOICE GATEWAY</span><strong id="hero-readout">AWAITING INPUT</strong><b id="hero-source">FIXTURE REPLAY / LOCAL</b></div></div><div class="hero-orbit" data-tilt="8" aria-hidden="true"><div class="orbit-ring ring-one"></div><div class="orbit-ring ring-two"></div><div class="orbit-data"><span>LISTEN</span><span>COMMIT</span><span>VERIFY</span></div><div class="coin-float"><div class="orbit-core"><span class="coin-word">PHAROS</span><svg viewBox="0 0 80 80" aria-hidden="true"><path d="M40 14a10 10 0 0 0-10 10v20a10 10 0 0 0 20 0V24a10 10 0 0 0-10-10ZM21 41a19 19 0 0 0 38 0M40 60v8m-10 0h20"/></svg><span class="coin-code">VOICE / ACTION</span></div></div><span class="orbit-label label-one">ASR</span><span class="orbit-label label-two">EOU</span><span class="orbit-label label-three">MANDATE</span><div class="orbit-scan"></div></div><span class="step-note">01 LISTEN <span>—</span> 02 COMMIT <span>—</span> 03 VERIFY</span></div>
         <section class="live-voice-panel panel" aria-labelledby="mic-title">
           <div class="section-title spread"><h2 id="mic-title">Start with your voice</h2><span class="pill">On-device recognition</span></div>
           <p>Record up to 20 seconds. Audio stays on this computer and is removed after transcription.</p>
@@ -38,7 +39,6 @@
           <label for="mic-text">Check your transcript</label><textarea id="mic-text" rows="2" maxlength="500" placeholder="Your words will appear here."></textarea>
           <div class="voice-actions"><button id="mic-use" type="button" class="plain" disabled>Use this instruction</button><button id="voice-read" type="button" class="text-button">Read response aloud</button><button id="voice-stop" type="button" class="text-button">Stop playback</button></div>
         </section>
-        <details class="fixture-details"><summary>Explore speech-event examples</summary>
         <section class="voice-console" aria-labelledby="voice-console-title">
           <div class="voice-console-top">
             <div><p class="eyebrow"><span></span> VOICE AGENT / TURN-TAKING</p><h2 id="voice-console-title">A pause is not always the end.</h2><p>Inspect how the gateway handles transcript fragments, waits for a complete turn, and responds to interruptions.</p></div>
@@ -67,7 +67,6 @@
           </div>
           <p id="voice-boundary-note" class="voice-note">These examples use recorded events, not the microphone. Recorded confirmations never authorize a new payment.</p>
         </section>
-        </details>
         <div class="flow-monitor" role="group" aria-label="Payment preview stages">
           <div class="flow-line" aria-hidden="true"><i></i></div>
           <div class="flow-node active" data-flow-step="input"><span>01</span><div><strong>Intent</strong><small>Committed speech or text</small></div></div>
@@ -123,7 +122,7 @@
             <div class="receipt-foot"><span id="review-time">No review yet</span><span>Unsigned only</span></div>
           </section>
         </div>
-        <section class="trust-strip" data-reveal aria-label="Voice agent safety boundaries"><span>NO RAW AUDIO STORED</span><i></i><span>BARGE-IN AWARE</span><i></i><span>COMMIT BEFORE ACTION</span><i></i><span>POLICY BEFORE CONFIRMATION</span></section>
+        <section class="trust-strip" data-reveal aria-label="Voice agent safety boundaries"><span>AUDIO STAYS LOCAL</span><i></i><span>STOP PLAYBACK ANYTIME</span><i></i><span>COMMIT BEFORE ACTION</span><i></i><span>POLICY BEFORE CONFIRMATION</span></section>
         <section class="recent-section" data-reveal><div class="section-title spread"><h2>Recent activity</h2><button class="text-button" type="button" data-view="activity">View all records →</button></div><div id="recent-list" class="record-list"><p class="muted-text">No saved reviews yet.</p></div></section>
       </section>
       <section id="view-activity" class="view" hidden><div class="page-heading"><div><p class="eyebrow">LOCAL RECORDS</p><h1>Activity</h1><p>The 100 most recent reviews and drafts on this computer. These are not transaction receipts.</p></div><button id="refresh-records" class="plain">Refresh records</button></div><div id="activity-list" class="record-list"></div></section>

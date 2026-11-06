@@ -31,18 +31,34 @@ if (typeof module!=="undefined") module.exports={previewExample};
 if (typeof document!=="undefined") {
   const form=document.getElementById("sandbox-form");
   const output=document.getElementById("sandbox-result");
+  form.addEventListener("input",()=>{
+    if (!output.dataset.status || output.dataset.status==="editing") return;
+    output.dataset.status="editing";
+    const heading=document.createElement("h3");heading.textContent="Request changed";
+    const reason=document.createElement("p");reason.textContent="Run a new review for these details.";
+    output.replaceChildren(heading,reason);
+    document.getElementById("sandbox-state").textContent="REVIEW REQUIRED";
+    document.getElementById("hero-readout").textContent="INTENT CHANGED";
+    document.querySelectorAll(".mini-flow > div").forEach((step,index)=>step.classList.toggle("active",index===0));
+  });
   form.addEventListener("submit",event=>{
     event.preventDefault();
     const result=previewExample(document.getElementById("sandbox-request").value,{
       limit:document.getElementById("sandbox-limit").value,hour:Number(document.getElementById("sandbox-hour").value),
     });
     output.replaceChildren();
+    const state=document.getElementById("sandbox-state");
+    state.textContent=result.status==="allowed"?"READY FOR REVIEW":result.status==="clarify"?"DETAIL NEEDED":"POLICY BLOCKED";
     const heading=document.createElement("h3");heading.textContent=result.status==="allowed"?"Ready to review":result.status==="clarify"?"One more detail":"Request blocked";
+    if (result.amount) { const amount=document.createElement("p"); amount.className="receipt-amount"; amount.append(document.createTextNode(result.amount),Object.assign(document.createElement("small"),{textContent:result.token})); output.append(amount); const recipient=document.createElement("p");recipient.className="receipt-recipient";recipient.textContent=`Recipient · ${result.recipient}`;output.append(recipient); }
     const reason=document.createElement("p");reason.textContent=result.reason;output.append(heading,reason);
     for (const check of result.checks||[]) {
-      const row=document.createElement("p");row.className=check.passed?"pass":"fail";
-      row.textContent=`${check.passed?"✓":"×"} ${check.name} · ${check.detail}`;output.append(row);
+      const row=document.createElement("div");row.className=`result-check ${check.passed?"pass":"fail"}`;
+      const mark=document.createElement("span");mark.textContent=check.passed?"✓":"×";
+      const copy=document.createElement("span");const title=document.createElement("strong");title.textContent=check.name;const detail=document.createElement("small");detail.textContent=check.detail;copy.append(title,detail);row.append(mark,copy);output.append(row);
     }
     output.dataset.status=result.status;
+    document.querySelectorAll(".mini-flow > div").forEach((step,index)=>step.classList.toggle("active",index <= (result.status==="allowed"?2:1)));
+    document.getElementById("hero-readout").textContent=state.textContent;
   });
 }

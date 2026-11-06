@@ -95,3 +95,13 @@ dd { margin: 5px 0 0; font-size: 15px; overflow-wrap: anywhere; }
 @media (prefers-reduced-motion: reduce) {
   .scenarios button { transition: none; }
 }
+/* Same blue-motion component language as the product workspace. */
+.task-nav {border:1px solid var(--line);border-radius:8px 8px 0 0;background:#101a2e;overflow:hidden}
+.task-nav a,.task-nav a:first-child {padding:20px 23px;border-right:1px solid var(--line);min-height:86px}
+.task-nav a:last-child{border-right:0}.task-nav a[aria-current]{background:#182b4b;border-bottom-color:var(--accent)}
+.video-panel{padding:18px;border:1px solid var(--line);border-top:0;border-radius:0 0 10px 10px;background:#0c1526}
+.video-panel video{border-radius:6px}.video-caption{border-bottom:0;padding-bottom:0}.media-links{font-size:12px}
+.evidence-section{border:1px solid var(--line);padding:28px;border-radius:10px;background:#0d1729;box-shadow:0 20px 50px #03071530}
+.evidence-section h2{font-family:var(--display);font-size:37px}.evidence-kind{font-size:10px}.recorded-label{font-size:12px}.scenarios button{font-size:12px;border-radius:5px}.scenarios button[aria-pressed='true']{background:#26487f;border-color:#628dcb;color:var(--text)}
+.record-summary{border:1px solid #304b72;border-radius:7px;padding:22px;background:#10203a}.result .eyebrow{font-size:10px}#result-heading{font:700 34px/1.1 var(--display);color:#a0d5bd}#result-heading.deny,#result-heading.unavailable{color:#ffaf9e}.record-time{font-size:10px}#record-request{font-size:17px}.record-description p{font-size:13px}.record-summary .text-link{font-size:11px}.load-status{font-size:11px;margin-top:12px}.evidence-details{margin-top:12px}.detail-note{font-size:13px}.evidence-grid h3,.trace-panel h3{font-size:27px}dt{font-size:11px}dd{font-size:12px}#checks strong{font-size:12px}#checks small{font-size:11px}#trace li{font-size:11px}.fail{color:#ffaf9e}.pass{color:#a0d5bd}.archive-links a,.technical-notes{font-size:13px}.technical-notes h3{font-size:28px}.evidence-section .section-intro{font-size:14px}.trace-panel .muted{font-size:13px}
+@media(max-width:600px){.task-nav a,.task-nav a:first-child{min-height:57px;padding:14px 15px;border-right:0}.video-panel{padding:10px}.video-caption{padding:14px 3px 0;font-size:12px}.evidence-section{padding:20px 16px}.evidence-section h2{font-size:32px}.record-summary{padding:18px}.evidence-kind{font-size:10px}.section-label{font-size:34px}.recorded-label{font-size:10px}}

@@ -18,38 +18,48 @@
   <script src="sandbox.js" defer></script>
 </head>
 <body>
+  <div class="ambient" aria-hidden="true"><span></span><span></span><span></span></div>
   <a class="skip" href="#main">Skip to content</a>
   <header class="site-header wrap">
-    <a class="wordmark" href="./" aria-label="Pharos Voice Action Gateway home">Voice Action<span>Pharos</span></a>
-    <nav aria-label="Main navigation">
-      <a href="#product">Product</a>
-      <a href="#demos">Demos</a>
-      <a href="#build">Build</a>
-    </nav>
+    <a class="wordmark" href="./" aria-label="Pharos Voice Action Gateway home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M7 25V7h11a7 7 0 0 1 0 14H7m7-7h6M7 29h7"/></svg><span>PHAROS<small>VOICE ACTION GATEWAY</small></span></a>
+    <nav aria-label="Main navigation"><a href="#product">Product</a><a href="#try">Try</a><a href="#demos">Demos</a><a href="#build">Build</a></nav>
+    <div class="header-actions"><button id="motion-toggle" class="motion-toggle" type="button" aria-pressed="false">Pause motion</button><span class="live-chip"><i></i>LOCAL-FIRST</span></div>
   </header>
+  <div class="signal-rail" aria-hidden="true"><div class="signal-track"><div class="signal-group"><span>VOICE INPUT</span><i></i><span>EXACT INTENT</span><i></i><span>POLICY CHECK</span><i></i><span>CHAIN MCP</span><i></i><span>HUMAN REVIEW</span><i></i><span>UNSIGNED OUTPUT</span><i></i></div><div class="signal-group"><span>VOICE INPUT</span><i></i><span>EXACT INTENT</span><i></i><span>POLICY CHECK</span><i></i><span>CHAIN MCP</span><i></i><span>HUMAN REVIEW</span><i></i><span>UNSIGNED OUTPUT</span><i></i></div></div></div>
   <main id="main" tabindex="-1">
     <section class="hero wrap" id="product" aria-labelledby="product-title">
-      <p class="eyebrow">Pharos Voice Action Gateway</p>
-      <h1 id="product-title">Voice Action<br><span>Gateway.</span></h1>
-      <div class="hero-bottom">
-        <p class="intro">Turn a payment request into<br class="desktop-break"> a draft you can review.</p>
-        <div class="hero-action">
-          <a class="button primary" href="#try">Try a payment <span aria-hidden="true">&darr;</span></a>
-          <p class="safety">Unsigned only. You approve in your wallet.</p>
+      <div class="hero-copy" data-reveal>
+        <p class="eyebrow"><span></span> PHAROS / AGENT PAYMENT CONTROL</p>
+        <h1 id="product-title" aria-label="Speak value. Then verify."><span aria-hidden="true" class="display-line">SPEAK VALUE.</span><span class="verb-line" aria-hidden="true"><em id="hero-verb"><span>THEN VERIFY.</span><span>STAY IN CONTROL.</span><span>NOT BLINDLY.</span><span>THEN VERIFY.</span></em><i class="type-caret"></i></span></h1>
+        <p class="intro">Voice or text becomes an exact payment review—not an automatic transaction.</p>
+        <div class="hero-actions"><a class="button primary" href="#try">Try the policy gate <span aria-hidden="true">→</span></a><a class="text-link" href="#demos">Watch English demos</a></div>
+        <p class="safety">Unsigned only. You approve in your wallet.</p>
+        <div class="live-readout"><span><i></i>GATEWAY</span><strong id="hero-readout">READY FOR INTENT</strong><b>LOCAL · UNSIGNED</b></div>
+      </div>
+      <div class="hero-orbit spotlight" data-tilt="8" aria-hidden="true"><div class="orbit-ring ring-one"></div><div class="orbit-ring ring-two"></div><div class="orbit-data"><span>LISTEN</span><span>CHECK</span><span>REVIEW</span></div><div class="coin-float"><div class="orbit-core"><span class="coin-word">PHAROS</span><svg viewBox="0 0 80 80"><path d="M40 14a10 10 0 0 0-10 10v20a10 10 0 0 0 20 0V24a10 10 0 0 0-10-10ZM21 41a19 19 0 0 0 38 0M40 60v8m-10 0h20"/></svg><span class="coin-code">VOICE / ACTION</span></div></div><span class="orbit-label label-one">ASR</span><span class="orbit-label label-two">POLICY</span><span class="orbit-label label-three">MCP</span><div class="orbit-scan"></div></div>
+      <div class="hero-proof-grid" data-reveal><article><span>01</span><strong>Intent</strong><small>Exact amount · asset · recipient</small></article><article><span>02</span><strong>Verify</strong><small>Policy · balance · simulation</small></article><article><span>03</span><strong>Review</strong><small>Human approval · current revision</small></article><article><span>04</span><strong>Export</strong><small>Unsigned request only</small></article></div>
+    </section>
+    <section class="sandbox-section wrap" id="try" aria-labelledby="sandbox-title" data-reveal>
+      <div class="section-heading sandbox-heading"><div><p class="eyebrow"><span></span> INTERACTIVE / EXAMPLE DATA</p><h2 id="sandbox-title">Your request.<br><em>One clear decision.</em></h2></div><span class="boundary-chip"><i></i>NO WALLET CONNECTED</span></div>
+      <div class="product-workspace spotlight">
+        <form id="sandbox-form" class="command-panel">
+          <div class="panel-kicker"><span>01</span> Payment intent</div>
+          <label for="sandbox-request">Tell the agent what to prepare</label>
+          <div class="command-input"><span aria-hidden="true">›</span><input id="sandbox-request" value="Send 1 USDC to Alice" maxlength="300" required autocomplete="off"><b id="voice-pulse" aria-hidden="true"></b></div>
+          <div class="waveform" id="sandbox-waveform" aria-hidden="true"></div>
+          <p class="micro-copy">Illustrative waveform · no audio is recorded here.</p>
+          <div class="sandbox-settings"><div><label for="sandbox-limit">Per-request limit</label><select id="sandbox-limit"><option value="5">5 token units</option><option value="0.5">0.5 token units</option><option value="10">10 token units</option></select></div><div><label for="sandbox-hour">Example UTC time</label><select id="sandbox-hour"><option value="12">12:00 · within window</option><option value="19">19:00 · outside window</option></select></div></div>
+          <button type="submit" class="button primary review-button">Run policy review <span aria-hidden="true">→</span></button>
+          <p class="safety-line">Example data · No network call · Nothing signed</p>
+        </form>
+        <div class="decision-panel">
+          <div class="panel-kicker"><span>02</span> Decision trace <b id="sandbox-state">AWAITING REVIEW</b></div>
+          <div id="sandbox-result" role="status"><div class="decision-empty"><div class="decision-orb"><span></span></div><h3>You stay in control.</h3><p>Amount, recipient and time checks appear here before any draft exists.</p></div></div>
+          <div class="mini-flow" aria-label="Example payment stages"><div class="active"><span>1</span>Intent</div><i></i><div><span>2</span>Policy</div><i></i><div><span>3</span>Review</div></div>
         </div>
       </div>
     </section>
-    <section class="wrap sandbox-section" id="try" aria-labelledby="sandbox-title">
-      <div><p class="eyebrow">Try it in your browser</p><h2 id="sandbox-title">A request.<br>A clear decision.</h2><p class="section-intro">Change the amount, recipient or time. See which rule decides.</p><p class="safety">Example data only. No network calls or wallet connection.</p></div>
-      <form id="sandbox-form">
-        <label for="sandbox-request">Your instruction</label>
-        <input id="sandbox-request" value="Send 1 USDC to Alice" maxlength="300" required autocomplete="off">
-        <div class="sandbox-settings"><div><label for="sandbox-limit">Per-request limit</label><select id="sandbox-limit"><option value="5">5 token units</option value="0.5">0.5 token units</option value="10">10 token units</option></select></div><div><label for="sandbox-hour">Example UTC time</label><select id="sandbox-hour"><option value="12">12:00 · within window</option value="19">19:00 · outside window</option></select></div></div>
-        <button type="submit" class="button primary">Review example <span aria-hidden="true">&rarr;</span></button>
-        <div id="sandbox-result" role="status"><h3>You stay in control.</h3><p>The example policy allows Alice and Bob between 09:00 and 17:00 UTC.</p></div>
-      </form>
-    </section>
-    <section class="demo-section wrap" id="demos" aria-labelledby="demos-title">
+    <section class="demo-section wrap" data-reveal id="demos" aria-labelledby="demos-title">
       <div class="section-heading">
         <h2 id="demos-title" class="section-label">From request to review</h2>
         <span class="recorded-label"><span aria-hidden="true"></span>Recorded demo</span>
@@ -60,7 +70,7 @@
         <a id="payment" href="#payment" data-task="payment"><span class="task-number">02</span><span>Natural-language payment</span><span class="task-arrow" aria-hidden="true">&nearr;</span></a>
         <a id="composition" href="#composition" data-task="composition"><span class="task-number">03</span><span>Skill + Chain MCP</span><span class="task-arrow" aria-hidden="true">&nearr;</span></a>
       </nav>
-      <section class="video-panel" aria-label="Selected English walkthrough">
+      <section class="video-panel spotlight" aria-label="Selected English walkthrough">
         <video id="walkthrough" controls preload="metadata" playsinline aria-label="Policy Gatekeeper English walkthrough" src="media/01-policy-gatekeeper-mcy.mp4">
           <track kind="captions" src="media/01-policy-gatekeeper-mcy.vtt" srclang="en" label="English" default>
           <p>Your browser cannot play this video. <a href="media/01-policy-gatekeeper-mcy.mp4">Download the English walkthrough</a>.</p>
@@ -74,7 +84,7 @@
         </div>
         <p id="video-status" class="media-status" role="status" hidden></p>
       </section>
-      <section id="evidence" class="evidence-section" aria-labelledby="task-title" tabindex="-1">
+      <section id="evidence" class="evidence-section spotlight" aria-labelledby="task-title" tabindex="-1">
         <div class="section-heading">
           <div><p id="category" class="eyebrow">Selected demonstration</p><h2 id="task-title">Policy Gatekeeper</h2></div>
           <span id="kind" class="evidence-kind">Recorded policy fixtures</span>
@@ -109,21 +119,21 @@
         <noscript><p>Enable JavaScript to switch records. Every original file is also available in the <a href="#proof-library">evidence library</a>.</p></noscript>
       </section>
     </section>
-    <section class="capabilities section-band" aria-labelledby="capabilities-title">
+    <section class="capabilities section-band" data-reveal aria-labelledby="capabilities-title">
       <div class="wrap">
         <div class="section-heading section-top"><p class="eyebrow">Local workspace</p><p class="muted">Voice or text. One careful review.</p></div>
         <h2 id="capabilities-title" class="display-heading">The details matter.<br><span class="muted">Keep them in view.</span></h2>
         <div class="capability-grid">
-          <article><span class="feature-index">01 / Batch</span><h3>Up to five payments.<br>One review.</h3><p>Prepare one to five payment rows with individual recipients and local memos. Check totals and ordered nonces before exporting the batch.</p></article>
-          <article><span class="feature-index">02 / Precision</span><h3>Speak naturally.<br>Review exact amounts.</h3><p>Use text or optional offline voice input. Keep exact token amounts; missing or ambiguous details become a question, not a guess.</p></article>
-          <article><span class="feature-index">03 / Recipients</span><h3>Check the address,<br>not just the alias.</h3><p>Validate mixed-case addresses with EIP-55. Resolve configured contacts to a full address and reject zero, known burn and known token-contract recipients.</p></article>
-          <article><span class="feature-index">04 / Allowance</span><h3>A rolling limit<br>on unsigned drafts.</h3><p>Reserve amounts and native fee budgets before export. The local allowance counts issued drafts, not on-chain spending.</p></article>
-          <article><span class="feature-index">05 / Audit</span><h3>A record of<br>every action.</h3><p>Keep an append-only, hash-linked local audit. Export its history and check it against an independently retained trusted tip.</p></article>
-          <article><span class="feature-index">06 / Confirmation</span><h3>Change the request.<br>Review it again.</h3><p>Confirmation belongs to the current review. Editing or cancelling invalidates it; export checks the policy and payment again.</p></article>
+          <article class="feature-card spotlight"><span class="feature-index">01 / Batch</span><h3>Up to five payments.<br>One review.</h3><p>Prepare one to five payment rows with individual recipients and local memos. Check totals and ordered nonces before exporting the batch.</p></article>
+          <article class="feature-card spotlight"><span class="feature-index">02 / Precision</span><h3>Speak naturally.<br>Review exact amounts.</h3><p>Use text or optional offline voice input. Keep exact token amounts; missing or ambiguous details become a question, not a guess.</p></article>
+          <article class="feature-card spotlight"><span class="feature-index">03 / Recipients</span><h3>Check the address,<br>not just the alias.</h3><p>Validate mixed-case addresses with EIP-55. Resolve configured contacts to a full address and reject zero, known burn and known token-contract recipients.</p></article>
+          <article class="feature-card spotlight"><span class="feature-index">04 / Allowance</span><h3>A rolling limit<br>on unsigned drafts.</h3><p>Reserve amounts and native fee budgets before export. The local allowance counts issued drafts, not on-chain spending.</p></article>
+          <article class="feature-card spotlight"><span class="feature-index">05 / Audit</span><h3>A record of<br>every action.</h3><p>Keep an append-only, hash-linked local audit. Export its history and check it against an independently retained trusted tip.</p></article>
+          <article class="feature-card spotlight"><span class="feature-index">06 / Confirmation</span><h3>Change the request.<br>Review it again.</h3><p>Confirmation belongs to the current review. Editing or cancelling invalidates it; export checks the policy and payment again.</p></article>
         </div>
       </div>
     </section>
-    <section class="build-section wrap" id="build" aria-labelledby="build-title">
+    <section class="build-section wrap" data-reveal id="build" aria-labelledby="build-title">
       <div class="build-heading">
         <p class="eyebrow">Build locally</p>
         <h2 id="build-title" class="display-heading">Your machine.<br>Your review.</h2>
@@ -141,7 +151,7 @@
         <details><summary>Check an archived record locally</summary><pre tabindex="0" aria-label="Evidence verification command"><code>python3 scripts/payment_proof.py verify site/proofs/pros-allow-live.json</code></pre><p class="muted">This checks the record's internal consistency. It does not authenticate the source chain data.</p></details>
       </div>
     </section>
-    <section class="archive-section wrap" id="proof-library" aria-labelledby="archive-title">
+    <section class="archive-section wrap" data-reveal id="proof-library" aria-labelledby="archive-title">
       <details>
         <summary id="archive-title">Evidence library and technical notes</summary>
         <div class="archive-content">
@@ -153,7 +163,7 @@
               <li><a href="proofs/policy-deny-recipient.json">Policy: recipient blocked</a></li>
               <li><a href="proofs/policy-deny-time.json">Policy: time blocked</a></li>
               <li><a href="proofs/language-demo.json">Payment: amount clarification</a></li>
-              <li><a href="proofs/pros-20261106-live.json">PROS: October 22, 2026</a></li>
+              <li><a href="proofs/pros-20261106-live.json">PROS: November 6, 2026</a></li>
               <li><a href="proofs/pros-allow-live.json">PROS: October 21, 2026</a></li>
               <li><a href="proofs/wpros-allow-live.json">WPROS: allowed review</a></li>
               <li><a href="proofs/usdc-deny-live.json">USDC: insufficient balance</a></li>

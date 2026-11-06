@@ -4,7 +4,7 @@ Prepared November 6, 2026. **Local candidate, not published or resubmitted.**
 
 ## Delivered
 
-- English product homepage, mobile layouts, task deep links, privacy page and 404.
+- English blue-motion product homepage, restored orbit/coin hero, waveform, workflow components, spotlight interactions, scroll reveals, mobile layouts, task deep links, privacy page and 404.
 - Interactive browser-only policy sandbox: exact example amounts, named limits, allowlist and time checks; no network calls or wallet output.
 - Three new English-narrated 1080p walkthroughs, burned captions, SRT and VTT.
 - Common English prefixes, exact number words, sentence punctuation and follow-up handling.
@@ -18,7 +18,7 @@ Prepared November 6, 2026. **Local candidate, not published or resubmitted.**
 
 ## Verification
 
-- 496 tests passed in 89.31 seconds after the final changes.
+- 500 tests passed in 91.60 seconds after restoring and guarding the visual components.
 - 12 encoded narration segments passed local ASR comparison, minimum similarity 0.9823.
 - All three complete MP4s decoded without errors.
 - Published bundle allowlist and proof replay passed.

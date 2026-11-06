@@ -1,6 +1,6 @@
 # V2 reviewer note — Policy Gatekeeper
 
-Status: local release candidate. Not resubmitted.
+Status: resubmitted November 6, 2026. IN REVIEW. No duplicate task created.
 
 V2: English walkthrough and product website, with P1 integrated. Spend limit, recipient/token allowlist and UTC time windows return a named allow/deny result. The video shows amount, recipient and time denials in the running local inspector. Explicit approval cannot override policy; mock executor remains uncalled for denied requests. Local audit and rolling unsigned-export allowance are implemented. No transaction is signed or broadcast.
 

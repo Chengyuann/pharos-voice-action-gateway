@@ -14,7 +14,7 @@ Prepare Pharos payments from voice or text. Check policy, balance and fees, revi
 
 **No private keys, signatures or broadcasts.** The public site contains recorded demonstrations. The interactive service runs locally; do not expose it as a multi-user payment backend.
 
-This source records the November 6, 2026 V2 release. Arena task approval remains a separate process; this website deployment does not create or resubmit tasks.
+This source records the November 6, 2026 V2 release. The three existing Arena tasks were resubmitted from their original task pages on November 6; no duplicate tasks were created. Approval and points remain pending.
 
 ### Run locally
 

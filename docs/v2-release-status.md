@@ -1,6 +1,6 @@
 # V2 English product release candidate
 
-Prepared and published November 6, 2026. **Website release only; Arena tasks were not resubmitted.**
+Prepared, published and resubmitted November 6, 2026. **The three existing Arena tasks were updated; no duplicate tasks were created.**
 
 ## Delivered
 
@@ -46,7 +46,7 @@ Prepared and published November 6, 2026. **Website release only; Arena tasks wer
 
 ## Release decision
 
-The source and website are released from `main`. Existing Arena submissions remain unchanged. Any later task replacement must update the three existing tasks rather than create duplicates.
+The source and website are released from `main`. The three existing Arena tasks were resubmitted from their original task pages on November 6 and are IN REVIEW. No duplicate tasks were created. Scores and approval remain pending.
 
 No signing, broadcast, real funds movement, wallet edits or private voice-template
 publication occurred.
